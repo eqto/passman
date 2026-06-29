@@ -1,0 +1,21 @@
+# Rust build artifacts
+/target
+**/*.rs.bk
+
+# Frontend dependencies and build output
+passman-app/node_modules/
+passman-app/dist/
+
+# Environment and OS files
+.env
+.DS_Store
+Thumbs.db
+
+# Tauri generated files
+passman-app/src-tauri/gen/
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo

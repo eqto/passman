@@ -1,0 +1,29 @@
+[package]
+name = "passman-app"
+version = { workspace = true }
+edition = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+description = "Passman desktop password manager"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+tauri-plugin-shell = "2"
+tauri-plugin-clipboard-manager = "2"
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+
+passman-core = { path = "../../passman-core" }
+rand = "0.8"
+chrono = { version = "0.4", features = ["serde"] }
+zeroize = "1"
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = []
