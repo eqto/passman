@@ -91,8 +91,16 @@ jobs:
         with:
           name: passman-bundle-${{ matrix.os }}
           path: |
-            src-tauri/target/release/bundle/*
-            target/release/bundle/*
+            src-tauri/target/release/bundle/**/*.AppImage
+            src-tauri/target/release/bundle/**/*.deb
+            src-tauri/target/release/bundle/**/*.rpm
+            src-tauri/target/release/bundle/**/*.dmg
+            src-tauri/target/release/bundle/**/*.exe
+            target/release/bundle/**/*.AppImage
+            target/release/bundle/**/*.deb
+            target/release/bundle/**/*.rpm
+            target/release/bundle/**/*.dmg
+            target/release/bundle/**/*.exe
       - name: Upload Windows portable
         if: matrix.os == 'windows-latest'
         uses: actions/upload-artifact@v4
@@ -100,29 +108,16 @@ jobs:
           name: passman-portable-windows
           path: target/release/passman-app.exe
 
-  upload-cli:
-    name: Upload CLI to Release
+  upload-artifacts:
+    name: Upload to Release
     if: github.event_name == 'release'
-    needs: build-cli
+    needs: [build-cli, build-app]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
         with:
           pattern: passman-cli-*
           path: ./artifacts
-      - name: Upload to Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: ./artifacts/**/*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  upload-app:
-    name: Upload App to Release
-    if: github.event_name == 'release'
-    needs: build-app
-    runs-on: ubuntu-latest
-    steps:
       - uses: actions/download-artifact@v4
         with:
           pattern: passman-bundle-*
