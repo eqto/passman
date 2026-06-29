@@ -19,16 +19,9 @@ pub struct OpenVault {
 }
 
 /// In-memory application state for the Tauri backend.
+#[derive(Default)]
 pub struct AppStateInner {
     pub open_vaults: HashMap<String, OpenVault>,
-}
-
-impl Default for AppStateInner {
-    fn default() -> Self {
-        Self {
-            open_vaults: HashMap::new(),
-        }
-    }
 }
 
 /// Shared application state passed to every Tauri command.

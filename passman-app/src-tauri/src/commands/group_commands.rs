@@ -13,10 +13,7 @@ pub(crate) struct GroupDeletionResult {
 }
 
 #[tauri::command]
-pub fn list_groups(
-    path: String,
-    state: State<'_, AppState>,
-) -> Result<Vec<String>, String> {
+pub fn list_groups(path: String, state: State<'_, AppState>) -> Result<Vec<String>, String> {
     state.with_open_vault(&path, |open_vault| {
         Ok(open_vault.vault.payload.groups.clone())
     })
@@ -57,11 +54,7 @@ pub fn delete_group(
         if !open_vault.vault.payload.groups.contains(&group) {
             return Err("group does not exist".to_string());
         }
-        open_vault
-            .vault
-            .payload
-            .groups
-            .retain(|g| g != &group);
+        open_vault.vault.payload.groups.retain(|g| g != &group);
         let now = chrono::Utc::now();
         let mut entries_to_trash: Vec<VaultEntry> = Vec::new();
         open_vault.vault.payload.entries.retain(|e| {
@@ -196,7 +189,11 @@ pub fn move_group_to_vault(
             .open_vaults
             .get_mut(&source_path)
             .ok_or("source vault is not open")?;
-        source.vault.payload.entries.retain(|e| !moved_ids.contains(&e.id));
+        source
+            .vault
+            .payload
+            .entries
+            .retain(|e| !moved_ids.contains(&e.id));
         let group_still_used = source
             .vault
             .payload
@@ -236,8 +233,14 @@ pub fn move_group_to_vault(
         }
         target.vault.payload.vault_metadata.updated_at = now;
     }
-    let source = guard.open_vaults.get(&source_path).ok_or("source vault is not open")?;
-    let target = guard.open_vaults.get(&target_path).ok_or("target vault is not open")?;
+    let source = guard
+        .open_vaults
+        .get(&source_path)
+        .ok_or("source vault is not open")?;
+    let target = guard
+        .open_vaults
+        .get(&target_path)
+        .ok_or("target vault is not open")?;
     let result = MoveGroupToVaultResult {
         source_groups: source.vault.payload.groups.clone(),
         source_entries: source.vault.payload.entries.clone(),
@@ -329,13 +332,7 @@ pub fn add_tag(
         if trimmed.is_empty() {
             return Err("tag name cannot be empty".to_string());
         }
-        if !open_vault
-            .vault
-            .payload
-            .tags
-            .iter()
-            .any(|t| t == &trimmed)
-        {
+        if !open_vault.vault.payload.tags.iter().any(|t| t == &trimmed) {
             open_vault.vault.payload.tags.push(trimmed);
         }
         open_vault.vault.payload.vault_metadata.updated_at = chrono::Utc::now();
