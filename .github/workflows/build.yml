@@ -8,6 +8,9 @@ on:
   release:
     types: [created]
 
+permissions:
+  contents: write
+
 jobs:
   test:
     name: Test & Lint
@@ -77,3 +80,20 @@ jobs:
         with:
           name: passman-portable-windows
           path: target/release/passman-app.exe
+
+  upload-cli:
+    name: Upload CLI to Release
+    if: github.event_name == 'release'
+    needs: build-cli
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: passman-cli-*
+          path: ./artifacts
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ./artifacts/**/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
