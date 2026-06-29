@@ -27,6 +27,7 @@ jobs:
 
   build-cli:
     name: Build CLI (${{ matrix.os }})
+    if: github.event_name == 'release'
     strategy:
       fail-fast: false
       matrix:
@@ -45,6 +46,7 @@ jobs:
 
   build-app:
     name: Build App (${{ matrix.os }})
+    if: github.event_name == 'release'
     strategy:
       fail-fast: false
       matrix:
