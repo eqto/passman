@@ -40,7 +40,13 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "targets": "all",
+    "targets": [
+      "appimage",
+      "deb",
+      "rpm",
+      "dmg",
+      "nsis"
+    ],
     "windows": {
       "certificateThumbprint": null,
       "digestAlgorithm": "sha256",
