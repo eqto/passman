@@ -34,18 +34,30 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            artifact_name: passman-cli-linux-x64
+            binary_name: passman-cli
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            artifact_name: passman-cli-windows-x64
+            binary_name: passman-cli.exe
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            artifact_name: passman-cli-macos-x64
+            binary_name: passman-cli
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-      - run: cargo build -p passman-cli --release
+        with:
+          targets: ${{ matrix.target }}
+      - run: cargo build -p passman-cli --release --target ${{ matrix.target }}
       - uses: actions/upload-artifact@v4
         with:
-          name: passman-cli-${{ matrix.os }}
-          path: |
-            target/release/passman-cli
-            target/release/passman-cli.exe
+          name: ${{ matrix.artifact_name }}
+          path: target/${{ matrix.target }}/release/${{ matrix.binary_name }}
 
   build-app:
     name: Build App (${{ matrix.os }})
@@ -74,6 +86,13 @@ jobs:
         with:
           projectPath: ./passman-app
           args: ""
+      - name: Upload bundles
+        uses: actions/upload-artifact@v4
+        with:
+          name: passman-bundle-${{ matrix.os }}
+          path: |
+            src-tauri/target/release/bundle/*
+            target/release/bundle/*
       - name: Upload Windows portable
         if: matrix.os == 'windows-latest'
         uses: actions/upload-artifact@v4
@@ -90,6 +109,27 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           pattern: passman-cli-*
+          path: ./artifacts
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ./artifacts/**/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  upload-app:
+    name: Upload App to Release
+    if: github.event_name == 'release'
+    needs: build-app
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: passman-bundle-*
+          path: ./artifacts
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: passman-portable-windows
           path: ./artifacts
       - name: Upload to Release
         uses: softprops/action-gh-release@v2
