@@ -103,11 +103,7 @@ pub fn close_vault(path: String, state: State<'_, AppState>) -> Result<(), Strin
 }
 
 #[tauri::command]
-pub fn delete_vault(
-    id: String,
-    path: String,
-    state: State<'_, AppState>,
-) -> Result<(), String> {
+pub fn delete_vault(id: String, path: String, state: State<'_, AppState>) -> Result<(), String> {
     config::remove_vault(&id).map_err(|e| e.to_string())?;
 
     {

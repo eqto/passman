@@ -3,10 +3,10 @@ use aes_gcm::{
     aead::{Aead, KeyInit},
     Aes256Gcm, Key, Nonce,
 };
-use base64::engine::{Engine, general_purpose::STANDARD as BASE64};
+use base64::engine::{general_purpose::STANDARD as BASE64, Engine};
 use flate2::read::GzDecoder;
-use hmac::{Hmac, Mac};
 use hmac::digest::KeyInit as HmacKeyInit;
+use hmac::{Hmac, Mac};
 use pbkdf2::pbkdf2_hmac;
 use serde::Deserialize;
 use sha2::Sha256;
@@ -121,12 +121,18 @@ struct EncryptedComponents {
     method: String,
 }
 
-pub fn decrypt_buttercup_file(path: &str, password: &str) -> Result<ButtercupVault, ButtercupError> {
+pub fn decrypt_buttercup_file(
+    path: &str,
+    password: &str,
+) -> Result<ButtercupVault, ButtercupError> {
     let contents = std::fs::read_to_string(path)?;
     decrypt_buttercup_vault(&contents, password)
 }
 
-pub fn decrypt_buttercup_vault(contents: &str, password: &str) -> Result<ButtercupVault, ButtercupError> {
+pub fn decrypt_buttercup_vault(
+    contents: &str,
+    password: &str,
+) -> Result<ButtercupVault, ButtercupError> {
     if !contents.starts_with(FORMAT_B_SIGNATURE) {
         return Err(ButtercupError::InvalidSignature);
     }
@@ -147,11 +153,8 @@ pub fn decrypt_buttercup_vault(contents: &str, password: &str) -> Result<Butterc
         entries: Vec::new(),
     };
 
-    let group_titles: HashMap<String, String> = raw
-        .g
-        .iter()
-        .map(|g| (g.id.clone(), g.t.clone()))
-        .collect();
+    let group_titles: HashMap<String, String> =
+        raw.g.iter().map(|g| (g.id.clone(), g.t.clone())).collect();
 
     let mut seen_groups: HashSet<String> = HashSet::new();
     for group in raw.g {
@@ -211,7 +214,10 @@ fn parse_encrypted_components(encrypted_text: &str) -> Result<EncryptedComponent
     })
 }
 
-fn decrypt_components(components: &EncryptedComponents, password: &str) -> Result<String, ButtercupError> {
+fn decrypt_components(
+    components: &EncryptedComponents,
+    password: &str,
+) -> Result<String, ButtercupError> {
     match components.method.as_str() {
         "cbc" => decrypt_cbc(components, password),
         "gcm" => decrypt_gcm(components, password),
@@ -219,7 +225,11 @@ fn decrypt_components(components: &EncryptedComponents, password: &str) -> Resul
     }
 }
 
-fn decode_common_components(components: &EncryptedComponents) -> Result<(Vec<u8>, Vec<u8>, Vec<u8>), ButtercupError> {
+type DecodedComponents = (Vec<u8>, Vec<u8>, Vec<u8>);
+
+fn decode_common_components(
+    components: &EncryptedComponents,
+) -> Result<DecodedComponents, ButtercupError> {
     let content_bytes = BASE64.decode(&components.content)?;
     let iv_bytes = hex::decode(&components.iv)?;
     let auth_bytes = hex::decode(&components.auth)?;
@@ -228,7 +238,12 @@ fn decode_common_components(components: &EncryptedComponents) -> Result<(Vec<u8>
 
 fn decrypt_cbc(components: &EncryptedComponents, password: &str) -> Result<String, ButtercupError> {
     let salt_bytes = components.salt.as_bytes();
-    let derived = derive_key(password, salt_bytes, components.rounds, PASSWORD_KEY_SIZE + HMAC_KEY_SIZE);
+    let derived = derive_key(
+        password,
+        salt_bytes,
+        components.rounds,
+        PASSWORD_KEY_SIZE + HMAC_KEY_SIZE,
+    );
     let (key, hmac_key) = derived.split_at(PASSWORD_KEY_SIZE);
 
     let (content_bytes, iv_bytes, auth_bytes) = decode_common_components(components)?;
@@ -269,10 +284,13 @@ fn decrypt_gcm(components: &EncryptedComponents, password: &str) -> Result<Strin
     let aad = format!("{}{}", components.iv, components.salt).into_bytes();
 
     let decrypted = cipher
-        .decrypt(nonce, aes_gcm::aead::Payload {
-            msg: &full_ciphertext,
-            aad: &aad,
-        })
+        .decrypt(
+            nonce,
+            aes_gcm::aead::Payload {
+                msg: &full_ciphertext,
+                aad: &aad,
+            },
+        )
         .map_err(|e| ButtercupError::DecryptionFailed(e.to_string()))?;
 
     String::from_utf8(decrypted).map_err(ButtercupError::Utf8)

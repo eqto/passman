@@ -127,7 +127,11 @@ fn run() -> Result<(), CliError> {
             create_vault_file(&output, &name, &password)?;
             println!("Created vault: {output}");
         }
-        Commands::Import { input, output, name } => {
+        Commands::Import {
+            input,
+            output,
+            name,
+        } => {
             let json = std::fs::read_to_string(&input)?;
             let mut imported: ImportJson = serde_json::from_str(&json)?;
             if let Some(vault_name) = name {
@@ -148,7 +152,11 @@ fn run() -> Result<(), CliError> {
             std::fs::write(&output, serde_json::to_string_pretty(&import)?)?;
             println!("Exported {} entries to {output}", import.entries.len());
         }
-        Commands::ImportButtercup { input, output, name } => {
+        Commands::ImportButtercup {
+            input,
+            output,
+            name,
+        } => {
             let bcup_password = prompt_password_buttercup("Buttercup master password: ")?;
             let pmv_password = prompt_password("New vault password: ")?;
 
@@ -298,4 +306,3 @@ impl From<ButtercupVault> for ImportJson {
         }
     }
 }
-

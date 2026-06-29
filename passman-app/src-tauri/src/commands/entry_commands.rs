@@ -24,10 +24,7 @@ pub(crate) struct TrashMutationResult {
 }
 
 #[tauri::command]
-pub fn list_entries(
-    path: String,
-    state: State<'_, AppState>,
-) -> Result<Vec<VaultEntry>, String> {
+pub fn list_entries(path: String, state: State<'_, AppState>) -> Result<Vec<VaultEntry>, String> {
     state.with_open_vault(&path, |open_vault| {
         Ok(open_vault.vault.payload.entries.clone())
     })
@@ -40,7 +37,13 @@ pub fn add_entry(
     state: State<'_, AppState>,
 ) -> Result<EntryMutationResult, String> {
     state.with_open_vault_save(&path, |open_vault| {
-        if open_vault.vault.payload.entries.iter().any(|e| e.id == entry.id) {
+        if open_vault
+            .vault
+            .payload
+            .entries
+            .iter()
+            .any(|e| e.id == entry.id)
+        {
             return Err("an entry with this id already exists".to_string());
         }
         open_vault.vault.payload.entries.push(entry.clone());
@@ -207,10 +210,7 @@ pub fn delete_trash_entry(
 }
 
 #[tauri::command]
-pub fn list_trash(
-    path: String,
-    state: State<'_, AppState>,
-) -> Result<Vec<TrashGroup>, String> {
+pub fn list_trash(path: String, state: State<'_, AppState>) -> Result<Vec<TrashGroup>, String> {
     state.with_open_vault(&path, |open_vault| {
         Ok(open_vault.vault.payload.trash.clone())
     })

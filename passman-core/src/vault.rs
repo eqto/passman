@@ -1,4 +1,6 @@
-use crate::crypto::{decrypt, derive_key, encrypt, random_bytes, KdfParams, CryptoError, KEY_SIZE, SALT_SIZE};
+use crate::crypto::{
+    decrypt, derive_key, encrypt, random_bytes, CryptoError, KdfParams, KEY_SIZE, SALT_SIZE,
+};
 use base64::{engine::general_purpose, Engine as _};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
@@ -54,7 +56,7 @@ pub struct KdfParamsJson {
 impl From<&KdfParams> for KdfParamsJson {
     fn from(params: &KdfParams) -> Self {
         Self {
-            salt: general_purpose::STANDARD.encode(&params.salt),
+            salt: general_purpose::STANDARD.encode(params.salt),
             memory_kb: params.memory_kb,
             iterations: params.iterations,
             parallelism: params.parallelism,
@@ -207,11 +209,7 @@ pub struct VaultFile {
     pub needs_save: bool,
 }
 
-pub fn create_vault_file(
-    path: &str,
-    name: &str,
-    password: &str,
-) -> Result<VaultFile, VaultError> {
+pub fn create_vault_file(path: &str, name: &str, password: &str) -> Result<VaultFile, VaultError> {
     let (vault, _key) = create_vault_file_with_key(path, name, password)?;
     Ok(vault)
 }
@@ -284,7 +282,10 @@ pub fn open_vault_file_with_key(
     let encrypted_dek = general_purpose::STANDARD.decode(&header.encrypted_dek)?;
     let dek_nonce = general_purpose::STANDARD.decode(&header.dek_nonce)?;
     let dek = decrypt(&encrypted_dek, &vault_key, &dek_nonce)?;
-    let dek_array: [u8; KEY_SIZE] = dek.as_slice().try_into().map_err(|_| VaultError::InvalidFormat)?;
+    let dek_array: [u8; KEY_SIZE] = dek
+        .as_slice()
+        .try_into()
+        .map_err(|_| VaultError::InvalidFormat)?;
 
     let payload_nonce = general_purpose::STANDARD.decode(&header.payload_nonce)?;
     let payload_json = decrypt(&encrypted_payload, &dek_array, &payload_nonce)?;
@@ -316,11 +317,16 @@ pub fn save_vault_file(vault: &VaultFile, password: &str) -> Result<(), VaultErr
 }
 
 pub fn save_vault_file_with_key(vault: &VaultFile, vault_key: &[u8]) -> Result<(), VaultError> {
-    let vault_key_array: [u8; KEY_SIZE] = vault_key.try_into().map_err(|_| VaultError::InvalidFormat)?;
+    let vault_key_array: [u8; KEY_SIZE] = vault_key
+        .try_into()
+        .map_err(|_| VaultError::InvalidFormat)?;
     let encrypted_dek = general_purpose::STANDARD.decode(&vault.header.encrypted_dek)?;
     let dek_nonce = general_purpose::STANDARD.decode(&vault.header.dek_nonce)?;
     let dek = decrypt(&encrypted_dek, &vault_key_array, &dek_nonce)?;
-    let dek_array: [u8; KEY_SIZE] = dek.as_slice().try_into().map_err(|_| VaultError::InvalidFormat)?;
+    let dek_array: [u8; KEY_SIZE] = dek
+        .as_slice()
+        .try_into()
+        .map_err(|_| VaultError::InvalidFormat)?;
 
     let payload_json = serde_json::to_vec(&vault.payload)?;
     let encrypted_payload = encrypt(&payload_json, &dek_array);
@@ -494,6 +500,9 @@ mod migration_tests {
         assert_eq!(migrated.entries.len(), 2);
         assert_eq!(migrated.entries[0].tags, vec!["Group A"]);
         assert!(migrated.entries[1].tags.is_empty());
-        assert_eq!(migrated.vault_metadata.format_version, PAYLOAD_FORMAT_VERSION);
+        assert_eq!(
+            migrated.vault_metadata.format_version,
+            PAYLOAD_FORMAT_VERSION
+        );
     }
 }
