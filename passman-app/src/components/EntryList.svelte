@@ -3,6 +3,7 @@
   import { currentVault, vaultData, setVaultViewState, groups } from "../stores/vaults";
   import { freeTags } from "../lib/tags.js";
   import { debounce } from "../lib/debounce.js";
+  import { showToast } from "../stores/toast.js";
   import EntryContextMenu from "./EntryContextMenu.svelte";
 
   const SEARCH_DEBOUNCE_MS = 150;
@@ -78,6 +79,7 @@
     event.stopPropagation();
     if (!password) return;
     await writeText(password);
+    showToast("Password copied to clipboard");
   }
 
   function openContextMenu(event, entry) {
@@ -90,9 +92,10 @@
     contextMenu = { show: false, x: 0, y: 0, entry: null };
   }
 
-  function handleMenuCopyPassword() {
+  async function handleMenuCopyPassword() {
     if (contextMenu.entry?.password) {
-      writeText(contextMenu.entry.password);
+      await writeText(contextMenu.entry.password);
+      showToast("Password copied to clipboard");
     }
     closeContextMenu();
   }
@@ -161,6 +164,7 @@
           role="button"
           tabindex="0"
           on:click={() => onSelect(entry)}
+          on:dblclick={(e) => copyPassword(e, entry.password)}
           on:keydown={(e) => handleEntryKeydown(e, entry)}
           on:contextmenu={(e) => openContextMenu(e, entry)}
         >

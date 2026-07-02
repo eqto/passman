@@ -1,6 +1,7 @@
 <script>
   import { groups } from "../stores/vaults";
   import { writeText } from "@tauri-apps/plugin-clipboard-manager";
+  import { showToast } from "../stores/toast.js";
 
   export let entry;
   export let onEdit;
@@ -12,9 +13,10 @@
 
   $: visibleTags = (entry?.tags || []).filter((tag) => !$groups.includes(tag));
 
-  async function copy(text) {
+  async function copy(text, type = "item") {
     if (!text) return;
     await writeText(text);
+    showToast(`${type} copied to clipboard`);
   }
 
   async function handleDelete() {
@@ -42,7 +44,7 @@
         <div class="field-row">
           <input type="text" value={entry.username} readonly />
           {#if entry.username}
-            <button class="copy-btn" aria-label="Copy username" on:click={() => copy(entry.username)}>
+            <button class="copy-btn" aria-label="Copy username" on:click={() => copy(entry.username, "Username")}>
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
             </button>
           {/if}
@@ -61,7 +63,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
               {/if}
             </button>
-            <button class="copy-btn" aria-label="Copy password" on:click={() => copy(entry.password)}>
+            <button class="copy-btn" aria-label="Copy password" on:click={() => copy(entry.password, "Password")}>
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
             </button>
           {/if}
