@@ -17,11 +17,15 @@
   import VaultSettingsDialog from "./VaultSettingsDialog.svelte";
   import VaultContextMenu from "./VaultContextMenu.svelte";
   import RemoveVaultDialog from "./RemoveVaultDialog.svelte";
+  import ImportButtercupDialog from "./ImportButtercupDialog.svelte";
   import { open } from "@tauri-apps/plugin-dialog";
   import { createDragList } from "../lib/dragList.js";
 
   let showCreate = false;
   let unlockTarget = null;
+  let showOpenDropdown = false;
+  let showButtercupImport = false;
+  let dropdownPosition = { x: 0, y: 0 };
 
   let contextMenu = { show: false, x: 0, y: 0, vault: null };
   let showSettings = false;
@@ -118,6 +122,9 @@
     if (contextMenu.show) {
       closeContextMenu();
     }
+    if (showOpenDropdown) {
+      showOpenDropdown = false;
+    }
   }
 
   function closeSettings() {
@@ -130,6 +137,29 @@
       event.preventDefault();
       selectVault(vault);
     }
+  }
+
+  function toggleOpenDropdown(event) {
+    event.stopPropagation();
+    const rect = event.currentTarget.getBoundingClientRect();
+    const menuWidth = 180;
+    const windowWidth = window.innerWidth;
+    
+    let x = rect.left;
+    if (x + menuWidth > windowWidth) {
+      x = windowWidth - menuWidth - 16;
+    }
+    
+    dropdownPosition = {
+      x,
+      y: rect.bottom + 4
+    };
+    showOpenDropdown = !showOpenDropdown;
+  }
+
+  function handleButtercupImport() {
+    showOpenDropdown = false;
+    showButtercupImport = true;
   }
 
 </script>
@@ -181,13 +211,24 @@
   </div>
 
   <div class="tab-actions">
-    <button class="new-vault-btn" on:click={() => showCreate = true}>
+    <button class="action-btn" on:click={() => showCreate = true}>
       <span class="btn-icon">+</span>
       <span>New Vault</span>
     </button>
-    <button class="open-vault-btn" on:click={pickExistingVault}>
-      Open Vault File
-    </button>
+    <div class="action-btn dropdown-button">
+      <span on:click={pickExistingVault}>Open Vault</span>
+      <div class="dropdown-separator"></div>
+      <button class="dropdown-toggle" on:click={toggleOpenDropdown} title="Open options">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 -960 960 960" fill="currentColor"><path d="M480-345 240-585l56-56 184 184 184-184 56 56-240 240Z"/></svg>
+      </button>
+    </div>
+    {#if showOpenDropdown}
+      <div class="dropdown-menu" style="left: {dropdownPosition.x}px; top: {dropdownPosition.y}px;">
+        <button class="dropdown-item" on:click={handleButtercupImport}>
+          Open Buttercup format
+        </button>
+      </div>
+    {/if}
   </div>
 </div>
 
@@ -244,6 +285,13 @@
     name={unlockTarget.name || unlockTarget.path}
     onUnlock={handleUnlock}
     onCancel={() => unlockTarget = null}
+  />
+{/if}
+
+{#if showButtercupImport}
+  <ImportButtercupDialog
+    on:success={() => showButtercupImport = false}
+    on:cancel={() => showButtercupImport = false}
   />
 {/if}
 
@@ -347,10 +395,13 @@
     align-items: center;
     gap: 0.5rem;
     flex-shrink: 0;
+    position: relative;
   }
 
-  .new-vault-btn,
-  .open-vault-btn {
+  .action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
     padding: 0.5rem 0.75rem;
     border: none;
     border-radius: 0.5rem;
@@ -358,24 +409,89 @@
     font-weight: 500;
     cursor: pointer;
     white-space: nowrap;
+    height: 2.25rem;
+    background-color: var(--hover-bg);
+    color: var(--text-color);
+  }
+
+  .action-btn:hover {
+    outline: 1px solid var(--border-color);
+  }
+
+  .action-btn span {
+    line-height: 1;
   }
 
   .btn-icon {
-    font-size: 1rem;
+    font-size: 0.875rem;
   }
 
-  .new-vault-btn {
-    background-color: var(--accent-color);
-    color: white;
-  }
-
-  .new-vault-btn:hover {
-    background-color: var(--accent-hover);
-  }
-
-  .open-vault-btn {
+  .dropdown-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 0.75rem;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    height: 2.25rem;
     background-color: var(--hover-bg);
     color: var(--text-color);
+    position: relative;
+  }
+
+  .dropdown-button:hover {
+    outline: 1px solid var(--border-color);
+  }
+
+  .dropdown-button span {
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .dropdown-separator {
+    width: 1px;
+    height: 1.25rem;
+    background-color: var(--border-color);
+  }
+
+  .dropdown-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    color: var(--text-color);
+  }
+
+  .dropdown-menu {
+    position: fixed;
+    background-color: var(--sidebar-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 9999;
+    min-width: 180px;
+  }
+
+  .dropdown-item {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    background: transparent;
+    border: none;
+    color: var(--text-color);
+    cursor: pointer;
+    font-size: 0.875rem;
+  }
+
+  .dropdown-item:hover {
+    background-color: var(--hover-bg);
   }
 
   .open-vault-btn:hover {

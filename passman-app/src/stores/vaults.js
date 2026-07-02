@@ -223,3 +223,17 @@ export async function reorderVaults(orderedIds) {
   return list;
 }
 
+export async function convertButtercupVault(bcupPath, password, outputPath) {
+  const id = crypto.randomUUID();
+  const vault = await invoke("convert_buttercup_vault", { bcupPath, password, outputPath, id });
+  await loadVaults();
+  currentVault.set({ ...vault, id });
+  updateVaultData(outputPath, {
+    unlocked: true,
+    groups: vault.groups || [],
+    tags: vault.tags || [],
+    entries: vault.entries || [],
+    trash: vault.trash || [],
+  });
+  return vault;
+}

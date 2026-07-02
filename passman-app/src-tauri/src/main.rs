@@ -9,10 +9,17 @@ use commands::*;
 use tauri::Manager;
 
 fn main() {
-    tauri::Builder::default()
+    let mut builder = tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
-        .plugin(tauri_plugin_clipboard_manager::init())
+        .plugin(tauri_plugin_clipboard_manager::init());
+
+    #[cfg(debug_assertions)]
+    {
+        builder = builder.plugin(tauri_plugin_mcp_bridge::init());
+    }
+
+    builder
         .setup(|app| {
             app.manage(AppState::new(app.handle().clone()));
             Ok(())
@@ -26,6 +33,7 @@ fn main() {
             delete_vault,
             rename_vault,
             reorder_vaults,
+            convert_buttercup_vault,
             list_groups,
             add_group,
             delete_group,
