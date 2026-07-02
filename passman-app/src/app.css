@@ -60,6 +60,7 @@ input,
 textarea,
 button {
   font-family: inherit;
+  line-height: 1.5;
 }
 
 /* Shared modal styles */

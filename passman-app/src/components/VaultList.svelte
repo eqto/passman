@@ -182,7 +182,8 @@
 
   <div class="tab-actions">
     <button class="new-vault-btn" on:click={() => showCreate = true}>
-      + New Vault
+      <span class="btn-icon">+</span>
+      <span>New Vault</span>
     </button>
     <button class="open-vault-btn" on:click={pickExistingVault}>
       Open Vault File
@@ -357,6 +358,10 @@
     font-weight: 500;
     cursor: pointer;
     white-space: nowrap;
+  }
+
+  .btn-icon {
+    font-size: 1rem;
   }
 
   .new-vault-btn {
