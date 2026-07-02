@@ -453,8 +453,8 @@
   .new-entry-btn {
     margin-top: 0.75rem;
     padding: 0.5rem 0.75rem;
-    background-color: var(--accent-color);
-    color: var(--selected-text);
+    background-color: var(--hover-bg);
+    color: var(--text-color);
     border: none;
     border-radius: 0.375rem;
     font-size: 0.875rem;
@@ -464,7 +464,7 @@
   }
 
   .new-entry-btn:hover {
-    background-color: var(--accent-hover);
+    outline: 1px solid var(--border-color);
   }
 
 </style>

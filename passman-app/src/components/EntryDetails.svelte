@@ -272,12 +272,12 @@
   }
 
   .edit-btn {
-    background-color: var(--accent-color);
-    color: var(--selected-text);
+    background-color: var(--hover-bg);
+    color: var(--text-color);
   }
 
   .edit-btn:hover {
-    background-color: var(--accent-hover);
+    outline: 1px solid var(--border-color);
   }
 
   .delete-btn {
