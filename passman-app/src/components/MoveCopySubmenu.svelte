@@ -75,7 +75,7 @@
             {#if !$vaultData[vault.path]?.unlocked}
               <span class="locked-badge">locked</span>
             {:else}
-              <span class="arrow">▶</span>
+              <span class="context-menu-arrow">▶</span>
             {/if}
           </button>
           {#if activeVault?.id === vault.id}
@@ -109,15 +109,7 @@
   }
 
   .context-menu {
-    position: fixed;
-    background-color: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 0.5rem;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    z-index: 100;
     width: 10rem;
-    padding: 0.25rem;
-    overflow: visible;
   }
 
   .context-menu.submenu {
@@ -127,43 +119,16 @@
   }
 
   .submenu-item {
-    width: 100%;
-    text-align: left;
-    padding: 0.5rem 0.75rem;
-    border: none;
-    border-radius: 0.375rem;
-    background: transparent;
-    color: var(--text-color);
-    cursor: pointer;
-    font-size: 0.875rem;
-    display: flex;
-    align-items: center;
     justify-content: space-between;
     gap: 0.5rem;
   }
 
-  .submenu-item:hover {
-    background-color: var(--hover-bg);
-  }
-
   .submenu-item:disabled {
-    color: var(--muted-color);
     cursor: not-allowed;
   }
 
   .submenu-item:disabled:hover {
     background-color: transparent;
-  }
-
-  .context-menu-divider {
-    height: 1px;
-    background-color: var(--border-color);
-    margin: 0.25rem 0.5rem;
-  }
-
-  .arrow {
-    font-size: 0.75rem;
-    opacity: 0.7;
   }
 
   .submenu-empty {

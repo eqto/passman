@@ -23,7 +23,7 @@
     <h2>Vault Settings</h2>
     <div class="modal-form">
       <input class="modal-input" bind:value={settingsName} placeholder="Vault name" />
-      <div class="path-field">
+      <div class="path-field form-group">
         <label for="vault-path">File location</label>
         <input id="vault-path" class="modal-input" type="text" value={vault?.path || ""} readonly />
       </div>
@@ -39,20 +39,3 @@
   </div>
 </div>
 
-<style>
-  .path-field {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-
-  .path-field label {
-    font-size: 0.875rem;
-    color: var(--muted-color);
-  }
-
-  .path-field input[readonly] {
-    cursor: default;
-    opacity: 0.8;
-  }
-</style>

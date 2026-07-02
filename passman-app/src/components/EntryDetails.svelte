@@ -100,17 +100,17 @@
 
     <div class="details-footer">
       {#if trashMode}
-        <button class="edit-btn" on:click={handleRestore}>
+        <button class="btn-secondary edit-btn" on:click={handleRestore}>
           Restore
         </button>
-        <button class="delete-btn" on:click={handleDelete}>
+        <button class="btn-danger delete-btn" on:click={handleDelete}>
           Delete Permanently
         </button>
       {:else}
-        <button class="edit-btn" on:click={() => onEdit(entry)}>
+        <button class="btn-secondary edit-btn" on:click={() => onEdit(entry)}>
           Edit
         </button>
-        <button class="delete-btn" on:click={handleDelete}>
+        <button class="btn-danger delete-btn" on:click={handleDelete}>
           Delete
         </button>
       {/if}
@@ -247,11 +247,6 @@
 
   .tag-chip {
     padding: 0.25rem 0.75rem;
-    background-color: var(--hover-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 9999px;
-    color: var(--text-color);
-    font-size: 0.875rem;
   }
 
   .details-footer {
@@ -271,18 +266,8 @@
     cursor: pointer;
   }
 
-  .edit-btn {
-    background-color: var(--hover-bg);
-    color: var(--text-color);
-  }
-
   .edit-btn:hover {
     outline: 1px solid var(--border-color);
-  }
-
-  .delete-btn {
-    background-color: var(--hover-bg);
-    color: var(--danger-color);
   }
 
   .delete-btn:hover {
@@ -294,7 +279,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--muted-color);
     font-size: 0.875rem;
   }
 </style>

@@ -132,7 +132,7 @@
 <svelte:window on:click={closeContextMenu} />
 
 <div class="entry-list">
-  <div class="list-header">
+  <div class="list-header section-header">
     <span class="count">{filtered.length} entries</span>
   </div>
 
@@ -140,6 +140,7 @@
     value={search}
     on:input={onSearchInput}
     placeholder="Search entries..."
+    class="modal-input"
   />
 
   {#if selectedTags.length > 0}
@@ -154,7 +155,7 @@
   {/if}
 
   {#if filtered.length === 0}
-    <p class="empty">No entries found.</p>
+    <p class="empty-state">No entries found.</p>
   {:else}
     <div class="entries">
       {#each filtered as entry (entry.id)}
@@ -203,7 +204,7 @@
   {/if}
 
   {#if !trashMode}
-    <button class="new-entry-btn" on:click={onNew}>
+    <button class="btn-secondary new-entry-btn" on:click={onNew}>
       + New Entry
     </button>
   {/if}
@@ -233,38 +234,7 @@
   }
 
   .list-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
     margin-bottom: 0.75rem;
-  }
-
-  .count {
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    color: var(--muted-color);
-    letter-spacing: 0.05em;
-  }
-
-  input {
-    width: 100%;
-    padding: 0.5rem 0.75rem;
-    border: 1px solid var(--input-border);
-    border-radius: 0.375rem;
-    background-color: var(--input-bg);
-    color: var(--text-color);
-    margin-bottom: 0.75rem;
-  }
-
-  input:focus {
-    outline: 2px solid var(--accent-color);
-    outline-offset: 1px;
-  }
-
-  .empty {
-    color: var(--muted-color);
-    font-size: 0.875rem;
   }
 
   .entries {
@@ -390,10 +360,6 @@
     cursor: pointer;
   }
 
-  .entry-tag:hover {
-    background-color: var(--border-color);
-  }
-
   .entry-tag.active {
     background-color: var(--selected-bg);
     color: var(--selected-text);
@@ -433,10 +399,6 @@
     cursor: pointer;
   }
 
-  .tag-filter-chip .remove {
-    font-weight: 600;
-  }
-
   .clear-tag-filter {
     padding: 0.25rem 0.5rem;
     background: transparent;
@@ -450,21 +412,5 @@
     color: var(--text-color);
   }
 
-  .new-entry-btn {
-    margin-top: 0.75rem;
-    padding: 0.5rem 0.75rem;
-    background-color: var(--hover-bg);
-    color: var(--text-color);
-    border: none;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    text-align: center;
-  }
-
-  .new-entry-btn:hover {
-    outline: 1px solid var(--border-color);
-  }
 
 </style>

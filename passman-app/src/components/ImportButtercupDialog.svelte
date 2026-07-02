@@ -112,7 +112,7 @@
           <label for="bcup-path">Buttercup file</label>
           <div class="path-row">
             <input id="bcup-path" class="modal-input" bind:value={bcupPath} placeholder="Select .bcup file" readonly />
-            <button class="browse-btn" on:click={pickBcupFile} disabled={loading}>
+            <button class="btn-secondary browse-btn" on:click={pickBcupFile} disabled={loading}>
               Browse
             </button>
           </div>
@@ -140,7 +140,7 @@
           <label for="output-path">Save as</label>
           <div class="path-row">
             <input id="output-path" class="modal-input" bind:value={outputPath} placeholder="Select save location" readonly />
-            <button class="browse-btn" on:click={pickOutputFile} disabled={loading}>
+            <button class="btn-secondary browse-btn" on:click={pickOutputFile} disabled={loading}>
               Browse
             </button>
           </div>
@@ -177,45 +177,6 @@
 </div>
 
 <style>
-  .form-group {
-    margin-bottom: 1rem;
-  }
-
-  .form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--text-color);
-  }
-
-  .path-row {
-    display: flex;
-    gap: 0.5rem;
-  }
-
-  .path-row .modal-input {
-    flex: 1;
-  }
-
-  .browse-btn {
-    padding: 0.5rem 0.75rem;
-    background-color: var(--hover-bg);
-    border: none;
-    border-radius: 0.5rem;
-    cursor: pointer;
-    color: var(--text-color);
-  }
-
-  .browse-btn:hover:not(:disabled) {
-    filter: brightness(0.95);
-  }
-
-  .browse-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
   .success-message {
     padding: 0.75rem;
     background-color: rgba(34, 197, 94, 0.1);

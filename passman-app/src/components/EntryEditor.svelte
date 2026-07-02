@@ -75,7 +75,7 @@
     <input bind:value={form.username} placeholder="Username" />
     <div class="password-row">
       <input bind:value={form.password} type="password" placeholder="Password" />
-      <button class="generate-btn" on:click={handleGenerate}>
+      <button class="btn-secondary generate-btn" on:click={handleGenerate}>
         Generate
       </button>
     </div>
@@ -98,7 +98,7 @@
           placeholder="Add tag"
           on:keydown={handleTagKeydown}
         />
-        <button class="add-tag-btn" type="button" on:click={addTag}>
+        <button class="btn-secondary add-tag-btn" type="button" on:click={addTag}>
           +
         </button>
       </div>
@@ -108,10 +108,10 @@
     <p class="error">{error}</p>
   {/if}
   <div class="actions">
-    <button class="cancel-btn" on:click={onClose}>
+    <button class="modal-cancel-btn cancel-btn" on:click={onClose}>
       Cancel
     </button>
-    <button class="save-btn" on:click={handleSave}>
+    <button class="btn-primary save-btn" on:click={handleSave}>
       Save
     </button>
   </div>
@@ -158,27 +158,13 @@
     outline-offset: 1px;
   }
 
-  .password-row {
-    display: flex;
-    gap: 0.5rem;
-  }
-
   .password-row input {
     flex: 1;
   }
 
-  .generate-btn {
-    padding: 0.5rem 0.75rem;
-    background-color: var(--hover-bg);
-    border: none;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
-    cursor: pointer;
-    color: var(--text-color);
-  }
-
-  .generate-btn:hover {
-    background-color: var(--border-color);
+  .password-row {
+    display: flex;
+    gap: 0.5rem;
   }
 
   .tags-section {
@@ -198,11 +184,6 @@
     align-items: center;
     gap: 0.25rem;
     padding: 0.25rem 0.5rem;
-    background-color: var(--hover-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 9999px;
-    color: var(--text-color);
-    font-size: 0.875rem;
   }
 
   .tag-chip button {
@@ -234,18 +215,8 @@
   }
 
   .add-tag-btn {
-    padding: 0.5rem 0.75rem;
-    background-color: var(--hover-bg);
-    border: none;
-    border-radius: 0.375rem;
     font-size: 1rem;
     line-height: 1;
-    cursor: pointer;
-    color: var(--text-color);
-  }
-
-  .add-tag-btn:hover {
-    background-color: var(--border-color);
   }
 
   .error {
@@ -263,29 +234,4 @@
     border-top: 1px solid var(--border-color);
   }
 
-  .cancel-btn {
-    padding: 0.5rem 1rem;
-    background: transparent;
-    border: none;
-    color: var(--muted-color);
-    cursor: pointer;
-    border-radius: 0.375rem;
-  }
-
-  .cancel-btn:hover {
-    color: var(--text-color);
-  }
-
-  .save-btn {
-    padding: 0.5rem 1rem;
-    background-color: var(--accent-color);
-    color: var(--selected-text);
-    border: none;
-    border-radius: 0.375rem;
-    cursor: pointer;
-  }
-
-  .save-btn:hover {
-    background-color: var(--accent-hover);
-  }
 </style>

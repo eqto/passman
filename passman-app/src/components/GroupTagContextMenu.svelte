@@ -62,19 +62,19 @@
     <div class="menu-item-wrapper" on:mouseenter={() => openMenu("merge")}>
       <button class="context-menu-item has-submenu">
         <span>Merge to group</span>
-        <span class="arrow">▶</span>
+        <span class="context-menu-arrow">▶</span>
       </button>
     </div>
     <div class="menu-item-wrapper" on:mouseenter={() => openMenu("moveToVault")}>
       <button class="context-menu-item has-submenu">
         <span>Move to</span>
-        <span class="arrow">▶</span>
+        <span class="context-menu-arrow">▶</span>
       </button>
     </div>
     <div class="menu-item-wrapper" on:mouseenter={() => openMenu("copyToVault")}>
       <button class="context-menu-item has-submenu">
         <span>Copy to</span>
-        <span class="arrow">▶</span>
+        <span class="context-menu-arrow">▶</span>
       </button>
     </div>
   {/if}
@@ -83,7 +83,7 @@
     <div class="menu-item-wrapper" on:mouseenter={() => openMenu("moveToGroup")}>
       <button class="context-menu-item has-submenu">
         <span>Move to group</span>
-        <span class="arrow">▶</span>
+        <span class="context-menu-arrow">▶</span>
       </button>
     </div>
   {/if}
@@ -143,15 +143,7 @@
   }
 
   .context-menu {
-    position: fixed;
-    background-color: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 0.5rem;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    z-index: 100;
     min-width: 10rem;
-    padding: 0.25rem;
-    overflow: visible;
   }
 
   .context-menu.submenu {
@@ -160,29 +152,8 @@
 
   .context-menu-item,
   .submenu-item {
-    width: 100%;
-    text-align: left;
-    padding: 0.5rem 0.75rem;
-    border: none;
-    border-radius: 0.375rem;
-    background: transparent;
-    color: var(--text-color);
-    cursor: pointer;
-    font-size: 0.875rem;
-    display: flex;
-    align-items: center;
     justify-content: space-between;
     gap: 0.5rem;
-  }
-
-  .context-menu-item:hover,
-  .submenu-item:hover {
-    background-color: var(--hover-bg);
-  }
-
-  .arrow {
-    font-size: 0.75rem;
-    opacity: 0.7;
   }
 
   .submenu-empty {

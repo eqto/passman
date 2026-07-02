@@ -209,7 +209,7 @@
     </div>
 
     {#if trashGroups.length === 0}
-      <p class="empty">No deleted groups.</p>
+      <p class="empty-state">No deleted groups.</p>
     {:else}
       {#each trashGroups as group (group)}
         <div
@@ -228,7 +228,7 @@
       {/each}
     {/if}
   {:else}
-    <div class="group-header">
+    <div class="group-header section-header">
       <span>Groups</span>
       <button class="add-group-btn" title="New group" on:click={() => showAdd = true}>
         +
@@ -236,7 +236,7 @@
     </div>
 
     {#if $groups.length === 0}
-      <p class="empty">No groups.</p>
+      <p class="empty-state">No groups.</p>
     {:else}
       {#each $groups as group (group)}
         <div
@@ -273,7 +273,7 @@
       {/each}
     {/if}
 
-    <div class="tags-header">
+    <div class="tags-header section-header">
       <span>Tags</span>
       <button class="add-group-btn" title="New tag" on:click={() => showAddTag = true}>
         +
@@ -281,7 +281,7 @@
     </div>
 
     {#if $tags.length === 0}
-      <p class="empty">No tags.</p>
+      <p class="empty-state">No tags.</p>
     {:else}
       <div class="tags">
         {#each $tags as tag}
@@ -293,7 +293,7 @@
       </div>
     {/if}
 
-    <div class="trash-header">
+    <div class="trash-header section-header">
       <span>Trash</span>
     </div>
     <div class="group-row trash-row" class:selected={trashMode}>
@@ -512,16 +512,10 @@
 
   .tag-chip {
     padding: 0.25rem 0.75rem;
-    background-color: var(--hover-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 9999px;
-    color: var(--text-color);
-    font-size: 0.875rem;
   }
 
   .empty {
     padding: 0.5rem 1rem;
     font-size: 0.875rem;
-    color: var(--muted-color);
   }
 </style>
