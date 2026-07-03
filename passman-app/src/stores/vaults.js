@@ -148,19 +148,18 @@ export async function registerAndOpenVault(id, path, password) {
 
 export async function closeVault(path) {
   await invoke("close_vault", { path });
-  clearVaultData(path);
   if (get(currentVault)?.path === path) {
     currentVault.set(null);
   }
+  clearVaultData(path);
 }
 
 export async function lockVaultByPath(path) {
   await invoke("close_vault", { path });
-  updateVaultData(path, { unlocked: false, groups: [], entries: [], trash: [] });
-  const current = get(currentVault);
-  if (current && current.path === path) {
+  if (get(currentVault)?.path === path) {
     currentVault.set(null);
   }
+  clearVaultData(path);
 }
 
 export async function lockVault() {

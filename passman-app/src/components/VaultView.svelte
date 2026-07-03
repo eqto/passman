@@ -25,7 +25,6 @@
   let trashMode = false;
   let selectedTrashGroup = "";
   let selectedTags = [];
-  let initializedVaultPath = null;
 
   let columnWidths = {
     groups: GROUP_PANEL_DEFAULT_WIDTH,
@@ -37,7 +36,7 @@
   let startWidth = 0;
 
   onMount(() => {
-    restoreViewState();
+    resetVaultView();
     try {
       const saved = JSON.parse(localStorage.getItem(WIDTHS_KEY));
       if (saved) {
@@ -101,29 +100,18 @@
     });
   }
 
-  function restoreViewState() {
-    if (!$currentVault) return;
-    const viewState = $vaultData[$currentVault.path]?.viewState || {};
-    selectedGroup = viewState.selectedGroup ?? "";
-    selectedEntry = viewState.selectedEntry ?? null;
-    editingEntry = viewState.editingEntry ?? null;
-    mode = viewState.mode ?? "view";
-    trashMode = viewState.trashMode ?? false;
-    selectedTrashGroup = viewState.selectedTrashGroup ?? "";
-    selectedTags = viewState.selectedTags ?? [];
-    if (!trashMode && !selectedGroup && $groups.length > 0) {
-      selectedGroup = $groups[0];
-      saveViewState();
-    }
-    if (trashMode && !selectedTrashGroup && $trash.length > 0) {
-      selectedTrashGroup = $trash[0].group;
-      saveViewState();
-    }
+  function resetVaultView() {
+    selectedGroup = "";
+    selectedEntry = null;
+    editingEntry = null;
+    mode = "view";
+    trashMode = false;
+    selectedTrashGroup = "";
+    selectedTags = [];
   }
 
-  $: if ($currentVault && initializedVaultPath !== $currentVault.path) {
-    initializedVaultPath = $currentVault.path;
-    restoreViewState();
+  $: if (!$currentVault) {
+    resetVaultView();
   }
 
   $: trashGroups = $trash.map((tg) => tg.group);
