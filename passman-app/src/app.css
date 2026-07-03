@@ -17,8 +17,8 @@
   --card-bg: #ffffff;
   --sidebar-bg: #f9fafb;
   --hover-bg: #f3f4f6;
-  --selected-bg: #dbeafe;
-  --selected-text: #1e3a8a;
+  --selected-bg: #e5e7eb;
+  --selected-text: #111827;
 }
 
 :root.dark {
@@ -35,7 +35,7 @@
   --card-bg: #1f242c;
   --sidebar-bg: #1c2129;
   --hover-bg: #252b35;
-  --selected-bg: #3b82f6;
+  --selected-bg: #374151;
   --selected-text: #ffffff;
 }
 

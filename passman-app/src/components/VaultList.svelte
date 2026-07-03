@@ -332,8 +332,8 @@
   .tab {
     display: flex;
     align-items: center;
-    gap: 0.25rem;
-    padding: 0.5rem 0.75rem;
+    gap: 0.5rem;
+    padding: 0.5rem 0.5rem 0.5rem 0.75rem;
     border: none;
     border-radius: 0.5rem;
     background: transparent;
@@ -378,14 +378,18 @@
     border-radius: 50%;
   }
 
+  .lock-tab-btn {
+    padding: 0.25rem;
+  }
+
   .tab.selected .lock-tab-btn {
     color: #ffffff;
-    background-color: var(--accent-color);
+    background-color: transparent;
   }
 
   .tab.selected .lock-tab-btn:hover {
     color: #ffffff;
-    background-color: var(--accent-hover);
+    background-color: rgba(255, 255, 255, 0.2);
   }
 
   .delete-tab-btn:hover {
