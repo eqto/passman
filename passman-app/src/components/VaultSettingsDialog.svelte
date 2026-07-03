@@ -1,6 +1,11 @@
 <script>
   import { createEventDispatcher } from "svelte";
   import { renameVault } from "../stores/vaults";
+  import Dialog from "./dialog/Dialog.svelte";
+  import DialogHeader from "./dialog/DialogHeader.svelte";
+  import DialogBody from "./dialog/DialogBody.svelte";
+  import DialogFooter from "./dialog/DialogFooter.svelte";
+  import DialogActions from "./dialog/DialogActions.svelte";
 
   export let vault = null;
 
@@ -16,11 +21,15 @@
   function handleCancel() {
     dispatch("cancel");
   }
+
+  function handleKeydown(event) {
+    if (event.key === "Escape") handleCancel();
+  }
 </script>
 
-<div class="modal-overlay">
-  <div class="modal">
-    <h2>Vault Settings</h2>
+<Dialog on:keydown={handleKeydown}>
+  <DialogHeader on:close={handleCancel}>Vault Settings</DialogHeader>
+  <DialogBody>
     <div class="modal-form">
       <input class="modal-input" bind:value={settingsName} placeholder="Vault name" />
       <div class="path-field form-group">
@@ -28,14 +37,17 @@
         <input id="vault-path" class="modal-input" type="text" value={vault?.path || ""} readonly />
       </div>
     </div>
-    <div class="modal-actions">
+  </DialogBody>
+  <DialogFooter>
+    <DialogActions>
       <button class="modal-cancel-btn" on:click={handleCancel}>
         Cancel
       </button>
       <button class="btn-primary" on:click={handleRename}>
         Save
       </button>
-    </div>
-  </div>
-</div>
+    </DialogActions>
+  </DialogFooter>
+</Dialog>
+
 

@@ -1,4 +1,10 @@
 <script>
+  import Dialog from "./dialog/Dialog.svelte";
+  import DialogHeader from "./dialog/DialogHeader.svelte";
+  import DialogBody from "./dialog/DialogBody.svelte";
+  import DialogFooter from "./dialog/DialogFooter.svelte";
+  import DialogActions from "./dialog/DialogActions.svelte";
+
   export let title = "Add Group";
   export let onAdd;
   export let onCancel;
@@ -27,26 +33,27 @@
   }
 </script>
 
-<div class="modal-overlay">
-  <div class="modal">
-    <h2>{title}</h2>
+<Dialog on:keydown={handleKeydown}>
+  <DialogHeader on:close={onCancel}>{title}</DialogHeader>
+  <DialogBody>
     <input
       class="modal-input"
       bind:value={groupName}
       placeholder={`${title.replace("Add ", "")} name`}
-      on:keydown={handleKeydown}
       use:focus
     />
     {#if error}
       <p class="modal-error">{error}</p>
     {/if}
-    <div class="modal-actions">
+  </DialogBody>
+  <DialogFooter>
+    <DialogActions>
       <button class="modal-cancel-btn" on:click={onCancel}>
         Cancel
       </button>
       <button class="btn-primary" on:click={handleAdd}>
         Add
       </button>
-    </div>
-  </div>
-</div>
+    </DialogActions>
+  </DialogFooter>
+</Dialog>

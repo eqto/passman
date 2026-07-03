@@ -2,6 +2,11 @@
   import { createEventDispatcher } from "svelte";
   import { open, save } from "@tauri-apps/plugin-dialog";
   import { convertButtercupVault } from "../stores/vaults";
+  import Dialog from "./dialog/Dialog.svelte";
+  import DialogHeader from "./dialog/DialogHeader.svelte";
+  import DialogBody from "./dialog/DialogBody.svelte";
+  import DialogFooter from "./dialog/DialogFooter.svelte";
+  import DialogActions from "./dialog/DialogActions.svelte";
 
   let step = 1;
   let bcupPath = "";
@@ -90,22 +95,24 @@
     step = 1;
     error = "";
   }
+
+  function handleKeydown(event) {
+    if (event.key === "Escape") handleCancel();
+  }
 </script>
 
-<div class="modal-overlay">
-  <div class="modal">
-    <h2>
-      {#if step === 1}
-        Import Buttercup Vault
-      {:else}
-        Save Passman Vault
-      {/if}
-    </h2>
-    
+<Dialog on:keydown={handleKeydown}>
+  <DialogHeader on:close={handleCancel}>
+    {#if step === 1}
+      Import Buttercup Vault
+    {:else}
+      Save Passman Vault
+    {/if}
+  </DialogHeader>
+  <DialogBody>
     {#if error}
       <div class="error-message">{error}</div>
     {/if}
-    
     <div class="modal-form">
       {#if step === 1}
         <div class="form-group">
@@ -119,12 +126,12 @@
         </div>
         <div class="form-group">
           <label for="password">Password</label>
-          <input 
+          <input
             id="password"
-            class="modal-input" 
-            bind:value={password} 
-            type="password" 
-            placeholder="Buttercup master password" 
+            class="modal-input"
+            bind:value={password}
+            type="password"
+            placeholder="Buttercup master password"
             disabled={loading}
           />
         </div>
@@ -147,15 +154,16 @@
         </div>
       {/if}
     </div>
-    
-    <div class="modal-actions">
+  </DialogBody>
+  <DialogFooter>
+    <DialogActions>
       {#if step === 1}
         <button class="modal-cancel-btn" on:click={handleCancel} disabled={loading}>
           Cancel
         </button>
-        <button 
-          class="btn-primary" 
-          on:click={handleDecrypt} 
+        <button
+          class="btn-primary"
+          on:click={handleDecrypt}
           disabled={!bcupPath || !password || loading}
         >
           {loading ? "Decrypting..." : "Next"}
@@ -164,17 +172,17 @@
         <button class="modal-cancel-btn" on:click={handleBack} disabled={loading}>
           Back
         </button>
-        <button 
-          class="btn-primary" 
-          on:click={handleImport} 
+        <button
+          class="btn-primary"
+          on:click={handleImport}
           disabled={!outputPath || loading}
         >
           {loading ? "Importing..." : "Import"}
         </button>
       {/if}
-    </div>
-  </div>
-</div>
+    </DialogActions>
+  </DialogFooter>
+</Dialog>
 
 <style>
   .success-message {
@@ -182,7 +190,6 @@
     background-color: rgba(34, 197, 94, 0.1);
     color: #22c55e;
     border-radius: 0.5rem;
-    margin-bottom: 1rem;
     font-size: 0.875rem;
   }
 
@@ -191,7 +198,6 @@
     background-color: rgba(239, 68, 68, 0.1);
     color: var(--danger-color);
     border-radius: 0.5rem;
-    margin-bottom: 1rem;
     font-size: 0.875rem;
   }
 </style>

@@ -1,4 +1,10 @@
 <script>
+  import Dialog from "./dialog/Dialog.svelte";
+  import DialogHeader from "./dialog/DialogHeader.svelte";
+  import DialogBody from "./dialog/DialogBody.svelte";
+  import DialogFooter from "./dialog/DialogFooter.svelte";
+  import DialogActions from "./dialog/DialogActions.svelte";
+
   export let path;
   export let name;
   export let onUnlock;
@@ -25,11 +31,15 @@
   function focus(node) {
     node.focus();
   }
+
+  function handleKeydown(event) {
+    if (event.key === "Escape") onCancel();
+  }
 </script>
 
-<div class="modal-overlay">
-  <div class="modal">
-    <h2>Unlock Vault</h2>
+<Dialog on:keydown={handleKeydown}>
+  <DialogHeader on:close={onCancel}>Unlock Vault</DialogHeader>
+  <DialogBody>
     <p class="vault-name">{name}</p>
     <input
       class="modal-input"
@@ -43,27 +53,29 @@
     {#if error}
       <p class="modal-error">{error}</p>
     {/if}
-    <div class="modal-actions">
+  </DialogBody>
+  <DialogFooter>
+    <DialogActions>
       <button class="modal-cancel-btn" on:click={onCancel} disabled={isUnlocking}>
         Cancel
       </button>
       <button class="btn-primary" on:click={handleUnlock} disabled={isUnlocking}>
         Unlock
       </button>
-    </div>
-    {#if isUnlocking}
-      <div class="progress-wrapper">
-        <div class="progress-bar">
-          <div class="progress-indeterminate"></div>
-        </div>
+    </DialogActions>
+  </DialogFooter>
+  {#if isUnlocking}
+    <div class="progress-wrapper">
+      <div class="progress-bar">
+        <div class="progress-indeterminate"></div>
       </div>
-    {/if}
-  </div>
-</div>
+    </div>
+  {/if}
+</Dialog>
 
 <style>
   .vault-name {
-    margin: 0 0 1rem;
+    margin: 0;
     font-size: 0.875rem;
     color: var(--muted-color);
     overflow: hidden;

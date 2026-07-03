@@ -1,4 +1,10 @@
 <script>
+  import Dialog from "./dialog/Dialog.svelte";
+  import DialogHeader from "./dialog/DialogHeader.svelte";
+  import DialogBody from "./dialog/DialogBody.svelte";
+  import DialogFooter from "./dialog/DialogFooter.svelte";
+  import DialogActions from "./dialog/DialogActions.svelte";
+
   export let group = "";
   export let vaultName = "";
   export let action = "move";
@@ -23,34 +29,36 @@
     if (!trimmed) return;
     onCopy(trimmed);
   }
+
+  function handleKeydown(event) {
+    if (event.key === "Escape") onCancel();
+  }
 </script>
 
-<div class="modal-overlay">
-  <div class="modal">
-    {#if showNameInput}
-      <h2>{action === "copy" ? "Copy" : "Move"} to {vaultName}</h2>
+<Dialog on:keydown={handleKeydown}>
+  {#if showNameInput}
+    <DialogHeader on:close={backToWarning}>{action === "copy" ? "Copy" : "Move"} to {vaultName}</DialogHeader>
+    <DialogBody>
       <p>Enter a new group name for the {action === "copy" ? "copy" : "move"}.</p>
       <input class="modal-input" bind:value={newName} placeholder="New group name" />
-      <div class="modal-actions">
+    </DialogBody>
+    <DialogFooter>
+      <DialogActions>
         <button class="modal-cancel-btn" on:click={backToWarning}>Back</button>
         <button class="btn-primary" on:click={handleCopy}>Copy as new</button>
-      </div>
-    {:else}
-      <h2>{action === "copy" ? "Copy" : "Move"} to {vaultName}</h2>
+      </DialogActions>
+    </DialogFooter>
+  {:else}
+    <DialogHeader on:close={onCancel}>{action === "copy" ? "Copy" : "Move"} to {vaultName}</DialogHeader>
+    <DialogBody>
       <p>Vault "{vaultName}" already has a group named "{group}".</p>
-      <div class="modal-actions">
+    </DialogBody>
+    <DialogFooter>
+      <DialogActions>
         <button class="modal-cancel-btn" on:click={onCancel}>Cancel</button>
         <button class="btn-primary" on:click={onMerge}>Merge</button>
         <button class="btn-primary" on:click={startCopyAsNew}>Copy as new</button>
-      </div>
-    {/if}
-  </div>
-</div>
-
-<style>
-  .modal-actions {
-    display: flex;
-    gap: 0.5rem;
-    justify-content: flex-end;
-  }
-</style>
+      </DialogActions>
+    </DialogFooter>
+  {/if}
+</Dialog>

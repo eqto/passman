@@ -1,4 +1,10 @@
 <script>
+  import Dialog from "./dialog/Dialog.svelte";
+  import DialogHeader from "./dialog/DialogHeader.svelte";
+  import DialogBody from "./dialog/DialogBody.svelte";
+  import DialogFooter from "./dialog/DialogFooter.svelte";
+  import DialogActions from "./dialog/DialogActions.svelte";
+
   export let vault;
   export let onRemove;
   export let onCancel;
@@ -12,33 +18,19 @@
   }
 </script>
 
-<div class="modal-overlay">
-  <div
-    class="modal"
-    role="dialog"
-    aria-modal="true"
-    tabindex="-1"
-    on:keydown={handleKeydown}
-  >
-    <h2>Remove Vault</h2>
-    <p class="message">
-      Remove "{vault.name}" from Passman?
-    </p>
-    <div class="modal-actions">
+<Dialog on:keydown={handleKeydown}>
+  <DialogHeader on:close={onCancel}>Remove Vault</DialogHeader>
+  <DialogBody>
+    <p>Remove "{vault.name}" from Passman?</p>
+  </DialogBody>
+  <DialogFooter>
+    <DialogActions>
       <button class="modal-cancel-btn" on:click={onCancel}>
         Cancel
       </button>
       <button class="btn-danger" on:click={handleRemove}>
         Remove
       </button>
-    </div>
-  </div>
-</div>
-
-<style>
-  .message {
-    margin: 0 0 0.5rem;
-    font-size: 0.875rem;
-    color: var(--text-color);
-  }
-</style>
+    </DialogActions>
+  </DialogFooter>
+</Dialog>

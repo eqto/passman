@@ -2,6 +2,11 @@
   import { createEventDispatcher } from "svelte";
   import { save } from "@tauri-apps/plugin-dialog";
   import { createVault } from "../stores/vaults";
+  import Dialog from "./dialog/Dialog.svelte";
+  import DialogHeader from "./dialog/DialogHeader.svelte";
+  import DialogBody from "./dialog/DialogBody.svelte";
+  import DialogFooter from "./dialog/DialogFooter.svelte";
+  import DialogActions from "./dialog/DialogActions.svelte";
 
   let newName = "";
   let newPath = "";
@@ -36,11 +41,15 @@
     reset();
     dispatch("cancel");
   }
+
+  function handleKeydown(event) {
+    if (event.key === "Escape") handleCancel();
+  }
 </script>
 
-<div class="modal-overlay">
-  <div class="modal">
-    <h2>Create Vault</h2>
+<Dialog on:keydown={handleKeydown}>
+  <DialogHeader on:close={handleCancel}>Create Vault</DialogHeader>
+  <DialogBody>
     <div class="modal-form">
       <input class="modal-input" bind:value={newName} placeholder="Vault name" />
       <div class="path-row">
@@ -51,16 +60,18 @@
       </div>
       <input class="modal-input" bind:value={newPassword} type="password" placeholder="Vault password" />
     </div>
-    <div class="modal-actions">
+  </DialogBody>
+  <DialogFooter>
+    <DialogActions>
       <button class="modal-cancel-btn" on:click={handleCancel}>
         Cancel
       </button>
       <button class="btn-primary" on:click={handleCreate}>
         Create
       </button>
-    </div>
-  </div>
-</div>
+    </DialogActions>
+  </DialogFooter>
+</Dialog>
 
 <style>
   .path-row .modal-input {
