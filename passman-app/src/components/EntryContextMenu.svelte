@@ -95,29 +95,29 @@
 <div
   bind:this={menuEl}
   bind:clientWidth={mainWidth}
-  class="context-menu"
+  class="menu"
   style="left: {left}px; top: {top}px;"
   on:click|stopPropagation
 >
-  <button
-    class="context-menu-item"
+  <div
+    class="menu-item"
     on:click={handleCopyPassword}
-    disabled={!entry?.password}
+    style="cursor: {!entry?.password ? 'not-allowed' : 'pointer'}; opacity: {!entry?.password ? '0.6' : '1'}"
   >
     Copy Password
-  </button>
+  </div>
   <div class="context-menu-divider"></div>
   <div class="menu-item-wrapper" on:mouseenter={openMove}>
-    <button class="context-menu-item has-submenu">
+    <div class="menu-item has-submenu">
       <span>Move to</span>
       <span class="context-menu-arrow">▶</span>
-    </button>
+    </div>
   </div>
   <div class="menu-item-wrapper" on:mouseenter={openCopy}>
-    <button class="context-menu-item has-submenu">
+    <div class="menu-item has-submenu">
       <span>Copy to</span>
       <span class="context-menu-arrow">▶</span>
-    </button>
+    </div>
   </div>
 </div>
 
@@ -151,19 +151,11 @@
     display: block;
   }
 
-  .context-menu {
+  .menu {
     width: 10rem;
   }
 
-  .context-menu-item.has-submenu {
+  .menu-item.has-submenu {
     cursor: default;
-  }
-
-  .context-menu-item:disabled {
-    cursor: not-allowed;
-  }
-
-  .context-menu-item:disabled:hover {
-    background-color: transparent;
   }
 </style>

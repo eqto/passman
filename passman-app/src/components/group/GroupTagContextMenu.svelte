@@ -54,37 +54,37 @@
 <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
 <div
   bind:clientWidth={mainWidth}
-  class="context-menu"
+  class="menu"
   style="left: {x}px; top: {y}px;"
   on:click|stopPropagation
 >
   {#if type === "group"}
     <div class="menu-item-wrapper" on:mouseenter={() => openMenu("merge")}>
-      <button class="context-menu-item has-submenu">
+      <div class="menu-item has-submenu">
         <span>Merge to group</span>
         <span class="context-menu-arrow">▶</span>
-      </button>
+      </div>
     </div>
     <div class="menu-item-wrapper" on:mouseenter={() => openMenu("moveToVault")}>
-      <button class="context-menu-item has-submenu">
+      <div class="menu-item has-submenu">
         <span>Move to</span>
         <span class="context-menu-arrow">▶</span>
-      </button>
+      </div>
     </div>
     <div class="menu-item-wrapper" on:mouseenter={() => openMenu("copyToVault")}>
-      <button class="context-menu-item has-submenu">
+      <div class="menu-item has-submenu">
         <span>Copy to</span>
         <span class="context-menu-arrow">▶</span>
-      </button>
+      </div>
     </div>
   {/if}
 
   {#if type === "tag"}
     <div class="menu-item-wrapper" on:mouseenter={() => openMenu("moveToGroup")}>
-      <button class="context-menu-item has-submenu">
+      <div class="menu-item has-submenu">
         <span>Move to group</span>
         <span class="context-menu-arrow">▶</span>
-      </button>
+      </div>
     </div>
   {/if}
 </div>
@@ -92,16 +92,16 @@
 {#if activeMenu}
   <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
   <div
-    class="context-menu submenu"
+    class="menu"
     style="left: {submenuLeft}px; top: {y}px; max-height: calc(100vh - {y}px - 8px);"
     on:click|stopPropagation
   >
     {#if activeMenu === "merge"}
       {#if mergeTargets.length > 0}
         {#each mergeTargets as target}
-          <button class="submenu-item" on:click={() => handleMerge(target)}>
+          <div class="menu-item" on:click={() => handleMerge(target)}>
             {target}
-          </button>
+          </div>
         {/each}
       {:else}
         <div class="submenu-empty">No other groups</div>
@@ -110,9 +110,9 @@
       {#if moveToGroupTargets.length > 0}
         {#each moveToGroupTargets as target}
           {#if target !== item}
-            <button class="submenu-item" on:click={() => handleMoveToGroup(target)}>
+            <div class="menu-item" on:click={() => handleMoveToGroup(target)}>
               {target}
-            </button>
+            </div>
           {/if}
         {/each}
       {:else}
@@ -121,13 +121,13 @@
     {:else if activeMenu === "moveToVault" || activeMenu === "copyToVault"}
       {#if unlockedVaults.length > 0}
         {#each unlockedVaults as vault}
-          <button
-            class="submenu-item"
+          <div
+            class="menu-item"
             on:click={() =>
               activeMenu === "moveToVault" ? handleMoveToVault(vault) : handleCopyToVault(vault)}
           >
             {vault.name}
-          </button>
+          </div>
         {/each}
       {:else}
         <div class="submenu-empty">No unlocked vaults</div>
@@ -142,16 +142,11 @@
     display: block;
   }
 
-  .context-menu {
+  .menu {
     min-width: 10rem;
   }
 
-  .context-menu.submenu {
-    overflow-y: auto;
-  }
-
-  .context-menu-item,
-  .submenu-item {
+  .menu-item.has-submenu {
     justify-content: space-between;
     gap: 0.5rem;
   }

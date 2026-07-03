@@ -197,6 +197,34 @@ button,
   overflow: visible;
 }
 
+/* Global Menu Classes */
+.menu {
+  position: fixed;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  z-index: 100;
+  padding: 0.25rem;
+  overflow-y: auto;
+}
+
+.menu-item {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  background: transparent;
+  color: var(--text-color);
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 400;
+  border-radius: 0.25rem;
+}
+
+.menu-item:hover {
+  background-color: var(--hover-bg);
+}
+
 .context-menu-item {
   width: 100%;
   padding: 0.5rem 0.75rem;

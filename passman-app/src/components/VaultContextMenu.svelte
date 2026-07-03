@@ -18,31 +18,31 @@
   }
 </script>
 
-<div class="context-menu" style="left: {x}px; top: {y}px">
+<div class="menu" style="left: {x}px; top: {y}px">
   {#if canRename}
-    <button class="context-menu-item" on:click={handleSettings}>
+    <div class="menu-item" on:click={handleSettings}>
       Settings
-    </button>
+    </div>
   {:else}
-    <button class="context-menu-item disabled" disabled>
+    <div class="menu-item" style="opacity: 0.6; cursor: not-allowed">
       Settings (vault locked)
-    </button>
+    </div>
   {/if}
-  <button class="context-menu-item danger" on:click={handleRemove}>
+  <div class="menu-item danger" on:click={handleRemove}>
     Remove Vault
-  </button>
+  </div>
 </div>
 
 <style>
-  .context-menu {
+  .menu {
     min-width: 8rem;
   }
 
-  .context-menu-item.danger {
+  .menu-item.danger {
     color: var(--danger-color);
   }
 
-  .context-menu-item.danger:hover {
+  .menu-item.danger:hover {
     background-color: rgba(239, 68, 68, 0.1);
   }
 </style>

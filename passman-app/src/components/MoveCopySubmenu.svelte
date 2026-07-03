@@ -44,7 +44,7 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
 <div
-  class="context-menu submenu"
+  class="menu"
   style="left: {left}px; top: {top}px; height: calc(100vh - {top}px - 8px);"
   on:click|stopPropagation
 >
@@ -53,9 +53,9 @@
   {:else}
     {#if groups.length > 0}
       {#each groups as group}
-        <button class="submenu-item" on:click={() => selectGroup(group)}>
+        <div class="menu-item" on:click={() => selectGroup(group)}>
           {group}
-        </button>
+        </div>
       {/each}
     {/if}
     {#if groups.length > 0 && vaults.length > 0}
@@ -67,9 +67,9 @@
           class="menu-item-wrapper"
           on:mouseenter={(e) => handleVaultHover(vault, e)}
         >
-          <button
-            class="submenu-item has-submenu"
-            disabled={!$vaultData[vault.path]?.unlocked}
+          <div
+            class="menu-item has-submenu"
+            style="cursor: {!$vaultData[vault.path]?.unlocked ? 'not-allowed' : 'default'}"
           >
             <span>{vault.name}</span>
             {#if !$vaultData[vault.path]?.unlocked}
@@ -77,19 +77,19 @@
             {:else}
               <span class="context-menu-arrow">▶</span>
             {/if}
-          </button>
+          </div>
           {#if activeVault?.id === vault.id}
             <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
             <div
-              class="context-menu submenu"
+              class="menu"
               style="left: {vaultLeft}px; top: {vaultTop}px; height: calc(100vh - {vaultTop}px - 8px);"
               on:click|stopPropagation
             >
               {#if targetVaultGroups(activeVault).length > 0}
                 {#each targetVaultGroups(activeVault) as group}
-                  <button class="submenu-item" on:click={() => selectVaultGroup(activeVault, group)}>
+                  <div class="menu-item" on:click={() => selectVaultGroup(activeVault, group)}>
                     {group}
-                  </button>
+                  </div>
                 {/each}
               {:else}
                 <div class="submenu-empty">No groups</div>
@@ -108,27 +108,9 @@
     display: block;
   }
 
-  .context-menu {
-    width: 10rem;
-  }
-
-  .context-menu.submenu {
-    overflow-y: auto;
-    overflow-x: hidden;
-    scrollbar-width: thin;
-  }
-
-  .submenu-item {
+  .menu-item.has-submenu {
     justify-content: space-between;
     gap: 0.5rem;
-  }
-
-  .submenu-item:disabled {
-    cursor: not-allowed;
-  }
-
-  .submenu-item:disabled:hover {
-    background-color: transparent;
   }
 
   .submenu-empty {
