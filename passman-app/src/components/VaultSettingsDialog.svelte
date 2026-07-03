@@ -1,11 +1,7 @@
 <script>
   import { createEventDispatcher } from "svelte";
   import { renameVault } from "../stores/vaults";
-  import Dialog from "./dialog/Dialog.svelte";
-  import DialogHeader from "./dialog/DialogHeader.svelte";
-  import DialogBody from "./dialog/DialogBody.svelte";
-  import DialogFooter from "./dialog/DialogFooter.svelte";
-  import DialogActions from "./dialog/DialogActions.svelte";
+  import { Dialog, DialogHeader, DialogBody, DialogFooter, DialogActions } from "./dialog";
 
   export let vault = null;
 

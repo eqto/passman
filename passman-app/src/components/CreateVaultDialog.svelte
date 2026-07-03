@@ -2,11 +2,7 @@
   import { createEventDispatcher } from "svelte";
   import { save } from "@tauri-apps/plugin-dialog";
   import { createVault } from "../stores/vaults";
-  import Dialog from "./dialog/Dialog.svelte";
-  import DialogHeader from "./dialog/DialogHeader.svelte";
-  import DialogBody from "./dialog/DialogBody.svelte";
-  import DialogFooter from "./dialog/DialogFooter.svelte";
-  import DialogActions from "./dialog/DialogActions.svelte";
+  import { Dialog, DialogHeader, DialogBody, DialogFooter, DialogActions } from "./dialog";
 
   let newName = "";
   let newPath = "";
