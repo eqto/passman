@@ -17,10 +17,12 @@
   import { createDragList } from "../../lib/dragList.js";
 
   export let selectedGroup = "";
+  export let selectedTags = [];
   export let selectedTrashGroup = "";
   export let trashMode = false;
   export let trashGroups = [];
   export let onSelectGroup;
+  export let onSelectTag = (tag) => {};
   export let onSelectTrashGroup;
   export let onTrashClick;
 
@@ -260,10 +262,16 @@
     {:else}
       <div class="tags">
         {#each $tags as tag}
-          <!-- svelte-ignore a11y_no_static_element_interactions -->
-          <span class="tag-chip" on:contextmenu={(e) => openContextMenu(e, "tag", tag)}>
+          <button
+            class="tag-chip"
+            class:active={selectedTags.includes(tag)}
+            type="button"
+            on:click={() => onSelectTag(tag)}
+            on:contextmenu={(e) => openContextMenu(e, "tag", tag)}
+            on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelectTag(tag); } }}
+          >
             {tag}
-          </span>
+          </button>
         {/each}
       </div>
     {/if}
@@ -429,6 +437,19 @@
 
   .tag-chip {
     padding: 0.25rem 0.75rem;
+    cursor: pointer;
+  }
+
+  .tag-chip:hover {
+    background-color: var(--accent-color);
+    color: #ffffff;
+    border-color: var(--accent-color);
+  }
+
+  .tag-chip.active {
+    background-color: var(--selected-bg);
+    color: var(--selected-text);
+    border-color: var(--selected-bg);
   }
 
   .empty {

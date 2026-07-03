@@ -12,9 +12,12 @@
 
   export let entries;
   export let selectedEntry = null;
+  export let selectedTags = [];
   export let trashMode = false;
   export let onSelect;
   export let onNew;
+  export let onToggleTag = (tag) => {};
+  export let onClearTags = () => {};
   export let onMoveToGroup = () => {};
   export let onMoveToVault = () => {};
   export let onCopyToGroup = () => {};
@@ -22,7 +25,6 @@
 
   let search = "";
   let filterSearch = "";
-  let selectedTags = [];
   let contextMenu = { show: false, x: 0, y: 0, entry: null };
 
   const setFilterSearch = debounce((value) => {
@@ -40,27 +42,20 @@
     const viewState = $vaultData[$currentVault.path]?.viewState || {};
     search = viewState.search || "";
     filterSearch = search;
-    selectedTags = viewState.selectedTags || [];
   }
 
   function saveState() {
     if ($currentVault) {
-      setVaultViewState($currentVault.path, { search, selectedTags });
+      setVaultViewState($currentVault.path, { search });
     }
   }
 
   function toggleTag(tag) {
-    if (selectedTags.includes(tag)) {
-      selectedTags = selectedTags.filter((t) => t !== tag);
-    } else {
-      selectedTags = [...selectedTags, tag];
-    }
-    saveState();
+    onToggleTag(tag);
   }
 
   function clearTagFilter() {
-    selectedTags = [];
-    saveState();
+    onClearTags();
   }
 
   function onSearchInput(event) {

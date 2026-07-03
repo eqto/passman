@@ -24,6 +24,7 @@
   let mode = "view"; // "view" | "edit"
   let trashMode = false;
   let selectedTrashGroup = "";
+  let selectedTags = [];
   let initializedVaultPath = null;
 
   let columnWidths = {
@@ -96,6 +97,7 @@
       mode,
       trashMode,
       selectedTrashGroup,
+      selectedTags,
     });
   }
 
@@ -108,6 +110,7 @@
     mode = viewState.mode ?? "view";
     trashMode = viewState.trashMode ?? false;
     selectedTrashGroup = viewState.selectedTrashGroup ?? "";
+    selectedTags = viewState.selectedTags ?? [];
     if (!trashMode && !selectedGroup && $groups.length > 0) {
       selectedGroup = $groups[0];
       saveViewState();
@@ -172,6 +175,20 @@
     selectedGroup = group;
     trashMode = false;
     resetSelection();
+    saveViewState();
+  }
+
+  function handleSelectTag(tag) {
+    if (selectedTags.includes(tag)) {
+      selectedTags = selectedTags.filter((t) => t !== tag);
+    } else {
+      selectedTags = [...selectedTags, tag];
+    }
+    saveViewState();
+  }
+
+  function handleClearTags() {
+    selectedTags = [];
     saveViewState();
   }
 
@@ -293,10 +310,12 @@
     <div class="panel groups" style="width: {columnWidths.groups}px">
       <GroupList
         selectedGroup={selectedGroup}
+        selectedTags={selectedTags}
         trashMode={trashMode}
         selectedTrashGroup={selectedTrashGroup}
         trashGroups={trashGroups}
         onSelectGroup={handleSelectGroup}
+        onSelectTag={handleSelectTag}
         onSelectTrashGroup={handleSelectTrashGroup}
         onTrashClick={handleTrashClick}
       />
@@ -312,9 +331,12 @@
       <EntryList
         entries={filteredEntries}
         selectedEntry={selectedEntry}
+        selectedTags={selectedTags}
         trashMode={trashMode}
         onSelect={handleSelect}
         onNew={handleNew}
+        onToggleTag={handleSelectTag}
+        onClearTags={handleClearTags}
         onMoveToGroup={handleMoveToGroup}
         onMoveToVault={handleMoveToVault}
         onCopyToGroup={handleCopyToGroup}
