@@ -51,10 +51,13 @@ jobs:
         with:
           targets: ${{ matrix.target }}
       - run: cargo build -p passman-cli --release --target ${{ matrix.target }}
-      - uses: actions/upload-artifact@v7
+      - name: Upload CLI binary to release
+        uses: softprops/action-gh-release@v3
         with:
-          name: ${{ matrix.artifact_name }}
-          path: target/${{ matrix.target }}/release/${{ matrix.binary_name }}
+          tag_name: ${{ github.ref_name }}
+          files: target/${{ matrix.target }}/release/${{ matrix.binary_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-app:
     name: Build App (${{ matrix.os }})
@@ -83,11 +86,11 @@ jobs:
         with:
           projectPath: ./passman-app
           args: ""
-      - name: Upload bundles
-        uses: actions/upload-artifact@v7
+      - name: Upload bundles to release
+        uses: softprops/action-gh-release@v3
         with:
-          name: passman-bundle-${{ matrix.os }}
-          path: |
+          tag_name: ${{ github.ref_name }}
+          files: |
             src-tauri/target/release/bundle/**/*.AppImage
             src-tauri/target/release/bundle/**/*.deb
             src-tauri/target/release/bundle/**/*.rpm
@@ -98,34 +101,13 @@ jobs:
             target/release/bundle/**/*.rpm
             target/release/bundle/**/*.dmg
             target/release/bundle/**/*.exe
-      - name: Upload Windows portable
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload Windows portable to release
         if: matrix.os == 'windows-latest'
-        uses: actions/upload-artifact@v7
-        with:
-          name: passman-portable-windows
-          path: target/release/passman-app.exe
-
-  upload-artifacts:
-    name: Upload to Release
-    if: github.event_name == 'release'
-    needs: [build-cli, build-app]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/download-artifact@v8
-        with:
-          pattern: passman-cli-*
-          path: ./artifacts
-      - uses: actions/download-artifact@v8
-        with:
-          pattern: passman-bundle-*
-          path: ./artifacts
-      - uses: actions/download-artifact@v8
-        with:
-          pattern: passman-portable-windows
-          path: ./artifacts
-      - name: Upload to Release
         uses: softprops/action-gh-release@v3
         with:
-          files: ./artifacts/**/*
+          tag_name: ${{ github.ref_name }}
+          files: target/release/passman-app.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
