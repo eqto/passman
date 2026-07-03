@@ -322,7 +322,7 @@
     border-radius: 0.5rem;
     background: transparent;
     color: var(--text-color);
-    cursor: grab;
+    cursor: pointer;
     white-space: nowrap;
   }
 
@@ -415,7 +415,7 @@
   }
 
   .action-btn:hover {
-    outline: 1px solid var(--border-color);
+    outline: 1px solid var(--accent-color);
   }
 
   .action-btn span {
@@ -444,7 +444,7 @@
   }
 
   .dropdown-button:hover {
-    outline: 1px solid var(--border-color);
+    outline: 1px solid var(--accent-color);
   }
 
   .dropdown-button span {
