@@ -33,7 +33,14 @@
   <div class="entry-details">
     <div class="details-header">
       <div class="entry-title-area">
-        <h2 class="entry-title">{entry.title}</h2>
+        <h2
+          class="entry-title"
+          class:editable={!trashMode}
+          title={trashMode ? entry.title : "Double-click to edit"}
+          on:dblclick={() => !trashMode && onEdit(entry)}
+        >
+          {entry.title}
+        </h2>
         <p class="entry-url">{entry.url || ""}</p>
       </div>
     </div>
@@ -151,6 +158,10 @@
     color: var(--text-color);
   }
 
+  .entry-title.editable {
+    cursor: pointer;
+  }
+
   .entry-url {
     margin: 0.25rem 0 0;
     font-size: 0.875rem;
@@ -185,10 +196,12 @@
   .field-row {
     display: flex;
     gap: 0.5rem;
+    padding-right: 0.5rem;
   }
 
   .field-row input {
     flex: 1;
+    min-width: 0;
     padding: 0.5rem 0.75rem;
     background-color: var(--input-bg);
     border: 1px solid var(--input-border);

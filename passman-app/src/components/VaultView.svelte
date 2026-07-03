@@ -399,7 +399,7 @@
 
   .panel.details {
     flex: 1;
-    min-width: 0;
+    min-width: 160px;
   }
 
   .resize-handle {

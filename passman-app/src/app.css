@@ -375,6 +375,7 @@ button,
   width: 2.25rem;
   height: 2.25rem;
   padding: 0;
+  flex-shrink: 0;
   background-color: var(--hover-bg);
   color: var(--text-color);
 }
