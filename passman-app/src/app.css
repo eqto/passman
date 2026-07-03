@@ -145,13 +145,14 @@ button,
 .modal-cancel-btn {
   padding: 0.5rem 1rem 0.25rem;
   background: transparent;
+  border: 1px solid var(--border-color);
   color: var(--muted-color);
   height: 2.25rem;
   line-height: 1.5rem;
 }
 
 .modal-cancel-btn:hover {
-  outline: 1px solid var(--accent-color);
+  border-color: var(--accent-color);
   color: var(--text-color);
 }
 
@@ -392,11 +393,13 @@ button,
 .btn-ghost {
   padding: 0.25rem 0.5rem;
   background: transparent;
+  border: 1px solid var(--border-color);
   color: var(--muted-color);
   font-size: 0.75rem;
 }
 
 .btn-ghost:hover {
+  border-color: var(--accent-color);
   color: var(--text-color);
 }
 

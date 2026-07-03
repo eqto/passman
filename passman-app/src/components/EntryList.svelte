@@ -15,6 +15,7 @@
   export let selectedEntry = null;
   export let selectedTags = [];
   export let trashMode = false;
+  export let hideNewButton = false;
   export let onSelect;
   export let onNew;
   export let onToggleTag = (tag) => {};
@@ -212,7 +213,7 @@
     </div>
   {/if}
 
-  {#if !trashMode}
+  {#if !trashMode && !hideNewButton}
     <button class="btn-secondary new-entry-btn" on:click={onNew}>
       + New Entry
     </button>

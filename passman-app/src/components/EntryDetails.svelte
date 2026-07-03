@@ -253,7 +253,7 @@
       {/each}
     </div>
 
-    <div class="details-footer">
+    <div class="details-footer" class:justify-end={!trashMode}>
       {#if trashMode}
         <button class="btn-secondary" on:click={handleRestore}>
           Restore
@@ -264,9 +264,6 @@
       {:else}
         <button class="btn-secondary" on:click={() => onEdit(entry)}>
           Edit
-        </button>
-        <button class="btn-danger" on:click={handleDelete}>
-          Delete
         </button>
       {/if}
     </div>
@@ -441,6 +438,10 @@
     margin-top: 1rem;
     padding-top: 1rem;
     border-top: 1px solid var(--border-color);
+  }
+
+  .details-footer.justify-end {
+    justify-content: flex-end;
   }
 
   .empty-details {

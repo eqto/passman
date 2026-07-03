@@ -336,6 +336,7 @@
         selectedEntry={selectedEntry}
         selectedTags={selectedTags}
         trashMode={trashMode}
+        hideNewButton={mode === "edit"}
         onSelect={handleSelect}
         onNew={handleNew}
         onToggleTag={handleSelectTag}
@@ -355,7 +356,7 @@
     ></button>
     <div class="panel details">
       {#if mode === "edit"}
-        <EntryEditor entry={editingEntry} selectedGroup={selectedGroup} onClose={handleCloseEditor} />
+        <EntryEditor entry={editingEntry} selectedGroup={selectedGroup} onClose={handleCloseEditor} onDelete={handleDelete} />
       {:else}
         <EntryDetails
           entry={selectedEntryData}

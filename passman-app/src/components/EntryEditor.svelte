@@ -11,6 +11,7 @@
   export let entry;
   export let selectedGroup = "";
   export let onClose;
+  export let onDelete = null;
 
   let form = { ...entry, tags: entry.tags || [], fields: entry.fields || [] };
   $: displayTags = freeTags(form.tags, $groups);
@@ -20,6 +21,7 @@
   let tagInputEl;
   let tagContextMenu = { show: false, x: 0, y: 0, tag: null };
   let confirmDeleteTag = null;
+  let confirmDeleteEntry = false;
   let passwordLength = DEFAULT_PASSWORD_LENGTH;
   let passwordOptions = {
     uppercase: true,
@@ -86,6 +88,13 @@
       onClose();
     } catch (e) {
       error = e.toString();
+    }
+  }
+
+  function handleConfirmDelete() {
+    confirmDeleteEntry = false;
+    if (onDelete) {
+      onDelete(form);
     }
   }
 
@@ -171,6 +180,11 @@
     <p class="error">{error}</p>
   {/if}
   <div class="actions">
+    {#if entry.title && onDelete}
+      <button class="btn-danger delete-action" on:click={() => confirmDeleteEntry = true}>
+        Delete
+      </button>
+    {/if}
     <button class="modal-cancel-btn" on:click={onClose}>
       Cancel
     </button>
@@ -196,6 +210,16 @@
     confirmLabel="Delete"
     on:confirm={confirmTagDelete}
     on:cancel={() => confirmDeleteTag = null}
+  />
+{/if}
+
+{#if confirmDeleteEntry}
+  <Confirm
+    title="Delete Entry"
+    message={`Delete entry "${form.title}"?`}
+    confirmLabel="Delete"
+    on:confirm={handleConfirmDelete}
+    on:cancel={() => confirmDeleteEntry = false}
   />
 {/if}
 
@@ -307,6 +331,10 @@
     margin-top: 1.5rem;
     padding-top: 1rem;
     border-top: 1px solid var(--border-color);
+  }
+
+  .delete-action {
+    margin-right: auto;
   }
 
 </style>
