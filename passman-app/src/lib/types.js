@@ -4,6 +4,14 @@
  */
 
 /**
+ * @typedef {Object} CustomField
+ * @property {string} id
+ * @property {string} label
+ * @property {string} type
+ * @property {string} value
+ */
+
+/**
  * @typedef {Object} VaultEntry
  * @property {string} id
  * @property {string} title
@@ -12,6 +20,7 @@
  * @property {string} url
  * @property {string} notes
  * @property {string[]} tags
+ * @property {CustomField[]} fields
  * @property {string} created_at
  * @property {string} updated_at
  */
@@ -87,4 +96,4 @@
  * @property {boolean} symbols
  */
 
-export {};
+export { };

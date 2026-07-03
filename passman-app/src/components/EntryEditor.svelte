@@ -3,15 +3,18 @@
   import { groups } from "../stores/vaults";
   import { DEFAULT_PASSWORD_LENGTH } from "../lib/constants.js";
   import { freeTags } from "../lib/tags.js";
+  import CustomFieldEditor from "./CustomFieldEditor.svelte";
 
   export let entry;
   export let selectedGroup = "";
   export let onClose;
 
-  let form = { ...entry, tags: entry.tags || [] };
+  let form = { ...entry, tags: entry.tags || [], fields: entry.fields || [] };
   $: displayTags = freeTags(form.tags, $groups);
   let error = "";
   let tagInput = "";
+  let showTagInput = false;
+  let tagInputEl;
   let passwordLength = DEFAULT_PASSWORD_LENGTH;
   let passwordOptions = {
     uppercase: true,
@@ -30,9 +33,11 @@
     }
     form = { ...form, tags: next };
     tagInput = "";
+    showTagInput = false;
   }
 
-  function removeTag(tag) {
+  function handleTagContextMenu(tag) {
+    if (!confirm(`Delete tag "${tag}"?`)) return;
     form = { ...form, tags: form.tags.filter((t) => t !== tag) };
   }
 
@@ -40,8 +45,13 @@
     if (event.key === "Enter" || event.key === ",") {
       event.preventDefault();
       addTag();
+    } else if (event.key === "Escape") {
+      tagInput = "";
+      showTagInput = false;
     }
   }
+
+  $: if (showTagInput && tagInputEl) tagInputEl.focus();
 
   async function handleSave() {
     error = "";
@@ -79,30 +89,66 @@
         Generate
       </button>
     </div>
-    {#if entry.title}
+    {#if entry.title && form.url}
       <input bind:value={form.url} placeholder="URL" />
+    {/if}
+    {#if entry.title && form.notes}
       <textarea bind:value={form.notes} placeholder="Notes" rows="6"></textarea>
     {/if}
     <div class="tags-section">
       <div class="tags-list">
         {#each displayTags as tag}
-          <span class="tag-chip">
+          <span
+            class="tag-chip"
+            title="Right-click to delete"
+            role="button"
+            tabindex="0"
+            on:contextmenu|preventDefault={() => handleTagContextMenu(tag)}
+          >
             {tag}
-            <button class="btn-icon" type="button" on:click={() => removeTag(tag)}>×</button>
           </span>
         {/each}
+        {#if !showTagInput}
+          <button
+            class="add-tag-chip"
+            type="button"
+            on:click={() => showTagInput = true}
+          >
+            + add tag
+          </button>
+        {/if}
       </div>
-      <div class="tag-input-row">
-        <input
-          bind:value={tagInput}
-          placeholder="Add tag"
-          on:keydown={handleTagKeydown}
-        />
-        <button class="btn-secondary" type="button" on:click={addTag}>
-          +
-        </button>
-      </div>
+      {#if showTagInput}
+        <div class="tag-input-row">
+          <input
+            class="tag-input"
+            bind:this={tagInputEl}
+            bind:value={tagInput}
+            placeholder="Add tag"
+            maxlength="20"
+            on:keydown={handleTagKeydown}
+          />
+          <button class="btn-secondary" type="button" on:click={addTag}>
+            Save
+          </button>
+          <button
+            class="btn-icon"
+            type="button"
+            aria-label="Cancel"
+            on:click={() => {
+              tagInput = "";
+              showTagInput = false;
+            }}
+          >
+            ×
+          </button>
+        </div>
+      {/if}
     </div>
+    <CustomFieldEditor
+      customFields={form.fields}
+      onChange={(fields) => form = { ...form, fields }}
+    />
   </div>
   {#if error}
     <p class="error">{error}</p>
@@ -139,6 +185,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+    padding: 0.25rem;
   }
 
   input,
@@ -182,29 +229,39 @@
   .tag-chip {
     display: inline-flex;
     align-items: center;
-    gap: 0.25rem;
-    padding: 0.25rem 0.5rem;
+    padding: 0.3rem 0.75rem 0.2rem;
   }
 
-  .tag-chip .btn-icon {
-    width: 1rem;
-    height: 1rem;
-    padding: 0;
+  .add-tag-chip {
+    padding: 0.25rem 0.75rem;
+    background-color: transparent;
+    border: 1px dashed var(--border-color);
+    border-radius: 0.5rem;
+    color: var(--muted-color);
     font-size: 0.875rem;
+    cursor: pointer;
   }
 
-  .tag-chip .btn-icon:hover {
-    color: var(--danger-color);
-    background: transparent;
+  .add-tag-chip:hover {
+    color: var(--text-color);
+    border-color: var(--accent-color);
   }
 
   .tag-input-row {
     display: flex;
     gap: 0.5rem;
+    align-items: center;
+    margin-left: 0.5rem;
   }
 
-  .tag-input-row input {
-    flex: 1;
+  .tag-input {
+    width: 8rem;
+    padding: 0.25rem 0.5rem;
+    background-color: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 0.5rem;
+    color: var(--text-color);
+    font-size: 0.875rem;
   }
 
   .error {

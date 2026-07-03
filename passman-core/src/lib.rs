@@ -48,6 +48,7 @@ mod integration_tests {
             url: "https://example.com".to_string(),
             notes: "".to_string(),
             tags: vec![],
+            fields: vec![],
             created_at: chrono::Utc::now(),
             updated_at: chrono::Utc::now(),
         });

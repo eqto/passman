@@ -436,7 +436,7 @@
   }
 
   .tag-chip {
-    padding: 0.25rem 0.75rem;
+    padding: 0.3rem 0.75rem 0.2rem;
     cursor: pointer;
   }
 

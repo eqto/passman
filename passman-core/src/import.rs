@@ -1,5 +1,5 @@
 use crate::buttercup::ButtercupVault;
-use crate::vault::{VaultEntry, VaultFile, VaultMetadata, PAYLOAD_FORMAT_VERSION};
+use crate::vault::{CustomField, VaultEntry, VaultFile, VaultMetadata, PAYLOAD_FORMAT_VERSION};
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 
@@ -28,6 +28,19 @@ pub struct ImportEntry {
     pub url: String,
     #[serde(default)]
     pub notes: String,
+    #[serde(default)]
+    pub fields: Vec<ImportCustomField>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct ImportCustomField {
+    pub id: String,
+    #[serde(default)]
+    pub label: String,
+    #[serde(rename = "type")]
+    pub field_type: String,
+    #[serde(default)]
+    pub value: String,
 }
 
 pub fn default_vault_name() -> String {
@@ -72,6 +85,12 @@ pub fn build_payload(vault: &mut VaultFile, imported: ImportJson) {
             url: e.url,
             notes: e.notes,
             tags: e.tags,
+            fields: e.fields.into_iter().map(|f| CustomField {
+                id: f.id,
+                label: f.label,
+                field_type: f.field_type,
+                value: f.value,
+            }).collect(),
             created_at: now,
             updated_at: now,
         })
@@ -94,6 +113,16 @@ impl From<ButtercupVault> for ImportJson {
                     password: e.password,
                     url: e.url,
                     notes: e.notes,
+                    fields: e
+                        .fields
+                        .into_iter()
+                        .map(|f| ImportCustomField {
+                            id: f.id,
+                            label: f.label,
+                            field_type: f.field_type,
+                            value: f.value,
+                        })
+                        .collect(),
                 })
                 .collect(),
         }

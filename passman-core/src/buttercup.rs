@@ -55,6 +55,14 @@ pub struct ButtercupVault {
 }
 
 #[derive(Debug, Clone)]
+pub struct ButtercupCustomField {
+    pub id: String,
+    pub label: String,
+    pub field_type: String,
+    pub value: String,
+}
+
+#[derive(Debug, Clone)]
 pub struct ButtercupEntry {
     pub id: String,
     pub tags: Vec<String>,
@@ -63,6 +71,7 @@ pub struct ButtercupEntry {
     pub password: String,
     pub url: String,
     pub notes: String,
+    pub fields: Vec<ButtercupCustomField>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -102,14 +111,15 @@ struct RawEntry {
     #[serde(default)]
     p: HashMap<String, RawValue>,
     #[serde(default)]
-    #[allow(dead_code)]
-    _a: HashMap<String, RawValue>,
+    a: HashMap<String, RawValue>,
 }
 
 #[derive(Debug, Deserialize)]
 struct RawValue {
     #[serde(default)]
     value: String,
+    #[serde(default)]
+    deleted: Option<u64>,
 }
 
 struct EncryptedComponents {
@@ -174,6 +184,30 @@ pub fn decrypt_buttercup_vault(
             }
         }
 
+        let standard_properties: HashSet<String> =
+            ["title", "username", "password", "URL", "notes"]
+                .iter()
+                .map(|s| s.to_string())
+                .collect();
+        let mut fields = Vec::new();
+        let mut field_index = 0;
+        for (property, raw_value) in &entry.p {
+            if standard_properties.contains(property) || raw_value.value.is_empty() {
+                continue;
+            }
+            if raw_value.deleted.is_some() {
+                continue;
+            }
+            let field_type = get_field_type(&entry.a, property);
+            fields.push(ButtercupCustomField {
+                id: format!("{}-cf-{}", entry.id, field_index),
+                label: property.clone(),
+                field_type,
+                value: raw_value.value.clone(),
+            });
+            field_index += 1;
+        }
+
         vault.entries.push(ButtercupEntry {
             id: entry.id,
             tags,
@@ -182,10 +216,20 @@ pub fn decrypt_buttercup_vault(
             password: get_property(&entry.p, "password"),
             url: get_property(&entry.p, "URL"),
             notes: get_property(&entry.p, "notes"),
+            fields,
         });
     }
 
     Ok(vault)
+}
+
+fn get_field_type(attributes: &HashMap<String, RawValue>, property: &str) -> String {
+    let key = format!("BC_ENTRY_FIELD_TYPE:{}", property);
+    attributes
+        .get(&key)
+        .map(|v| v.value.clone())
+        .filter(|v| !v.is_empty())
+        .unwrap_or_else(|| "text".to_string())
 }
 
 fn parse_encrypted_components(encrypted_text: &str) -> Result<EncryptedComponents, ButtercupError> {

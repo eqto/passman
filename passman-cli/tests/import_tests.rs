@@ -26,7 +26,15 @@ fn test_import_creates_pmv() {
                 "username": "user",
                 "password": "pass",
                 "url": "https://example.com",
-                "notes": ""
+                "notes": "",
+                "fields": [
+                    {
+                        "id": "f1",
+                        "label": "PIN",
+                        "type": "password",
+                        "value": "1234"
+                    }
+                ]
             }
         ]
     });
@@ -49,6 +57,10 @@ fn test_import_creates_pmv() {
     assert_eq!(opened.payload.trash.len(), 0);
     assert_eq!(opened.payload.entries.len(), 1);
     assert_eq!(opened.payload.entries[0].tags, vec!["General"]);
+    assert_eq!(opened.payload.entries[0].fields.len(), 1);
+    assert_eq!(opened.payload.entries[0].fields[0].label, "PIN");
+    assert_eq!(opened.payload.entries[0].fields[0].field_type, "password");
+    assert_eq!(opened.payload.entries[0].fields[0].value, "1234");
 }
 
 #[test]

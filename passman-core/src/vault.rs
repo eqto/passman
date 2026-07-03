@@ -90,6 +90,15 @@ pub struct VaultMetadata {
 }
 
 #[derive(Debug, Serialize, Deserialize, Default, Clone)]
+pub struct CustomField {
+    pub id: String,
+    pub label: String,
+    #[serde(rename = "type")]
+    pub field_type: String,
+    pub value: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Default, Clone)]
 pub struct VaultEntry {
     pub id: String,
     pub title: String,
@@ -99,6 +108,8 @@ pub struct VaultEntry {
     pub notes: String,
     #[serde(default)]
     pub tags: Vec<String>,
+    #[serde(default)]
+    pub fields: Vec<CustomField>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -188,6 +199,7 @@ fn migrate_v1_to_v2(legacy: LegacyVaultPayload) -> VaultPayload {
                 url: e.url,
                 notes: e.notes,
                 tags,
+                fields: Vec::new(),
                 created_at: e.created_at,
                 updated_at: e.updated_at,
             }

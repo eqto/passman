@@ -417,7 +417,7 @@ button,
 
 /* Tag/Chip Styles */
 .tag-chip {
-  padding: 0.25rem 0.75rem;
+  padding: 0.3rem 0.75rem 0.2rem;
   background-color: var(--hover-bg);
   border: 1px solid var(--border-color);
   border-radius: 9999px;
