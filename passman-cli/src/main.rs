@@ -208,4 +208,3 @@ fn prompt_password_buttercup(prompt: &str) -> Result<String, CliError> {
     }
     rpassword::prompt_password(prompt).map_err(|e| CliError::PasswordPrompt(e.to_string()))
 }
-

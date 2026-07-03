@@ -181,24 +181,25 @@ pub async fn convert_buttercup_vault(
     state: State<'_, AppState>,
 ) -> Result<VaultFileDTO, String> {
     // Decrypt buttercup file
-    let bcup = buttercup::decrypt_buttercup_file(&bcup_path, &password)
-        .map_err(|e| e.to_string())?;
-    
+    let bcup =
+        buttercup::decrypt_buttercup_file(&bcup_path, &password).map_err(|e| e.to_string())?;
+
     let import = passman_core::ImportJson::from(bcup);
-    
+
     let vault_name = passman_core::derive_vault_name(&import.name, &bcup_path);
-    
-    let (mut vault, vault_key) = vault::create_vault_file_with_key(&output_path, &vault_name, &password)
-        .map_err(|e| e.to_string())?;
-    
+
+    let (mut vault, vault_key) =
+        vault::create_vault_file_with_key(&output_path, &vault_name, &password)
+            .map_err(|e| e.to_string())?;
+
     passman_core::build_payload(&mut vault, import);
-    
+
     // Save the vault
     vault::save_vault_file(&vault, &password).map_err(|e| e.to_string())?;
-    
+
     // Register the vault
     config::add_vault(&id, &vault_name, &output_path).map_err(|e| e.to_string())?;
-    
+
     // Open the vault in state
     let dto = vault_to_dto(&vault);
     let mut guard = state.inner.lock().unwrap();
@@ -209,6 +210,6 @@ pub async fn convert_buttercup_vault(
             key: Some(Zeroizing::new(vault_key.to_vec())),
         },
     );
-    
+
     Ok(dto)
 }

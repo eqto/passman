@@ -8,7 +8,10 @@ use zeroize::Zeroizing;
 use passman_core::VaultFile;
 
 /// Validate that a reordered list contains exactly the same items as the current list.
-pub fn validate_reorder<T: std::hash::Hash + Eq + Clone>(current: &[T], reordered: &[T]) -> Result<(), String> {
+pub fn validate_reorder<T: std::hash::Hash + Eq + Clone>(
+    current: &[T],
+    reordered: &[T],
+) -> Result<(), String> {
     let current_set: HashSet<&T> = current.iter().collect();
     if reordered.len() != current_set.len() {
         return Err("invalid list".to_string());
