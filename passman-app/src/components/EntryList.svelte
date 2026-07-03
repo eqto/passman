@@ -145,7 +145,7 @@
     value={search}
     on:input={onSearchInput}
     placeholder="Search entries..."
-    class="modal-input"
+    class="modal-input search-input"
   />
 
   {#if selectedTags.length > 0}
@@ -239,6 +239,10 @@
   }
 
   .list-header {
+    margin-bottom: 0.75rem;
+  }
+
+  .search-input {
     margin-bottom: 0.75rem;
   }
 
