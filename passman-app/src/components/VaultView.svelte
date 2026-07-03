@@ -148,11 +148,6 @@
         return true;
       });
 
-  $: if (selectedEntry && !filteredEntries.some((e) => e.id === selectedEntry.id)) {
-    resetSelection();
-    saveViewState();
-  }
-
   function handleNew() {
     editingEntry = {
       id: crypto.randomUUID(),
@@ -188,6 +183,9 @@
       selectedTags = selectedTags.filter((t) => t !== tag);
     } else {
       selectedTags = [...selectedTags, tag];
+      if (selectedEntry && !(selectedEntry.tags || []).includes(tag)) {
+        resetSelection();
+      }
     }
     saveViewState();
   }
