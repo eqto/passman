@@ -47,7 +47,7 @@
       <button class="modal-cancel-btn" on:click={onCancel} disabled={isUnlocking}>
         Cancel
       </button>
-      <button class="modal-primary-btn" on:click={handleUnlock} disabled={isUnlocking}>
+      <button class="btn-primary" on:click={handleUnlock} disabled={isUnlocking}>
         Unlock
       </button>
     </div>
@@ -80,7 +80,7 @@
     width: 100%;
     height: 0.625rem;
     background-color: var(--input-border);
-    border-radius: 0.375rem;
+    border-radius: 0.5rem;
     overflow: hidden;
   }
 
@@ -88,7 +88,7 @@
     width: 40%;
     height: 100%;
     background: linear-gradient(90deg, var(--accent-color), var(--accent-hover));
-    border-radius: 0.375rem;
+    border-radius: 0.5rem;
     animation: indeterminate 1.5s ease-in-out infinite;
   }
 

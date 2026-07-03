@@ -55,7 +55,7 @@
       <button class="modal-cancel-btn" on:click={handleCancel}>
         Cancel
       </button>
-      <button class="modal-primary-btn" on:click={handleCreate}>
+      <button class="btn-primary" on:click={handleCreate}>
         Create
       </button>
     </div>

@@ -44,7 +44,7 @@
       <button class="modal-cancel-btn" on:click={onCancel}>
         Cancel
       </button>
-      <button class="modal-primary-btn" on:click={handleAdd}>
+      <button class="btn-primary" on:click={handleAdd}>
         Add
       </button>
     </div>

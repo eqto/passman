@@ -88,7 +88,7 @@
         {#each displayTags as tag}
           <span class="tag-chip">
             {tag}
-            <button type="button" on:click={() => removeTag(tag)}>×</button>
+            <button class="btn-icon" type="button" on:click={() => removeTag(tag)}>×</button>
           </span>
         {/each}
       </div>
@@ -98,7 +98,7 @@
           placeholder="Add tag"
           on:keydown={handleTagKeydown}
         />
-        <button class="btn-secondary add-tag-btn" type="button" on:click={addTag}>
+        <button class="btn-secondary" type="button" on:click={addTag}>
           +
         </button>
       </div>
@@ -108,10 +108,10 @@
     <p class="error">{error}</p>
   {/if}
   <div class="actions">
-    <button class="modal-cancel-btn cancel-btn" on:click={onClose}>
+    <button class="modal-cancel-btn" on:click={onClose}>
       Cancel
     </button>
-    <button class="btn-primary save-btn" on:click={handleSave}>
+    <button class="btn-primary" on:click={handleSave}>
       Save
     </button>
   </div>
@@ -146,7 +146,7 @@
     width: 100%;
     padding: 0.5rem 0.75rem;
     border: 1px solid var(--input-border);
-    border-radius: 0.375rem;
+    border-radius: 0.5rem;
     background-color: var(--input-bg);
     color: var(--text-color);
     resize: vertical;
@@ -186,23 +186,16 @@
     padding: 0.25rem 0.5rem;
   }
 
-  .tag-chip button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+  .tag-chip .btn-icon {
     width: 1rem;
     height: 1rem;
     padding: 0;
-    background: transparent;
-    border: none;
-    color: var(--muted-color);
-    cursor: pointer;
     font-size: 0.875rem;
-    line-height: 1;
   }
 
-  .tag-chip button:hover {
+  .tag-chip .btn-icon:hover {
     color: var(--danger-color);
+    background: transparent;
   }
 
   .tag-input-row {
@@ -212,11 +205,6 @@
 
   .tag-input-row input {
     flex: 1;
-  }
-
-  .add-tag-btn {
-    font-size: 1rem;
-    line-height: 1;
   }
 
   .error {

@@ -191,7 +191,7 @@
         <span class="tab-name">{vault.name}</span>
         {#if $vaultData[vault.path]?.unlocked}
           <button
-            class="tab-action-btn lock-tab-btn"
+            class="btn-icon tab-action-btn lock-tab-btn"
             on:click|stopPropagation={() => handleLock(vault)}
             title="Lock vault"
           >
@@ -199,7 +199,7 @@
           </button>
         {:else}
           <button
-            class="tab-action-btn delete-tab-btn"
+            class="btn-icon tab-action-btn delete-tab-btn"
             on:click|stopPropagation={() => handleDelete(vault)}
             title="Remove vault"
           >
@@ -211,14 +211,14 @@
   </div>
 
   <div class="tab-actions">
-    <button class="action-btn" on:click={() => showCreate = true}>
-      <span class="btn-icon">+</span>
+    <button class="btn-secondary" on:click={() => showCreate = true}>
+      <span class="action-icon">+</span>
       <span>New Vault</span>
     </button>
-    <div class="action-btn dropdown-button">
-      <span on:click={pickExistingVault}>Open Vault</span>
+    <div class="btn-secondary dropdown-button">
+      <button class="dropdown-main-btn" on:click={pickExistingVault}>Open Vault</button>
       <div class="dropdown-separator"></div>
-      <button class="dropdown-toggle" on:click={toggleOpenDropdown} title="Open options">
+      <button class="btn-icon dropdown-toggle" on:click={toggleOpenDropdown} title="Open options">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 -960 960 960" fill="currentColor"><path d="M480-345 240-585l56-56 184 184 184-184 56 56-240 240Z"/></svg>
       </button>
     </div>
@@ -356,23 +356,10 @@
   }
 
   .tab-action-btn {
-    margin-left: 0.25rem;
-    background: transparent;
-    border: none;
-    color: var(--muted-color);
-    cursor: pointer;
-    font-size: 1rem;
-    line-height: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     width: 1.75rem;
     height: 1.75rem;
+    padding: 0;
     border-radius: 50%;
-  }
-
-  .tab-action-btn:hover {
-    background-color: var(--hover-bg);
   }
 
   .tab.selected .lock-tab-btn {
@@ -398,75 +385,31 @@
     position: relative;
   }
 
-  .action-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-    padding: 0.5rem 0.75rem;
-    border: none;
-    border-radius: 0.5rem;
+  .action-icon {
     font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    white-space: nowrap;
-    height: 2.25rem;
-    background-color: var(--hover-bg);
-    color: var(--text-color);
-  }
-
-  .action-btn:hover {
-    outline: 1px solid var(--accent-color);
-  }
-
-  .action-btn span {
     line-height: 1;
-  }
-
-  .btn-icon {
-    font-size: 0.875rem;
   }
 
   .dropdown-button {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-    padding: 0.5rem 0.75rem;
-    border: none;
-    border-radius: 0.5rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    white-space: nowrap;
-    height: 2.25rem;
-    background-color: var(--hover-bg);
-    color: var(--text-color);
     position: relative;
   }
 
-  .dropdown-button:hover {
-    outline: 1px solid var(--accent-color);
-  }
 
-  .dropdown-button span {
-    line-height: 1;
+  .dropdown-main-btn {
+    background: transparent;
+    border: none;
+    padding: 0;
+    color: var(--text-color);
     cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1;
   }
 
   .dropdown-separator {
     width: 1px;
     height: 1.25rem;
     background-color: var(--border-color);
-  }
-
-  .dropdown-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    border: none;
-    padding: 0;
-    cursor: pointer;
-    color: var(--text-color);
   }
 
   .dropdown-menu {
@@ -477,25 +420,6 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     z-index: 9999;
     min-width: 180px;
-  }
-
-  .dropdown-item {
-    width: 100%;
-    padding: 0.5rem 0.75rem;
-    text-align: left;
-    background: transparent;
-    border: none;
-    color: var(--text-color);
-    cursor: pointer;
-    font-size: 0.875rem;
-  }
-
-  .dropdown-item:hover {
-    background-color: var(--hover-bg);
-  }
-
-  .open-vault-btn:hover {
-    filter: brightness(0.95);
   }
 
   .vault-load-error {

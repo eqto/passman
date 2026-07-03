@@ -12,7 +12,7 @@
       <button class="modal-cancel-btn" on:click={onCancel}>
         Cancel
       </button>
-      <button class="modal-primary-btn" on:click={() => onDelete(group)}>
+      <button class="btn-primary" on:click={() => onDelete(group)}>
         Delete
       </button>
     </div>

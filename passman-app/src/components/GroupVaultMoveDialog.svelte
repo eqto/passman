@@ -33,15 +33,15 @@
       <input class="modal-input" bind:value={newName} placeholder="New group name" />
       <div class="modal-actions">
         <button class="modal-cancel-btn" on:click={backToWarning}>Back</button>
-        <button class="modal-primary-btn" on:click={handleCopy}>Copy as new</button>
+        <button class="btn-primary" on:click={handleCopy}>Copy as new</button>
       </div>
     {:else}
       <h2>{action === "copy" ? "Copy" : "Move"} to {vaultName}</h2>
       <p>Vault "{vaultName}" already has a group named "{group}".</p>
       <div class="modal-actions">
         <button class="modal-cancel-btn" on:click={onCancel}>Cancel</button>
-        <button class="modal-primary-btn" on:click={onMerge}>Merge</button>
-        <button class="modal-primary-btn" on:click={startCopyAsNew}>Copy as new</button>
+        <button class="btn-primary" on:click={onMerge}>Merge</button>
+        <button class="btn-primary" on:click={startCopyAsNew}>Copy as new</button>
       </div>
     {/if}
   </div>

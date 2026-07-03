@@ -150,7 +150,7 @@
           {tag} <span class="remove">×</span>
         </button>
       {/each}
-      <button class="clear-tag-filter" on:click={clearTagFilter}>Clear</button>
+      <button class="btn-ghost" on:click={clearTagFilter}>Clear</button>
     </div>
   {/if}
 
@@ -190,7 +190,7 @@
           </div>
           {#if entry.password}
             <button
-              class="copy-btn"
+              class="btn-copy"
               title="Copy password"
               aria-label="Copy password"
               on:click={(e) => copyPassword(e, entry.password)}
@@ -253,7 +253,7 @@
     padding: 0.5rem;
     background: transparent;
     border: none;
-    border-radius: 0.375rem;
+    border-radius: 0.5rem;
     color: var(--text-color);
     cursor: pointer;
     text-align: left;
@@ -278,40 +278,14 @@
     flex: 1;
   }
 
-  .copy-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 2rem;
-    height: 2rem;
-    padding: 0;
-    background: transparent;
-    border: none;
-    border-radius: 0.375rem;
-    color: var(--muted-color);
-    cursor: pointer;
-    flex-shrink: 0;
-    opacity: 0;
-    transition: opacity 0.15s ease;
-  }
-
-  .entry-row:hover .copy-btn,
-  .entry-row.selected .copy-btn {
+  .entry-row:hover .btn-copy,
+  .entry-row.selected .btn-copy {
     opacity: 1;
   }
 
-  .copy-btn:hover {
-    background-color: var(--hover-bg);
-    color: var(--text-color);
-  }
-
-  .entry-row.selected .copy-btn:hover {
+  .entry-row.selected .btn-copy:hover {
     background-color: rgba(255, 255, 255, 0.15);
     color: var(--selected-text);
-  }
-
-  .copy-btn svg {
-    display: block;
   }
 
   .entry-title-row {
@@ -397,19 +371,6 @@
     border-radius: 9999px;
     font-size: 0.75rem;
     cursor: pointer;
-  }
-
-  .clear-tag-filter {
-    padding: 0.25rem 0.5rem;
-    background: transparent;
-    border: none;
-    color: var(--muted-color);
-    font-size: 0.75rem;
-    cursor: pointer;
-  }
-
-  .clear-tag-filter:hover {
-    color: var(--text-color);
   }
 
 

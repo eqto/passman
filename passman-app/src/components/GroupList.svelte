@@ -199,7 +199,7 @@
   {#if trashMode}
     <div class="trash-header">
       <button
-        class="back-btn"
+        class="btn-icon"
         title="Back to groups"
         on:click={() => onSelectGroup(selectedGroup || ($groups[0] ?? ""))}
       >
@@ -230,7 +230,7 @@
   {:else}
     <div class="group-header section-header">
       <span>Groups</span>
-      <button class="add-group-btn" title="New group" on:click={() => showAdd = true}>
+      <button class="btn-icon" title="New group" on:click={() => showAdd = true}>
         +
       </button>
     </div>
@@ -263,7 +263,7 @@
             <span class="group-name">{group}</span>
           </button>
           <button
-            class="delete-group-btn"
+            class="btn-icon-danger"
             title="Delete group"
             on:click={() => deleteTarget = group}
           >
@@ -384,38 +384,6 @@
     gap: 0.5rem;
   }
 
-  .back-btn {
-    background: transparent;
-    border: none;
-    color: var(--muted-color);
-    cursor: pointer;
-    font-size: 1rem;
-    line-height: 1;
-    padding: 0.25rem;
-    border-radius: 0.25rem;
-  }
-
-  .back-btn:hover {
-    color: var(--text-color);
-    background-color: var(--hover-bg);
-  }
-
-  .add-group-btn {
-    background: transparent;
-    border: none;
-    color: var(--muted-color);
-    cursor: pointer;
-    font-size: 1rem;
-    line-height: 1;
-    padding: 0.25rem;
-    border-radius: 0.25rem;
-  }
-
-  .add-group-btn:hover {
-    color: var(--text-color);
-    background-color: var(--hover-bg);
-  }
-
   .group-row {
     display: flex;
     align-items: center;
@@ -435,7 +403,7 @@
     opacity: 0.6;
   }
 
-  .group-row.dragging .delete-group-btn {
+  .group-row.dragging .btn-icon-danger {
     display: none;
   }
 
@@ -448,7 +416,7 @@
   }
 
   .group-row.selected .group-item,
-  .group-row.selected .delete-group-btn {
+  .group-row.selected .btn-icon-danger {
     color: var(--selected-text);
   }
 
@@ -466,30 +434,12 @@
     font-size: 0.875rem;
   }
 
-  .delete-group-btn {
+  .btn-icon-danger {
     display: none;
-    align-items: center;
-    justify-content: center;
-    width: 1.5rem;
-    height: 1.5rem;
-    margin-right: 0.75rem;
-    padding: 0;
-    background: transparent;
-    border: none;
-    color: var(--muted-color);
-    cursor: pointer;
-    font-size: 1rem;
-    line-height: 1;
-    border-radius: 0.25rem;
   }
 
-  .group-row:hover .delete-group-btn {
-    display: flex;
-  }
-
-  .delete-group-btn:hover {
-    background-color: rgba(239, 68, 68, 0.15);
-    color: var(--danger-color);
+  .group-row:hover .btn-icon-danger {
+    display: inline-flex;
   }
 
   .group-icon {

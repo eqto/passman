@@ -57,10 +57,23 @@ body {
 }
 
 input,
-textarea,
-button {
+textarea {
   font-family: inherit;
   line-height: 1.5;
+}
+
+button,
+.button {
+  font-family: inherit;
+  line-height: 1;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.875rem;
+  font-weight: 500;
+  justify-content: center;
 }
 
 /* Shared modal styles */
@@ -100,55 +113,21 @@ button {
 }
 
 .modal-cancel-btn {
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 1rem 0.25rem;
   background: transparent;
-  border: none;
   color: var(--muted-color);
-  cursor: pointer;
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
+  height: 2.25rem;
+  line-height: 1.5rem;
 }
 
 .modal-cancel-btn:hover {
+  outline: 1px solid var(--accent-color);
   color: var(--text-color);
 }
 
 .modal-cancel-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-}
-
-.modal-primary-btn {
-  padding: 0.5rem 1rem;
-  background-color: var(--accent-color);
-  color: white;
-  border: none;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  font-size: 0.875rem;
-}
-
-.modal-primary-btn:hover {
-  background-color: var(--accent-hover);
-}
-
-.modal-primary-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.modal-danger-btn {
-  padding: 0.5rem 1rem;
-  background-color: var(--danger-color);
-  color: white;
-  border: none;
-  border-radius: 0.375rem;
-  cursor: pointer;
-  font-size: 0.875rem;
-}
-
-.modal-danger-btn:hover {
-  filter: brightness(0.95);
 }
 
 .modal-input {
@@ -197,18 +176,13 @@ button {
 
 .context-menu-item {
   width: 100%;
-  text-align: left;
   padding: 0.5rem 0.75rem;
-  border: none;
-  border-radius: 0.375rem;
+  text-align: left;
   background: transparent;
   color: var(--text-color);
-  cursor: pointer;
-  font-size: 0.875rem;
-  display: flex;
-  align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
+  font-weight: 400;
 }
 
 .context-menu-item:hover {
@@ -237,13 +211,11 @@ button {
 
 /* Button Variants */
 .btn-primary {
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 1rem 0.25rem;
   background-color: var(--accent-color);
   color: white;
-  border: none;
-  border-radius: 0.375rem;
-  cursor: pointer;
-  font-size: 0.875rem;
+  height: 2.25rem;
+  line-height: 1.5rem;
 }
 
 .btn-primary:hover {
@@ -256,31 +228,132 @@ button {
 }
 
 .btn-secondary {
-  padding: 0.5rem 0.75rem;
+  padding: 0.5rem 0.75rem 0.25rem;
   background-color: var(--hover-bg);
-  border: none;
-  border-radius: 0.375rem;
-  cursor: pointer;
   color: var(--text-color);
-  font-size: 0.875rem;
+  gap: 0.375rem;
+  height: 2.25rem;
+  line-height: 1.5rem;
 }
 
 .btn-secondary:hover {
-  background-color: var(--border-color);
+  outline: 1px solid var(--accent-color);
+}
+
+.btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .btn-danger {
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 1rem 0.25rem;
   background-color: var(--danger-color);
   color: white;
-  border: none;
-  border-radius: 0.375rem;
-  cursor: pointer;
-  font-size: 0.875rem;
+  height: 2.25rem;
+  line-height: 1.5rem;
 }
 
 .btn-danger:hover {
   filter: brightness(0.95);
+}
+
+.btn-danger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Icon Button */
+.btn-icon {
+  padding: 0.25rem;
+  background: transparent;
+  color: var(--muted-color);
+  font-size: 1rem;
+}
+
+.btn-icon:hover {
+  background-color: var(--hover-bg);
+  color: var(--text-color);
+}
+
+/* Danger Icon Button */
+.btn-icon-danger {
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  margin-right: 0.75rem;
+  background: transparent;
+  color: var(--muted-color);
+  font-size: 1rem;
+}
+
+.btn-icon-danger:hover {
+  outline: 1px solid var(--accent-color);
+  color: var(--danger-color);
+}
+
+/* Copy Button (transparent) */
+.btn-copy {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  background: transparent;
+  color: var(--muted-color);
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.btn-copy:hover {
+  background-color: var(--hover-bg);
+  color: var(--text-color);
+}
+
+.btn-copy svg {
+  display: block;
+}
+
+/* Copy Button (solid background) */
+.btn-copy-solid {
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  background-color: var(--hover-bg);
+  color: var(--text-color);
+}
+
+.btn-copy-solid:hover {
+  outline: 1px solid var(--accent-color);
+}
+
+.btn-copy-solid svg {
+  display: block;
+}
+
+/* Ghost Text Button */
+.btn-ghost {
+  padding: 0.25rem 0.5rem;
+  background: transparent;
+  color: var(--muted-color);
+  font-size: 0.75rem;
+}
+
+.btn-ghost:hover {
+  color: var(--text-color);
+}
+
+/* Dropdown Menu Item */
+.dropdown-item {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  background: transparent;
+  color: var(--text-color);
+  justify-content: flex-start;
+  font-weight: 400;
+}
+
+.dropdown-item:hover {
+  background-color: var(--hover-bg);
 }
 
 /* Tag/Chip Styles */
@@ -333,6 +406,6 @@ button {
   gap: 0.5rem;
 }
 
-.path-row > input {
+.path-row>input {
   flex: 1;
 }

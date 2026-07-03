@@ -32,7 +32,7 @@
       <button class="modal-cancel-btn" on:click={handleCancel}>
         Cancel
       </button>
-      <button class="modal-primary-btn" on:click={handleRename}>
+      <button class="btn-primary" on:click={handleRename}>
         Save
       </button>
     </div>

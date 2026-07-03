@@ -154,7 +154,7 @@
           Cancel
         </button>
         <button 
-          class="modal-primary-btn" 
+          class="btn-primary" 
           on:click={handleDecrypt} 
           disabled={!bcupPath || !password || loading}
         >
@@ -165,7 +165,7 @@
           Back
         </button>
         <button 
-          class="modal-primary-btn" 
+          class="btn-primary" 
           on:click={handleImport} 
           disabled={!outputPath || loading}
         >

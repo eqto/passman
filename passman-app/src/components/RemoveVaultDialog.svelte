@@ -28,7 +28,7 @@
       <button class="modal-cancel-btn" on:click={onCancel}>
         Cancel
       </button>
-      <button class="modal-danger-btn" on:click={handleRemove}>
+      <button class="btn-danger" on:click={handleRemove}>
         Remove
       </button>
     </div>
