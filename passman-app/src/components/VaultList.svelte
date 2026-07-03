@@ -407,13 +407,13 @@
   }
 
   .tab.selected .lock-tab-btn {
-    color: #ffffff;
+    color: var(--selected-text);
     background-color: transparent;
   }
 
   .tab.selected .lock-tab-btn:hover {
-    color: #ffffff;
-    background-color: rgba(255, 255, 255, 0.2);
+    color: var(--selected-text);
+    background-color: rgba(128, 128, 128, 0.2);
   }
 
   .delete-tab-btn:hover {

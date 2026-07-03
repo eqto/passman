@@ -363,11 +363,11 @@
   }
 
   .group-row.drop-before {
-    border-top: 2px solid var(--selected-bg);
+    border-top: 2px solid var(--accent-color);
   }
 
   .group-row.drop-after {
-    border-bottom: 2px solid var(--selected-bg);
+    border-bottom: 2px solid var(--accent-color);
   }
 
   .group-row.selected .group-item,
