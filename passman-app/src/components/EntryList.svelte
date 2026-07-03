@@ -4,7 +4,9 @@
   import { freeTags } from "../lib/tags.js";
   import { debounce } from "../lib/debounce.js";
   import { showToast } from "../stores/toast.js";
+  import { closeAllContextMenus } from "../stores/contextMenu.js";
   import EntryContextMenu from "./EntryContextMenu.svelte";
+  import { onMount } from "svelte";
 
   const SEARCH_DEBOUNCE_MS = 150;
 
@@ -26,6 +28,13 @@
   const setFilterSearch = debounce((value) => {
     filterSearch = value;
   }, SEARCH_DEBOUNCE_MS);
+
+  onMount(() => {
+    window.addEventListener('close-all-context-menus', closeContextMenu);
+    return () => {
+      window.removeEventListener('close-all-context-menus', closeContextMenu);
+    };
+  });
 
   $: if ($currentVault) {
     const viewState = $vaultData[$currentVault.path]?.viewState || {};
@@ -85,6 +94,7 @@
   function openContextMenu(event, entry) {
     if (trashMode) return;
     event.preventDefault();
+    closeAllContextMenus();
     contextMenu = { show: true, x: event.clientX, y: event.clientY, entry };
   }
 

@@ -1,5 +1,6 @@
 <script>
   import { get } from "svelte/store";
+  import { onMount } from "svelte";
   import {
     vaults,
     currentVault,
@@ -12,6 +13,7 @@
     deleteVault,
     reorderVaults,
   } from "../stores/vaults";
+  import { closeAllContextMenus } from "../stores/contextMenu.js";
   import UnlockDialog from "./UnlockDialog.svelte";
   import CreateVaultDialog from "./CreateVaultDialog.svelte";
   import VaultSettingsDialog from "./VaultSettingsDialog.svelte";
@@ -38,6 +40,19 @@
     onReorder: async (items) => reorderVaults(items.map((v) => v.id)),
   });
   const { dragItem, dragOver, insertBefore } = drag;
+
+  onMount(() => {
+    window.addEventListener('close-all-context-menus', closeContextMenu);
+    window.addEventListener('close-all-context-menus', () => {
+      showOpenDropdown = false;
+    });
+    return () => {
+      window.removeEventListener('close-all-context-menus', closeContextMenu);
+      window.removeEventListener('close-all-context-menus', () => {
+        showOpenDropdown = false;
+      });
+    };
+  });
 
   async function pickExistingVault() {
     const selected = await open({
@@ -96,6 +111,7 @@
 
   function handleContextMenu(event, vault) {
     event.preventDefault();
+    closeAllContextMenus();
     contextMenu = { show: true, x: event.clientX, y: event.clientY, vault };
   }
 

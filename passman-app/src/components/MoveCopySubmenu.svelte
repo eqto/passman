@@ -1,5 +1,5 @@
 <script>
-  import { createEventDispatcher } from "svelte";
+  import { createEventDispatcher, onMount, afterUpdate } from "svelte";
   import { vaultData } from "../stores/vaults";
 
   export let groups = [];
@@ -11,10 +11,29 @@
   const dispatch = createEventDispatcher();
   let activeVault = null;
   let vaultTop = 0;
+  let menuEl;
+  let adjustedTop = top;
 
   const MENU_WIDTH = 160;
+  const PADDING = 8;
 
   $: vaultLeft = computeSubmenuLeft(left, menuWidth);
+
+  function adjustPosition() {
+    if (!menuEl) return;
+    const rect = menuEl.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    
+    if (rect.top + rect.height > viewportHeight - PADDING) {
+      adjustedTop = viewportHeight - rect.height - PADDING;
+      if (adjustedTop < PADDING) adjustedTop = PADDING;
+    } else {
+      adjustedTop = top;
+    }
+  }
+
+  onMount(() => adjustPosition());
+  afterUpdate(() => adjustPosition());
 
   function computeSubmenuLeft(baseLeft, width) {
     const w = width || MENU_WIDTH;
@@ -44,8 +63,9 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
 <div
+  bind:this={menuEl}
   class="menu"
-  style="left: {left}px; top: {top}px; height: calc(100vh - {top}px - 8px);"
+  style="left: {left}px; top: {adjustedTop}px"
   on:click|stopPropagation
 >
   {#if groups.length === 0 && vaults.length === 0}
@@ -82,7 +102,7 @@
             <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
             <div
               class="menu"
-              style="left: {vaultLeft}px; top: {vaultTop}px; height: calc(100vh - {vaultTop}px - 8px);"
+              style="left: {vaultLeft}px; top: {vaultTop}px"
               on:click|stopPropagation
             >
               {#if targetVaultGroups(activeVault).length > 0}

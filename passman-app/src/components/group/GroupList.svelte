@@ -1,6 +1,8 @@
 <script>
   import { groups, tags, vaults, currentVault, vaultData, setVaultViewState } from "../../stores/vaults";
   import { showToast } from "../../stores/toast.js";
+  import { closeAllContextMenus } from "../../stores/contextMenu.js";
+  import { onMount } from "svelte";
   import {
     addGroup,
     addTag,
@@ -29,6 +31,13 @@
   let moveToVaultTarget = null;
   let moveToVaultGroup = "";
   let moveToVaultAction = "move";
+
+  onMount(() => {
+    window.addEventListener('close-all-context-menus', closeContextMenu);
+    return () => {
+      window.removeEventListener('close-all-context-menus', closeContextMenu);
+    };
+  });
 
   function switchToVaultAndGroup(vault, groupName) {
     setVaultViewState(vault.path, {
@@ -70,6 +79,7 @@
 
   function openContextMenu(event, type, item) {
     event.preventDefault();
+    closeAllContextMenus();
     contextMenu = { show: true, x: event.clientX, y: event.clientY, type, item };
   }
 

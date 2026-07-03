@@ -10,11 +10,15 @@
 
   const dispatch = createEventDispatcher();
   let menuEl;
+  let moveItemEl;
+  let copyItemEl;
   let mainWidth = 0;
   let left = x;
   let top = y;
   let showMove = false;
   let showCopy = false;
+  let moveItemTop = y;
+  let copyItemTop = y;
 
   const MENU_WIDTH = CONTEXT_MENU_WIDTH;
 
@@ -83,11 +87,17 @@
   function openMove() {
     showMove = true;
     showCopy = false;
+    if (moveItemEl) {
+      moveItemTop = moveItemEl.getBoundingClientRect().top;
+    }
   }
 
   function openCopy() {
     showCopy = true;
     showMove = false;
+    if (copyItemEl) {
+      copyItemTop = copyItemEl.getBoundingClientRect().top;
+    }
   }
 </script>
 
@@ -108,13 +118,13 @@
   </div>
   <div class="context-menu-divider"></div>
   <div class="menu-item-wrapper" on:mouseenter={openMove}>
-    <div class="menu-item has-submenu">
+    <div bind:this={moveItemEl} class="menu-item has-submenu">
       <span>Move to</span>
       <span class="context-menu-arrow">▶</span>
     </div>
   </div>
   <div class="menu-item-wrapper" on:mouseenter={openCopy}>
-    <div class="menu-item has-submenu">
+    <div bind:this={copyItemEl} class="menu-item has-submenu">
       <span>Copy to</span>
       <span class="context-menu-arrow">▶</span>
     </div>
@@ -126,7 +136,7 @@
     groups={moveGroups}
     vaults={moveVaults}
     left={submenuLeft}
-    {top}
+    top={moveItemTop}
     menuWidth={mainWidth}
     on:selectGroup={handleMoveToGroup}
     on:selectVaultGroup={handleMoveToVault}
@@ -138,7 +148,7 @@
     groups={moveGroups}
     vaults={moveVaults}
     left={submenuLeft}
-    {top}
+    top={copyItemTop}
     menuWidth={mainWidth}
     on:selectGroup={handleCopyToGroup}
     on:selectVaultGroup={handleCopyToVault}

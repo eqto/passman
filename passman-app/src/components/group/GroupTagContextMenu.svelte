@@ -12,6 +12,11 @@
   const dispatch = createEventDispatcher();
   let activeMenu = null;
   let mainWidth = 0;
+  let mergeItemEl;
+  let moveToVaultItemEl;
+  let copyToVaultItemEl;
+  let moveToGroupItemEl;
+  let submenuTop = y;
 
   const MENU_WIDTH = 160;
 
@@ -32,6 +37,15 @@
 
   function openMenu(menu) {
     activeMenu = menu;
+    let itemEl;
+    if (menu === "merge") itemEl = mergeItemEl;
+    else if (menu === "moveToVault") itemEl = moveToVaultItemEl;
+    else if (menu === "copyToVault") itemEl = copyToVaultItemEl;
+    else if (menu === "moveToGroup") itemEl = moveToGroupItemEl;
+    
+    if (itemEl) {
+      submenuTop = itemEl.getBoundingClientRect().top;
+    }
   }
 
   function handleMerge(target) {
@@ -60,19 +74,19 @@
 >
   {#if type === "group"}
     <div class="menu-item-wrapper" on:mouseenter={() => openMenu("merge")}>
-      <div class="menu-item has-submenu">
+      <div bind:this={mergeItemEl} class="menu-item has-submenu">
         <span>Merge to group</span>
         <span class="context-menu-arrow">▶</span>
       </div>
     </div>
     <div class="menu-item-wrapper" on:mouseenter={() => openMenu("moveToVault")}>
-      <div class="menu-item has-submenu">
+      <div bind:this={moveToVaultItemEl} class="menu-item has-submenu">
         <span>Move to</span>
         <span class="context-menu-arrow">▶</span>
       </div>
     </div>
     <div class="menu-item-wrapper" on:mouseenter={() => openMenu("copyToVault")}>
-      <div class="menu-item has-submenu">
+      <div bind:this={copyToVaultItemEl} class="menu-item has-submenu">
         <span>Copy to</span>
         <span class="context-menu-arrow">▶</span>
       </div>
@@ -81,7 +95,7 @@
 
   {#if type === "tag"}
     <div class="menu-item-wrapper" on:mouseenter={() => openMenu("moveToGroup")}>
-      <div class="menu-item has-submenu">
+      <div bind:this={moveToGroupItemEl} class="menu-item has-submenu">
         <span>Move to group</span>
         <span class="context-menu-arrow">▶</span>
       </div>
@@ -93,7 +107,7 @@
   <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
   <div
     class="menu"
-    style="left: {submenuLeft}px; top: {y}px; max-height: calc(100vh - {y}px - 8px);"
+    style="left: {submenuLeft}px; top: {submenuTop}px"
     on:click|stopPropagation
   >
     {#if activeMenu === "merge"}
