@@ -196,13 +196,16 @@
           class:selected={selectedTrashGroup === group}
           role="listitem"
         >
-          <button
+          <div
             class="group-item"
+            role="button"
+            tabindex="0"
             on:click={() => onSelectTrashGroup(group)}
+            on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelectTrashGroup(group); } }}
           >
             <span class="group-icon">📁</span>
             <span class="group-name">{group}</span>
-          </button>
+          </div>
         </div>
       {/each}
     {/if}
@@ -228,14 +231,17 @@
           on:dragleave={drag.dragLeave}
           on:drop={(e) => drag.drop(e, $groups, group)}
         >
-          <button
+          <div
             class="group-item"
+            role="button"
+            tabindex="0"
             on:click={() => onSelectGroup(group)}
+            on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelectGroup(group); } }}
             on:contextmenu={(e) => openContextMenu(e, "group", group)}
           >
             <span class="group-icon">📁</span>
             <span class="group-name">{group}</span>
-          </button>
+          </div>
           <button
             class="btn-icon-danger"
             title="Delete group"
@@ -264,10 +270,16 @@
 
     <GroupTitle title="Trash" isTrash={true} />
     <div class="group-row trash-row" class:selected={trashMode}>
-      <button class="group-item" on:click={onTrashClick}>
+      <div
+        class="group-item"
+        role="button"
+        tabindex="0"
+        on:click={onTrashClick}
+        on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onTrashClick(); } }}
+      >
         <span class="group-icon">🗑️</span>
         <span class="group-name">Trash</span>
-      </button>
+      </div>
     </div>
   {/if}
 </div>
@@ -363,21 +375,29 @@
     color: var(--selected-text);
   }
 
+  .group-row:not(.selected) .group-item {
+    opacity: 0.85;
+  }
+
+  .group-row:not(.selected):hover .group-item {
+    opacity: 0.8;
+  }
+
   .group-item {
     flex: 1;
     display: flex;
     align-items: center;
-    justify-content: flex-start !important;
+    justify-content: flex-start;
     gap: 0.5rem;
     padding: 0.5rem 0.5rem 0.5rem 0.25rem;
     background: transparent;
     border: none;
     border-radius: 0;
-    color: var(--text-color);
     cursor: pointer;
     text-align: left;
     font-size: 0.875rem;
     font-weight: 400;
+    color: var(--text-color);
     line-height: 1.5;
   }
 

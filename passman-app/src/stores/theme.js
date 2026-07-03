@@ -1,28 +1,26 @@
 import { writable } from "svelte/store";
-import { Store } from "@tauri-apps/plugin-store";
 
-const STORE_KEY = "theme";
-const store = new Store(".settings.json");
+const STORE_KEY = "passman.theme";
 
-export const theme = writable("auto");
-
-export async function loadTheme() {
+function loadTheme() {
+  if (typeof window === "undefined") return null;
   try {
-    const savedTheme = await store.get(STORE_KEY);
-    if (savedTheme && (savedTheme === "light" || savedTheme === "dark" || savedTheme === "auto")) {
-      theme.set(savedTheme);
+    const saved = localStorage.getItem(STORE_KEY);
+    if (saved === "light" || saved === "dark" || saved === "auto") {
+      return saved;
     }
   } catch (e) {
-    console.error("Failed to load theme from store:", e);
+    console.error("Failed to load theme from localStorage:", e);
   }
+  return null;
 }
 
-export async function saveTheme(value) {
+function saveTheme(value) {
+  if (typeof window === "undefined") return;
   try {
-    await store.set(STORE_KEY, value);
-    await store.save();
+    localStorage.setItem(STORE_KEY, value);
   } catch (e) {
-    console.error("Failed to save theme to store:", e);
+    console.error("Failed to save theme to localStorage:", e);
   }
 }
 
@@ -38,7 +36,10 @@ export function applyTheme(value) {
   }
 }
 
-// Subscribe to theme changes and apply them
+const initialTheme = loadTheme() || "auto";
+export const theme = writable(initialTheme);
+
+// Apply and persist theme changes
 theme.subscribe((value) => {
   applyTheme(value);
   saveTheme(value);
@@ -55,7 +56,4 @@ if (typeof window !== "undefined") {
     });
     applyTheme(currentTheme);
   });
-
-  // Load theme on startup
-  loadTheme();
 }

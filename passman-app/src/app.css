@@ -19,6 +19,8 @@
   --hover-bg: #f3f4f6;
   --selected-bg: #e5e7eb;
   --selected-text: #111827;
+  --toast-bg: #374151;
+  --toast-text: #ffffff;
 }
 
 :root.dark {
@@ -37,6 +39,8 @@
   --hover-bg: #252b35;
   --selected-bg: #374151;
   --selected-text: #ffffff;
+  --toast-bg: #1f2937;
+  --toast-text: #ffffff;
 }
 
 * {
@@ -72,8 +76,11 @@ button,
   display: inline-flex;
   align-items: center;
   font-size: 0.875rem;
-  font-weight: 500;
   justify-content: center;
+}
+
+.btn-text-bold {
+  font-weight: 500;
 }
 
 /* Shared modal styles */

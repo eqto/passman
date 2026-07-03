@@ -267,10 +267,19 @@
     color: var(--text-color);
     cursor: pointer;
     text-align: left;
+    user-select: none;
   }
 
   .entry-row:hover {
     background-color: var(--hover-bg);
+  }
+
+  .entry-row:not(.selected) .entry-info {
+    opacity: 0.85;
+  }
+
+  .entry-row:not(.selected):hover .entry-info {
+    opacity: 0.8;
   }
 
   .entry-row.selected {
@@ -306,7 +315,7 @@
   }
 
   .entry-title {
-    font-weight: 500;
+    font-weight: 400;
     font-size: 0.875rem;
     overflow: hidden;
     text-overflow: ellipsis;
