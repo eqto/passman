@@ -34,9 +34,9 @@
 </script>
 
 <Dialog on:keydown={handleKeydown}>
-  <DialogHeader on:close={onCancel}>Unlock Vault</DialogHeader>
+  <DialogHeader on:close={onCancel}>Unlock {name}</DialogHeader>
   <DialogBody>
-    <p class="vault-name">{name}</p>
+    <p class="vault-path">File: {path}</p>
     <input
       class="modal-input"
       bind:value={password}
@@ -70,7 +70,7 @@
 </Dialog>
 
 <style>
-  .vault-name {
+  .vault-path {
     margin: 0;
     font-size: 0.875rem;
     color: var(--muted-color);
