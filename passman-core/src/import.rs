@@ -85,12 +85,16 @@ pub fn build_payload(vault: &mut VaultFile, imported: ImportJson) {
             url: e.url,
             notes: e.notes,
             tags: e.tags,
-            fields: e.fields.into_iter().map(|f| CustomField {
-                id: f.id,
-                label: f.label,
-                field_type: f.field_type,
-                value: f.value,
-            }).collect(),
+            fields: e
+                .fields
+                .into_iter()
+                .map(|f| CustomField {
+                    id: f.id,
+                    label: f.label,
+                    field_type: f.field_type,
+                    value: f.value,
+                })
+                .collect(),
             created_at: now,
             updated_at: now,
         })
