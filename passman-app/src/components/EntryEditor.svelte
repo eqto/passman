@@ -5,6 +5,8 @@
   import { freeTags } from "../lib/tags.js";
   import CustomFieldEditor from "./CustomFieldEditor.svelte";
   import Chip from "./form/Chip.svelte";
+  import TagContextMenu from "./TagContextMenu.svelte";
+  import Confirm from "./dialog/Confirm.svelte";
 
   export let entry;
   export let selectedGroup = "";
@@ -16,6 +18,8 @@
   let tagInput = "";
   let showTagInput = false;
   let tagInputEl;
+  let tagContextMenu = { show: false, x: 0, y: 0, tag: null };
+  let confirmDeleteTag = null;
   let passwordLength = DEFAULT_PASSWORD_LENGTH;
   let passwordOptions = {
     uppercase: true,
@@ -37,9 +41,20 @@
     showTagInput = false;
   }
 
-  function handleTagContextMenu(tag) {
-    if (!confirm(`Delete tag "${tag}"?`)) return;
-    form = { ...form, tags: form.tags.filter((t) => t !== tag) };
+  function openTagContextMenu(event, tag) {
+    event.preventDefault();
+    tagContextMenu = { show: true, x: event.clientX, y: event.clientY, tag };
+  }
+
+  function handleTagDelete(tag) {
+    tagContextMenu = { ...tagContextMenu, show: false };
+    confirmDeleteTag = tag;
+  }
+
+  function confirmTagDelete() {
+    if (!confirmDeleteTag) return;
+    form = { ...form, tags: form.tags.filter((t) => t !== confirmDeleteTag) };
+    confirmDeleteTag = null;
   }
 
   function handleTagKeydown(event) {
@@ -105,10 +120,7 @@
             title="Right-click to delete"
             role="button"
             tabindex="0"
-            on:contextmenu={(event) => {
-              event.preventDefault();
-              handleTagContextMenu(tag);
-            }}
+            on:contextmenu={(event) => openTagContextMenu(event, tag)}
           >
             {tag}
           </Chip>
@@ -167,6 +179,25 @@
     </button>
   </div>
 </div>
+
+{#if tagContextMenu.show}
+  <TagContextMenu
+    x={tagContextMenu.x}
+    y={tagContextMenu.y}
+    on:delete={() => handleTagDelete(tagContextMenu.tag)}
+    on:close={() => tagContextMenu = { ...tagContextMenu, show: false }}
+  />
+{/if}
+
+{#if confirmDeleteTag}
+  <Confirm
+    title="Delete Tag"
+    message={`Delete tag "${confirmDeleteTag}"?`}
+    confirmLabel="Delete"
+    on:confirm={confirmTagDelete}
+    on:cancel={() => confirmDeleteTag = null}
+  />
+{/if}
 
 <style>
   .entry-editor {

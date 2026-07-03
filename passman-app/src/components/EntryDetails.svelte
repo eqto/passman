@@ -4,6 +4,8 @@
   import { showToast } from "../stores/toast.js";
   import { updateEntry } from "../stores/entries";
   import Chip from "./form/Chip.svelte";
+  import TagContextMenu from "./TagContextMenu.svelte";
+  import Confirm from "./dialog/Confirm.svelte";
 
   export let entry;
   export let onEdit;
@@ -16,6 +18,8 @@
   let tagInput = "";
   let showTagInput = false;
   let tagInputEl;
+  let tagContextMenu = { show: false, x: 0, y: 0, tag: null };
+  let confirmDeleteTag = null;
 
   $: visibleTags = (entry?.tags || []).filter((tag) => !$groups.includes(tag));
   $: if (showTagInput && tagInputEl) tagInputEl.focus();
@@ -30,12 +34,24 @@
     showTagInput = false;
   }
 
-  async function handleTagContextMenu(tag) {
+  function openTagContextMenu(event, tag) {
     if (trashMode) return;
-    if (!confirm(`Delete tag "${tag}"?`)) return;
+    event.preventDefault();
+    tagContextMenu = { show: true, x: event.clientX, y: event.clientY, tag };
+  }
+
+  function handleTagDelete(tag) {
+    tagContextMenu = { ...tagContextMenu, show: false };
+    confirmDeleteTag = tag;
+  }
+
+  async function confirmTagDelete() {
+    if (!confirmDeleteTag) return;
+    const tag = confirmDeleteTag;
     const nextTags = (entry.tags || []).filter((t) => t !== tag);
     const updated = { ...entry, tags: nextTags, updated_at: new Date().toISOString() };
     await updateEntry(updated);
+    confirmDeleteTag = null;
   }
 
   function handleTagKeydown(event) {
@@ -149,10 +165,7 @@
                 title={trashMode ? "" : "Right-click to delete"}
                 role="button"
                 tabindex="0"
-                on:contextmenu={(event) => {
-                  event.preventDefault();
-                  handleTagContextMenu(tag);
-                }}
+                on:contextmenu={(event) => openTagContextMenu(event, tag)}
               >
                 {tag}
               </Chip>
@@ -258,6 +271,25 @@
       {/if}
     </div>
   </div>
+
+  {#if tagContextMenu.show}
+    <TagContextMenu
+      x={tagContextMenu.x}
+      y={tagContextMenu.y}
+      on:delete={() => handleTagDelete(tagContextMenu.tag)}
+      on:close={() => tagContextMenu = { ...tagContextMenu, show: false }}
+    />
+  {/if}
+
+  {#if confirmDeleteTag}
+    <Confirm
+      title="Delete Tag"
+      message={`Delete tag "${confirmDeleteTag}"?`}
+      confirmLabel="Delete"
+      on:confirm={confirmTagDelete}
+      on:cancel={() => confirmDeleteTag = null}
+    />
+  {/if}
 {:else}
   <div class="empty-details">
     Select an entry to view details.
