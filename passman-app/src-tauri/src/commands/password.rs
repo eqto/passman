@@ -1,4 +1,3 @@
-use passman_core::{TrashGroup, VaultEntry, VaultFile};
 use rand::rngs::OsRng;
 use rand::seq::SliceRandom;
 
@@ -39,27 +38,6 @@ pub fn generate_password(options: PasswordOptions) -> Result<String, String> {
         .collect();
 
     Ok(String::from_utf8(password).unwrap())
-}
-
-#[derive(Clone, serde::Serialize)]
-pub struct VaultFileDTO {
-    pub path: String,
-    pub name: String,
-    pub groups: Vec<String>,
-    pub tags: Vec<String>,
-    pub entries: Vec<VaultEntry>,
-    pub trash: Vec<TrashGroup>,
-}
-
-pub fn vault_to_dto(vault: &VaultFile) -> VaultFileDTO {
-    VaultFileDTO {
-        path: vault.path.clone(),
-        name: vault.payload.vault_metadata.name.clone(),
-        groups: vault.payload.groups.clone(),
-        tags: vault.payload.tags.clone(),
-        entries: vault.payload.entries.clone(),
-        trash: vault.payload.trash.clone(),
-    }
 }
 
 #[cfg(test)]

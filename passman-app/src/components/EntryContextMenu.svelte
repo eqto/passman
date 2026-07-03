@@ -2,6 +2,7 @@
   import { createEventDispatcher, onMount, afterUpdate } from "svelte";
   import { groups, vaults, currentVault } from "../stores/vaults";
   import { CONTEXT_MENU_WIDTH, CONTEXT_MENU_PADDING } from "../lib/constants.js";
+  import { computeSubmenuLeft } from "../lib/menuPosition.js";
   import MoveCopySubmenu from "./MoveCopySubmenu.svelte";
 
   export let x = 0;
@@ -27,16 +28,6 @@
   $: moveVaults = ($vaults || []).filter((vault) => vault.path !== $currentVault?.path);
 
   $: submenuLeft = computeSubmenuLeft(left, mainWidth);
-
-  function computeSubmenuLeft(baseLeft, width) {
-    const w = width || MENU_WIDTH;
-    let nextLeft = baseLeft + w;
-    if (nextLeft + w > window.innerWidth - CONTEXT_MENU_PADDING) {
-      nextLeft = baseLeft - w;
-    }
-    if (nextLeft < CONTEXT_MENU_PADDING) nextLeft = CONTEXT_MENU_PADDING;
-    return nextLeft;
-  }
 
   function adjustPosition() {
     if (!menuEl) return;

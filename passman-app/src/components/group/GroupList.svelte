@@ -103,83 +103,55 @@
   }
 
   async function handleMoveToVault(event) {
-    const { source, targetPath } = event.detail;
-    const target = $vaults.find((v) => v.path === targetPath);
-    const targetGroups = $vaultData[targetPath]?.groups || [];
-    if (target && targetGroups.includes(source)) {
-      moveToVaultGroup = source;
-      moveToVaultTarget = target;
-      moveToVaultAction = "move";
-      closeContextMenu();
-    } else if (target) {
-      try {
-        await moveGroupToVault(source, targetPath, source);
-        switchToVaultAndGroup(target, source);
-        showToast(`Moved "${source}" to ${target.name}`);
-      } catch (e) {
-        console.error(e);
-        alert(`Move failed: ${e}`);
-      }
-      closeContextMenu();
-    }
+    await handleVaultAction(event, "move");
   }
 
   async function handleCopyToVault(event) {
+    await handleVaultAction(event, "copy");
+  }
+
+  async function handleVaultAction(event, action) {
     const { source, targetPath } = event.detail;
     const target = $vaults.find((v) => v.path === targetPath);
     const targetGroups = $vaultData[targetPath]?.groups || [];
     if (target && targetGroups.includes(source)) {
       moveToVaultGroup = source;
       moveToVaultTarget = target;
-      moveToVaultAction = "copy";
+      moveToVaultAction = action;
       closeContextMenu();
     } else if (target) {
       try {
-        await copyGroupToVault(source, targetPath, source);
+        const fn = action === "copy" ? copyGroupToVault : moveGroupToVault;
+        await fn(source, targetPath, source);
         switchToVaultAndGroup(target, source);
-        showToast(`Copied "${source}" to ${target.name}`);
+        showToast(`${action === "copy" ? "Copied" : "Moved"} "${source}" to ${target.name}`);
       } catch (e) {
         console.error(e);
-        alert(`Copy failed: ${e}`);
+        alert(`${action === "copy" ? "Copy" : "Move"} failed: ${e}`);
       }
       closeContextMenu();
     }
   }
 
   async function handleMergeToVault() {
-    if (moveToVaultTarget && moveToVaultGroup) {
-      try {
-        if (moveToVaultAction === "copy") {
-          await copyGroupToVault(moveToVaultGroup, moveToVaultTarget.path, moveToVaultGroup);
-          switchToVaultAndGroup(moveToVaultTarget, moveToVaultGroup);
-          showToast(`Copied "${moveToVaultGroup}" into ${moveToVaultTarget.name}`);
-        } else {
-          await moveGroupToVault(moveToVaultGroup, moveToVaultTarget.path, moveToVaultGroup);
-          switchToVaultAndGroup(moveToVaultTarget, moveToVaultGroup);
-          showToast(`Moved "${moveToVaultGroup}" into ${moveToVaultTarget.name}`);
-        }
-      } catch (e) {
-        console.error(e);
-        alert(`${moveToVaultAction === "copy" ? "Copy" : "Move"} failed: ${e}`);
-      }
-    }
-    moveToVaultTarget = null;
-    moveToVaultGroup = "";
-    moveToVaultAction = "move";
-    closeContextMenu();
+    await handleVaultResolve(moveToVaultGroup);
   }
 
   async function handleCopyToVaultAsNew(newName) {
+    await handleVaultResolve(newName);
+  }
+
+  async function handleVaultResolve(targetName) {
     if (moveToVaultTarget && moveToVaultGroup) {
       try {
-        if (moveToVaultAction === "copy") {
-          await copyGroupToVault(moveToVaultGroup, moveToVaultTarget.path, newName);
-          switchToVaultAndGroup(moveToVaultTarget, newName);
-          showToast(`Copied "${moveToVaultGroup}" to ${moveToVaultTarget.name} as "${newName}"`);
+        const fn = moveToVaultAction === "copy" ? copyGroupToVault : moveGroupToVault;
+        await fn(moveToVaultGroup, moveToVaultTarget.path, targetName);
+        switchToVaultAndGroup(moveToVaultTarget, targetName);
+        const verb = moveToVaultAction === "copy" ? "Copied" : "Moved";
+        if (targetName === moveToVaultGroup) {
+          showToast(`${verb} "${moveToVaultGroup}" into ${moveToVaultTarget.name}`);
         } else {
-          await moveGroupToVault(moveToVaultGroup, moveToVaultTarget.path, newName);
-          switchToVaultAndGroup(moveToVaultTarget, newName);
-          showToast(`Moved "${moveToVaultGroup}" to ${moveToVaultTarget.name} as "${newName}"`);
+          showToast(`${verb} "${moveToVaultGroup}" to ${moveToVaultTarget.name} as "${targetName}"`);
         }
       } catch (e) {
         console.error(e);

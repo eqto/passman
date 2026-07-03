@@ -1,6 +1,7 @@
 <script>
   import { createEventDispatcher, onMount, afterUpdate } from "svelte";
   import { vaultData } from "../stores/vaults";
+  import { computeSubmenuLeft } from "../lib/menuPosition.js";
 
   export let groups = [];
   export let vaults = [];
@@ -34,16 +35,6 @@
 
   onMount(() => adjustPosition());
   afterUpdate(() => adjustPosition());
-
-  function computeSubmenuLeft(baseLeft, width) {
-    const w = width || MENU_WIDTH;
-    let nextLeft = baseLeft + w;
-    if (nextLeft + w > window.innerWidth - 8) {
-      nextLeft = baseLeft - w;
-    }
-    if (nextLeft < 8) nextLeft = 8;
-    return nextLeft;
-  }
 
   function selectGroup(group) {
     dispatch("selectGroup", group);

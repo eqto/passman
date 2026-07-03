@@ -114,6 +114,12 @@ pub struct VaultPayload {
     pub trash: Vec<TrashGroup>,
 }
 
+impl VaultPayload {
+    pub fn touch(&mut self) {
+        self.vault_metadata.updated_at = chrono::Utc::now();
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, Default, Clone)]
 pub struct TrashGroup {
     pub group: String,

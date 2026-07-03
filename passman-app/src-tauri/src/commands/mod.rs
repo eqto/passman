@@ -1,3 +1,4 @@
+pub mod dto;
 pub mod entry_commands;
 pub mod group_commands;
 pub mod password;

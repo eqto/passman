@@ -1,9 +1,8 @@
 use clap::{Parser, Subcommand};
 use passman_core::{
-    create_vault_file, save_vault_file, ButtercupError, ButtercupVault, VaultEntry, VaultFile,
-    VaultMetadata, PAYLOAD_FORMAT_VERSION,
+    build_payload, create_vault_file, derive_vault_name, save_vault_file, ButtercupError,
+    ImportJson, VaultFile,
 };
-use serde::{Deserialize, Serialize};
 use std::io;
 use std::path::Path;
 use thiserror::Error;
@@ -65,37 +64,6 @@ enum Commands {
         /// Path to the .pmv file to extract
         input: String,
     },
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-struct ImportJson {
-    #[serde(default = "default_vault_name")]
-    name: String,
-    #[serde(default)]
-    groups: Vec<String>,
-    #[serde(default)]
-    entries: Vec<ImportEntry>,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-struct ImportEntry {
-    id: String,
-    #[serde(default)]
-    tags: Vec<String>,
-    #[serde(default)]
-    title: String,
-    #[serde(default)]
-    username: String,
-    #[serde(default)]
-    password: String,
-    #[serde(default)]
-    url: String,
-    #[serde(default)]
-    notes: String,
-}
-
-fn default_vault_name() -> String {
-    "Imported Vault".to_string()
 }
 
 #[derive(Debug, Error)]
@@ -204,39 +172,6 @@ fn run() -> Result<(), CliError> {
     Ok(())
 }
 
-fn build_payload(vault: &mut VaultFile, imported: ImportJson) {
-    let now = chrono::Utc::now();
-    vault.payload.vault_metadata = VaultMetadata {
-        name: imported.name,
-        created_at: now,
-        updated_at: now,
-        format_version: PAYLOAD_FORMAT_VERSION,
-    };
-
-    vault.payload.groups = imported
-        .groups
-        .into_iter()
-        .map(|g| g.trim().to_string())
-        .filter(|g| !g.is_empty())
-        .collect();
-
-    vault.payload.entries = imported
-        .entries
-        .into_iter()
-        .map(|e| VaultEntry {
-            id: e.id,
-            title: e.title,
-            username: e.username,
-            password: e.password,
-            url: e.url,
-            notes: e.notes,
-            tags: e.tags,
-            created_at: now,
-            updated_at: now,
-        })
-        .collect();
-}
-
 fn create_and_save_vault(
     output: &str,
     name: &str,
@@ -260,17 +195,6 @@ fn resolve_convert_password() -> Result<String, CliError> {
     }
 }
 
-fn derive_vault_name(source_name: &str, input_path: &str) -> String {
-    if !source_name.is_empty() {
-        source_name.to_string()
-    } else {
-        Path::new(input_path)
-            .file_stem()
-            .map(|s| s.to_string_lossy().to_string())
-            .unwrap_or_else(|| "Imported Buttercup Vault".to_string())
-    }
-}
-
 fn prompt_password(prompt: &str) -> Result<String, CliError> {
     if let Ok(password) = std::env::var("PASSMAN_PASSWORD") {
         return Ok(password);
@@ -285,24 +209,3 @@ fn prompt_password_buttercup(prompt: &str) -> Result<String, CliError> {
     rpassword::prompt_password(prompt).map_err(|e| CliError::PasswordPrompt(e.to_string()))
 }
 
-impl From<ButtercupVault> for ImportJson {
-    fn from(vault: ButtercupVault) -> Self {
-        ImportJson {
-            name: vault.name,
-            groups: vault.groups,
-            entries: vault
-                .entries
-                .into_iter()
-                .map(|e| ImportEntry {
-                    id: e.id,
-                    tags: e.tags,
-                    title: e.title,
-                    username: e.username,
-                    password: e.password,
-                    url: e.url,
-                    notes: e.notes,
-                })
-                .collect(),
-        }
-    }
-}

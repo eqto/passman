@@ -1,12 +1,9 @@
-use passman_core::{buttercup, config, vault, AppConfig, VaultConfig, VaultEntry, VaultFile, VaultMetadata, PAYLOAD_FORMAT_VERSION};
-use serde::{Deserialize, Serialize};
-use std::collections::HashSet;
-use std::path::Path;
+use passman_core::{buttercup, config, vault, AppConfig, VaultConfig};
 use tauri::State;
 use zeroize::Zeroizing;
 
-use crate::commands::password::{vault_to_dto, VaultFileDTO};
-use crate::commands::state::{AppState, OpenVault};
+use crate::commands::dto::{vault_to_dto, VaultFileDTO};
+use crate::commands::state::{validate_reorder, AppState, OpenVault};
 
 #[tauri::command]
 pub fn list_vaults() -> Result<AppConfig, String> {
@@ -151,7 +148,7 @@ pub fn rename_vault(
         let mut guard = state.inner.lock().unwrap();
         if let Some(open_vault) = guard.open_vaults.get_mut(&path) {
             open_vault.vault.payload.vault_metadata.name = name;
-            open_vault.vault.payload.vault_metadata.updated_at = chrono::Utc::now();
+            open_vault.vault.payload.touch();
         }
     }
 
@@ -162,14 +159,8 @@ pub fn rename_vault(
 #[tauri::command]
 pub fn reorder_vaults(ids: Vec<String>) -> Result<Vec<VaultConfig>, String> {
     let mut config = config::load_config().map_err(|e| e.to_string())?;
-    let current_set: HashSet<String> = config.vaults.iter().map(|v| v.id.clone()).collect();
-    if ids.len() != current_set.len() {
-        return Err("invalid vault list".to_string());
-    }
-    let new_set: HashSet<String> = ids.iter().cloned().collect();
-    if new_set != current_set {
-        return Err("invalid vault list".to_string());
-    }
+    let current_ids: Vec<String> = config.vaults.iter().map(|v| v.id.clone()).collect();
+    validate_reorder(&current_ids, &ids)?;
     let mut ordered = Vec::new();
     for id in ids {
         if let Some(vault) = config.vaults.iter().find(|v| v.id == id) {
@@ -179,81 +170,6 @@ pub fn reorder_vaults(ids: Vec<String>) -> Result<Vec<VaultConfig>, String> {
     config.vaults = ordered;
     config::save_config(&config).map_err(|e| e.to_string())?;
     Ok(config.vaults)
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-struct ImportJson {
-    #[serde(default = "default_vault_name")]
-    name: String,
-    #[serde(default)]
-    groups: Vec<String>,
-    #[serde(default)]
-    entries: Vec<ImportEntry>,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-struct ImportEntry {
-    id: String,
-    #[serde(default)]
-    tags: Vec<String>,
-    #[serde(default)]
-    title: String,
-    #[serde(default)]
-    username: String,
-    #[serde(default)]
-    password: String,
-    #[serde(default)]
-    url: String,
-    #[serde(default)]
-    notes: String,
-}
-
-fn default_vault_name() -> String {
-    "Imported Vault".to_string()
-}
-
-fn derive_vault_name(source_name: &str, input_path: &str) -> String {
-    if !source_name.is_empty() {
-        source_name.to_string()
-    } else {
-        Path::new(input_path)
-            .file_stem()
-            .map(|s| s.to_string_lossy().to_string())
-            .unwrap_or_else(|| "Imported Buttercup Vault".to_string())
-    }
-}
-
-fn build_payload(vault: &mut VaultFile, imported: ImportJson) {
-    let now = chrono::Utc::now();
-    vault.payload.vault_metadata = VaultMetadata {
-        name: imported.name,
-        created_at: now,
-        updated_at: now,
-        format_version: PAYLOAD_FORMAT_VERSION,
-    };
-
-    vault.payload.groups = imported
-        .groups
-        .into_iter()
-        .map(|g| g.trim().to_string())
-        .filter(|g| !g.is_empty())
-        .collect();
-
-    vault.payload.entries = imported
-        .entries
-        .into_iter()
-        .map(|e| VaultEntry {
-            id: e.id,
-            title: e.title,
-            username: e.username,
-            password: e.password,
-            url: e.url,
-            notes: e.notes,
-            tags: e.tags,
-            created_at: now,
-            updated_at: now,
-        })
-        .collect();
 }
 
 #[tauri::command]
@@ -268,34 +184,14 @@ pub async fn convert_buttercup_vault(
     let bcup = buttercup::decrypt_buttercup_file(&bcup_path, &password)
         .map_err(|e| e.to_string())?;
     
-    // Convert to ImportJson format
-    let import = ImportJson {
-        name: bcup.name.clone(),
-        groups: bcup.groups,
-        entries: bcup
-            .entries
-            .into_iter()
-            .map(|e| ImportEntry {
-                id: e.id,
-                tags: e.tags,
-                title: e.title,
-                username: e.username,
-                password: e.password,
-                url: e.url,
-                notes: e.notes,
-            })
-            .collect(),
-    };
+    let import = passman_core::ImportJson::from(bcup);
     
-    // Derive vault name
-    let vault_name = derive_vault_name(&import.name, &bcup_path);
+    let vault_name = passman_core::derive_vault_name(&import.name, &bcup_path);
     
-    // Create new vault with same password
     let (mut vault, vault_key) = vault::create_vault_file_with_key(&output_path, &vault_name, &password)
         .map_err(|e| e.to_string())?;
     
-    // Build payload from buttercup data
-    build_payload(&mut vault, import);
+    passman_core::build_payload(&mut vault, import);
     
     // Save the vault
     vault::save_vault_file(&vault, &password).map_err(|e| e.to_string())?;

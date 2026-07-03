@@ -94,6 +94,16 @@ export function setVaultViewState(path, viewState) {
   });
 }
 
+function setVaultData(path, vault) {
+  updateVaultData(path, {
+    unlocked: true,
+    groups: vault.groups || [],
+    tags: vault.tags || [],
+    entries: vault.entries || [],
+    trash: vault.trash || [],
+  });
+}
+
 export async function loadVaults() {
   try {
     loadError.set(null);
@@ -111,13 +121,7 @@ export async function createVault(id, name, path, password) {
   const vault = await invoke("create_vault", { id, name, path, password });
   await loadVaults();
   currentVault.set(vault);
-  updateVaultData(path, {
-    unlocked: true,
-    groups: vault.groups || [],
-    tags: vault.tags || [],
-    entries: vault.entries || [],
-    trash: vault.trash || [],
-  });
+  setVaultData(path, vault);
   return vault;
 }
 
@@ -130,13 +134,7 @@ export async function openVault(path, password) {
     name: vault.name || existing?.name,
     path: vault.path || existing?.path,
   });
-  updateVaultData(path, {
-    unlocked: true,
-    groups: vault.groups || [],
-    tags: vault.tags || [],
-    entries: vault.entries || [],
-    trash: vault.trash || [],
-  });
+  setVaultData(path, vault);
   return vault;
 }
 
@@ -144,13 +142,7 @@ export async function registerAndOpenVault(id, path, password) {
   const vault = await invoke("register_and_open_vault", { id, path, password });
   await loadVaults();
   currentVault.set({ ...vault, id });
-  updateVaultData(path, {
-    unlocked: true,
-    groups: vault.groups || [],
-    tags: vault.tags || [],
-    entries: vault.entries || [],
-    trash: vault.trash || [],
-  });
+  setVaultData(path, vault);
   return vault;
 }
 
@@ -187,13 +179,7 @@ export async function unlockVault(password) {
     name: opened.name || vault.name,
     path: opened.path || vault.path,
   });
-  updateVaultData(vault.path, {
-    unlocked: true,
-    groups: opened.groups || [],
-    tags: opened.tags || [],
-    entries: opened.entries || [],
-    trash: opened.trash || [],
-  });
+  setVaultData(vault.path, opened);
 }
 
 export async function deleteVault(id, path) {
@@ -228,12 +214,6 @@ export async function convertButtercupVault(bcupPath, password, outputPath) {
   const vault = await invoke("convert_buttercup_vault", { bcupPath, password, outputPath, id });
   await loadVaults();
   currentVault.set({ ...vault, id });
-  updateVaultData(outputPath, {
-    unlocked: true,
-    groups: vault.groups || [],
-    tags: vault.tags || [],
-    entries: vault.entries || [],
-    trash: vault.trash || [],
-  });
+  setVaultData(outputPath, vault);
   return vault;
 }

@@ -1,10 +1,44 @@
 use passman_core::vault;
-use std::collections::HashMap;
+use passman_core::{TrashGroup, VaultEntry, VaultPayload};
+use std::collections::{HashMap, HashSet};
 use std::sync::{mpsc, Arc, Mutex};
 use tauri::{AppHandle, Emitter};
 use zeroize::Zeroizing;
 
 use passman_core::VaultFile;
+
+/// Validate that a reordered list contains exactly the same items as the current list.
+pub fn validate_reorder<T: std::hash::Hash + Eq + Clone>(current: &[T], reordered: &[T]) -> Result<(), String> {
+    let current_set: HashSet<&T> = current.iter().collect();
+    if reordered.len() != current_set.len() {
+        return Err("invalid list".to_string());
+    }
+    let new_set: HashSet<&T> = reordered.iter().collect();
+    if new_set != current_set {
+        return Err("invalid list".to_string());
+    }
+    Ok(())
+}
+
+/// Move entries into the trash group with the given name, creating the group if it doesn't exist.
+pub fn move_entries_to_trash(payload: &mut VaultPayload, group: String, entries: Vec<VaultEntry>) {
+    if entries.is_empty() {
+        return;
+    }
+    let now = chrono::Utc::now();
+    let entries: Vec<VaultEntry> = entries
+        .into_iter()
+        .map(|mut e| {
+            e.tags = vec![group.clone()];
+            e.updated_at = now;
+            e
+        })
+        .collect();
+    match payload.trash.iter_mut().find(|tg| tg.group == group) {
+        Some(tg) => tg.entries.extend(entries),
+        None => payload.trash.push(TrashGroup { group, entries }),
+    }
+}
 
 /// Data required to save a vault without holding the global state lock.
 pub(crate) struct SaveJob {

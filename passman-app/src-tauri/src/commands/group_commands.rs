@@ -3,7 +3,7 @@ use serde::Serialize;
 use std::collections::HashSet;
 use tauri::State;
 
-use crate::commands::state::AppState;
+use crate::commands::state::{move_entries_to_trash, validate_reorder, AppState};
 
 #[derive(Serialize)]
 pub(crate) struct GroupDeletionResult {
@@ -39,7 +39,7 @@ pub fn add_group(
         {
             open_vault.vault.payload.groups.push(trimmed);
         }
-        open_vault.vault.payload.vault_metadata.updated_at = chrono::Utc::now();
+        open_vault.vault.payload.touch();
         Ok(open_vault.vault.payload.groups.clone())
     })
 }
@@ -55,35 +55,17 @@ pub fn delete_group(
             return Err("group does not exist".to_string());
         }
         open_vault.vault.payload.groups.retain(|g| g != &group);
-        let now = chrono::Utc::now();
         let mut entries_to_trash: Vec<VaultEntry> = Vec::new();
         open_vault.vault.payload.entries.retain(|e| {
             if e.tags.iter().any(|t| t == &group) {
-                let mut entry = e.clone();
-                entry.tags = vec![group.clone()];
-                entry.updated_at = now;
-                entries_to_trash.push(entry);
+                entries_to_trash.push(e.clone());
                 false
             } else {
                 true
             }
         });
-        if !entries_to_trash.is_empty() {
-            match open_vault
-                .vault
-                .payload
-                .trash
-                .iter_mut()
-                .find(|tg| tg.group == group)
-            {
-                Some(tg) => tg.entries.extend(entries_to_trash),
-                None => open_vault.vault.payload.trash.push(TrashGroup {
-                    group,
-                    entries: entries_to_trash,
-                }),
-            }
-        }
-        open_vault.vault.payload.vault_metadata.updated_at = now;
+        move_entries_to_trash(&mut open_vault.vault.payload, group, entries_to_trash);
+        open_vault.vault.payload.touch();
         Ok(GroupDeletionResult {
             groups: open_vault.vault.payload.groups.clone(),
             entries: open_vault.vault.payload.entries.clone(),
@@ -99,17 +81,9 @@ pub fn reorder_groups(
     state: State<'_, AppState>,
 ) -> Result<Vec<String>, String> {
     state.with_open_vault_save(&path, |open_vault| {
-        let current_set: HashSet<String> =
-            open_vault.vault.payload.groups.iter().cloned().collect();
-        if groups.len() != current_set.len() {
-            return Err("invalid group list".to_string());
-        }
-        let new_set: HashSet<String> = groups.iter().cloned().collect();
-        if new_set != current_set {
-            return Err("invalid group list".to_string());
-        }
+        validate_reorder(&open_vault.vault.payload.groups, &groups)?;
         open_vault.vault.payload.groups = groups;
-        open_vault.vault.payload.vault_metadata.updated_at = chrono::Utc::now();
+        open_vault.vault.payload.touch();
         Ok(open_vault.vault.payload.groups.clone())
     })
 }
@@ -150,7 +124,7 @@ pub fn merge_groups(
                 entry.updated_at = now;
             }
         }
-        open_vault.vault.payload.vault_metadata.updated_at = now;
+        open_vault.vault.payload.touch();
         Ok((
             open_vault.vault.payload.groups.clone(),
             open_vault.vault.payload.entries.clone(),
@@ -203,7 +177,7 @@ pub fn move_group_to_vault(
         if !group_still_used {
             source.vault.payload.groups.retain(|g| g != &group);
         }
-        source.vault.payload.vault_metadata.updated_at = now;
+        source.vault.payload.touch();
     }
     {
         let target = guard
@@ -231,7 +205,7 @@ pub fn move_group_to_vault(
                 target.vault.payload.entries.push(entry);
             }
         }
-        target.vault.payload.vault_metadata.updated_at = now;
+        target.vault.payload.touch();
     }
     let source = guard
         .open_vaults
@@ -312,7 +286,7 @@ pub fn copy_group_to_vault(
                 target.vault.payload.entries.push(copy);
             }
         }
-        target.vault.payload.vault_metadata.updated_at = now;
+        target.vault.payload.touch();
         let groups = target.vault.payload.groups.clone();
         let entries = target.vault.payload.entries.clone();
         drop(guard);
@@ -335,7 +309,7 @@ pub fn add_tag(
         if !open_vault.vault.payload.tags.iter().any(|t| t == &trimmed) {
             open_vault.vault.payload.tags.push(trimmed);
         }
-        open_vault.vault.payload.vault_metadata.updated_at = chrono::Utc::now();
+        open_vault.vault.payload.touch();
         Ok(open_vault.vault.payload.tags.clone())
     })
 }

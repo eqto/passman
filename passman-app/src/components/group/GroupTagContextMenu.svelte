@@ -1,6 +1,7 @@
 <script>
   import { createEventDispatcher } from "svelte";
   import { vaultData } from "../../stores/vaults";
+  import { computeSubmenuLeft } from "../../lib/menuPosition.js";
 
   export let x = 0;
   export let y = 0;
@@ -24,16 +25,6 @@
   $: moveToGroupTargets = type === "tag" ? groups : [];
   $: unlockedVaults = vaults.filter((v) => $vaultData[v.path]?.unlocked);
   $: submenuLeft = computeSubmenuLeft(x, mainWidth);
-
-  function computeSubmenuLeft(baseLeft, width) {
-    const w = width || MENU_WIDTH;
-    let nextLeft = baseLeft + w;
-    if (nextLeft + w > window.innerWidth - 8) {
-      nextLeft = baseLeft - w;
-    }
-    if (nextLeft < 8) nextLeft = 8;
-    return nextLeft;
-  }
 
   function openMenu(menu) {
     activeMenu = menu;

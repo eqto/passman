@@ -9,16 +9,8 @@ export async function addEntry(entry) {
   const vault = get(currentVault);
   if (!vault) return [];
   const { entry: added } = await invoke("add_entry", { path: vault.path, entry });
-  vaultData.update((vd) => {
-    const current = vd[vault.path] || {};
-    const entries = current.entries || [];
-    return {
-      ...vd,
-      [vault.path]: {
-        ...current,
-        entries: [...entries, added],
-      },
-    };
+  updateVaultData(vault.path, {
+    entries: [...(get(entries) || []), added],
   });
 }
 
@@ -26,18 +18,10 @@ export async function updateEntry(entry) {
   const vault = get(currentVault);
   if (!vault) return [];
   const { entry: updated } = await invoke("update_entry", { path: vault.path, entry });
-  vaultData.update((vd) => {
-    const current = vd[vault.path] || {};
-    const entries = (current.entries || []).map((e) =>
+  updateVaultData(vault.path, {
+    entries: (get(entries) || []).map((e) =>
       e.id === updated.id ? updated : e
-    );
-    return {
-      ...vd,
-      [vault.path]: {
-        ...current,
-        entries,
-      },
-    };
+    ),
   });
 }
 
@@ -96,21 +80,10 @@ export async function moveEntryToVault(entry, targetPath, targetGroup) {
   const sourceGroup = groupTags[0] || "";
   const { entries: sourceEntries, trash } = await invoke("delete_entry", { path: vault.path, id: entry.id, group: sourceGroup });
   const { entry: added } = await invoke("add_entry", { path: targetPath, entry: newEntry });
-  vaultData.update((vd) => {
-    const sourceVault = vd[vault.path] || {};
-    const targetVault = vd[targetPath] || {};
-    return {
-      ...vd,
-      [vault.path]: {
-        ...sourceVault,
-        entries: sourceEntries,
-        trash,
-      },
-      [targetPath]: {
-        ...targetVault,
-        entries: [...(targetVault.entries || []), added],
-      },
-    };
+  updateVaultData(vault.path, { entries: sourceEntries, trash });
+  const targetEntries = (get(vaultData)[targetPath] || {}).entries || [];
+  updateVaultData(targetPath, {
+    entries: [...targetEntries, added],
   });
 }
 
@@ -155,15 +128,8 @@ export async function copyEntryToGroup(entry, group) {
     updated_at: now,
   };
   const { entry: added } = await invoke("add_entry", { path: vault.path, entry: copy });
-  vaultData.update((vd) => {
-    const current = vd[vault.path] || {};
-    return {
-      ...vd,
-      [vault.path]: {
-        ...current,
-        entries: [...(current.entries || []), added],
-      },
-    };
+  updateVaultData(vault.path, {
+    entries: [...(get(entries) || []), added],
   });
 }
 
@@ -184,15 +150,9 @@ export async function copyEntryToVault(entry, targetPath, targetGroup) {
     copy.tags = [...copy.tags, targetGroup];
   }
   const { entry: added } = await invoke("add_entry", { path: targetPath, entry: copy });
-  vaultData.update((vd) => {
-    const current = vd[targetPath] || {};
-    return {
-      ...vd,
-      [targetPath]: {
-        ...current,
-        entries: [...(current.entries || []), added],
-      },
-    };
+  const targetEntries = (get(vaultData)[targetPath] || {}).entries || [];
+  updateVaultData(targetPath, {
+    entries: [...targetEntries, added],
   });
 }
 
