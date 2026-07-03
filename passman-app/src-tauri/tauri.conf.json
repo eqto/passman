@@ -42,7 +42,11 @@
       "icons/icon.ico"
     ],
     "targets": [
-      "deb"
+      "deb",
+      "rpm",
+      "appimage",
+      "dmg",
+      "nsis"
     ],
     "windows": {
       "certificateThumbprint": null,
