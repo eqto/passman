@@ -392,8 +392,20 @@
 
   .dropdown-button {
     position: relative;
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0.75rem 0.25rem;
+    background-color: var(--hover-bg);
+    color: var(--text-color);
+    border-radius: 0.5rem;
+    gap: 0.375rem;
+    height: 2.25rem;
+    line-height: 1.5rem;
   }
 
+  .dropdown-button:hover {
+    outline: 1px solid var(--accent-color);
+  }
 
   .dropdown-main-btn {
     background: transparent;

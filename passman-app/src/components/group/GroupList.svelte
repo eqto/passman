@@ -1,6 +1,6 @@
 <script>
-  import { groups, tags, vaults, currentVault, vaultData, setVaultViewState } from "../stores/vaults";
-  import { showToast } from "../stores/toast.js";
+  import { groups, tags, vaults, currentVault, vaultData, setVaultViewState } from "../../stores/vaults";
+  import { showToast } from "../../stores/toast.js";
   import {
     addGroup,
     addTag,
@@ -9,13 +9,10 @@
     mergeGroups,
     moveGroupToVault,
     copyGroupToVault,
-  } from "../stores/groups";
-  import { moveEntriesWithTagToGroup } from "../stores/entries";
-  import AddGroupDialog from "./AddGroupDialog.svelte";
-  import DeleteGroupDialog from "./DeleteGroupDialog.svelte";
-  import GroupTagContextMenu from "./GroupTagContextMenu.svelte";
-  import GroupVaultMoveDialog from "./GroupVaultMoveDialog.svelte";
-  import { createDragList } from "../lib/dragList.js";
+  } from "../../stores/groups";
+  import { moveEntriesWithTagToGroup } from "../../stores/entries";
+  import { AddGroupDialog, DeleteGroupDialog, GroupTagContextMenu, GroupVaultMoveDialog, GroupTitle } from "./index";
+  import { createDragList } from "../../lib/dragList.js";
 
   export let selectedGroup = "";
   export let selectedTrashGroup = "";
@@ -228,12 +225,7 @@
       {/each}
     {/if}
   {:else}
-    <div class="group-header section-header">
-      <span>Groups</span>
-      <button class="btn-icon" title="New group" on:click={() => showAdd = true}>
-        +
-      </button>
-    </div>
+    <GroupTitle title="Groups" showButton={true} onButtonClick={() => showAdd = true} />
 
     {#if $groups.length === 0}
       <p class="empty-state">No groups.</p>
@@ -273,12 +265,7 @@
       {/each}
     {/if}
 
-    <div class="tags-header section-header">
-      <span>Tags</span>
-      <button class="add-group-btn" title="New tag" on:click={() => showAddTag = true}>
-        +
-      </button>
-    </div>
+    <GroupTitle title="Tags" showButton={true} onButtonClick={() => showAddTag = true} />
 
     {#if $tags.length === 0}
       <p class="empty-state">No tags.</p>
@@ -293,9 +280,7 @@
       </div>
     {/if}
 
-    <div class="trash-header section-header">
-      <span>Trash</span>
-    </div>
+    <GroupTitle title="Trash" isTrash={true} />
     <div class="group-row trash-row" class:selected={trashMode}>
       <button class="group-item" on:click={onTrashClick}>
         <span class="group-icon">🗑️</span>
@@ -355,33 +340,9 @@
     flex-direction: column;
     background-color: var(--sidebar-bg);
     border-right: 1px solid var(--border-color);
-    padding: 1rem 0;
+    padding: 0;
     overflow-y: auto;
-  }
-
-  .group-header,
-  .tags-header,
-  .trash-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 1rem;
-    margin-bottom: 0.5rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    color: var(--muted-color);
-    letter-spacing: 0.05em;
-  }
-
-  .tags-header,
-  .trash-header {
-    margin-top: 1rem;
-  }
-
-  .trash-header {
-    justify-content: flex-start;
-    gap: 0.5rem;
+    text-align: left;
   }
 
   .group-row {
@@ -424,14 +385,18 @@
     flex: 1;
     display: flex;
     align-items: center;
+    justify-content: flex-start !important;
     gap: 0.5rem;
-    padding: 0.5rem 1rem;
+    padding: 0.5rem 0.5rem 0.5rem 0.25rem;
     background: transparent;
     border: none;
+    border-radius: 0;
     color: var(--text-color);
     cursor: pointer;
     text-align: left;
     font-size: 0.875rem;
+    font-weight: 400;
+    line-height: 1.5;
   }
 
   .btn-icon-danger {
@@ -457,7 +422,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
-    padding: 0 1rem;
+    padding: 0 0.5rem;
   }
 
   .tag-chip {

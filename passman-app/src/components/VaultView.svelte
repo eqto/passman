@@ -3,7 +3,7 @@
   import { currentVault, vaultData, groups, entries, trash, setVaultViewState } from "../stores/vaults";
   import { deleteEntry, restoreEntry, deleteTrashEntry, moveEntryToGroup, moveEntryToVault, copyEntryToGroup, copyEntryToVault } from "../stores/entries";
   import { writeText } from "@tauri-apps/plugin-clipboard-manager";
-  import GroupList from "./GroupList.svelte";
+  import { GroupList } from "./group";
   import EntryList from "./EntryList.svelte";
   import EntryDetails from "./EntryDetails.svelte";
   import EntryEditor from "./EntryEditor.svelte";

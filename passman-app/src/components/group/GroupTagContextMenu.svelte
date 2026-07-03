@@ -1,6 +1,6 @@
 <script>
   import { createEventDispatcher } from "svelte";
-  import { vaultData } from "../stores/vaults";
+  import { vaultData } from "../../stores/vaults";
 
   export let x = 0;
   export let y = 0;

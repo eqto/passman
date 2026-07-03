@@ -1,5 +1,5 @@
 <script>
-  import { Dialog, DialogHeader, DialogBody, DialogFooter, DialogActions } from "./dialog";
+  import { Dialog, DialogHeader, DialogBody, DialogFooter, DialogActions } from "../dialog";
 
   export let group = "";
   export let onDelete;
