@@ -6,12 +6,10 @@
   import AutoLock from "./components/AutoLock.svelte";
   import Toast from "./components/Toast.svelte";
   import { loadVaults, currentVault, isUnlocked, lockVault, unlockVault, initSaveListener, saveStatus } from "./stores/vaults";
-  import { applyTheme } from "./stores/theme";
 
   let saveUnlisten = null;
 
   onMount(async () => {
-    applyTheme("system");
     await loadVaults();
     try {
       saveUnlisten = await initSaveListener();

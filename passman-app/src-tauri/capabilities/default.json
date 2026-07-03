@@ -15,6 +15,10 @@
     "dialog:allow-confirm",
     "clipboard-manager:allow-write-text",
     "shell:allow-open",
-    "mcp-bridge:default"
+    "mcp-bridge:default",
+    "store:allow-get",
+    "store:allow-set",
+    "store:allow-delete",
+    "store:allow-has"
   ]
 }
