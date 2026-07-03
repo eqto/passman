@@ -3,6 +3,7 @@
   import { writeText } from "@tauri-apps/plugin-clipboard-manager";
   import { showToast } from "../stores/toast.js";
   import { updateEntry } from "../stores/entries";
+  import Chip from "./form/Chip.svelte";
 
   export let entry;
   export let onEdit;
@@ -142,15 +143,19 @@
           <span class="label">Tags</span>
           <div class="tags">
             {#each visibleTags as tag}
-              <span
-                class="tag-chip"
+              <Chip
+                size="medium"
+                as="span"
                 title={trashMode ? "" : "Right-click to delete"}
                 role="button"
                 tabindex="0"
-                on:contextmenu|preventDefault={() => handleTagContextMenu(tag)}
+                on:contextmenu={(event) => {
+                  event.preventDefault();
+                  handleTagContextMenu(tag);
+                }}
               >
                 {tag}
-              </span>
+              </Chip>
             {/each}
             {#if !trashMode && !showTagInput}
               <button
@@ -364,10 +369,6 @@
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
-  }
-
-  .tag-chip {
-    padding: 0.3rem 0.75rem 0.2rem;
   }
 
   .add-tag-chip {

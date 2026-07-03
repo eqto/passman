@@ -4,6 +4,7 @@
   import { DEFAULT_PASSWORD_LENGTH } from "../lib/constants.js";
   import { freeTags } from "../lib/tags.js";
   import CustomFieldEditor from "./CustomFieldEditor.svelte";
+  import Chip from "./form/Chip.svelte";
 
   export let entry;
   export let selectedGroup = "";
@@ -98,15 +99,19 @@
     <div class="tags-section">
       <div class="tags-list">
         {#each displayTags as tag}
-          <span
-            class="tag-chip"
+          <Chip
+            size="medium"
+            as="span"
             title="Right-click to delete"
             role="button"
             tabindex="0"
-            on:contextmenu|preventDefault={() => handleTagContextMenu(tag)}
+            on:contextmenu={(event) => {
+              event.preventDefault();
+              handleTagContextMenu(tag);
+            }}
           >
             {tag}
-          </span>
+          </Chip>
         {/each}
         {#if !showTagInput}
           <button
@@ -224,12 +229,6 @@
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
-  }
-
-  .tag-chip {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.3rem 0.75rem 0.2rem;
   }
 
   .add-tag-chip {

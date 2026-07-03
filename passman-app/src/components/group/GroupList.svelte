@@ -15,6 +15,7 @@
   import { moveEntriesWithTagToGroup } from "../../stores/entries";
   import { AddGroupDialog, DeleteGroupDialog, GroupTagContextMenu, GroupVaultMoveDialog, GroupTitle } from "./index";
   import { createDragList } from "../../lib/dragList.js";
+  import Chip from "../form/Chip.svelte";
 
   export let selectedGroup = "";
   export let selectedTags = [];
@@ -262,16 +263,15 @@
     {:else}
       <div class="tags">
         {#each $tags as tag}
-          <button
-            class="tag-chip"
-            class:active={selectedTags.includes(tag)}
-            type="button"
+          <Chip
+            size="medium"
+            active={selectedTags.includes(tag)}
             on:click={() => onSelectTag(tag)}
             on:contextmenu={(e) => openContextMenu(e, "tag", tag)}
             on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelectTag(tag); } }}
           >
             {tag}
-          </button>
+          </Chip>
         {/each}
       </div>
     {/if}
@@ -435,21 +435,10 @@
     padding: 0 0.5rem;
   }
 
-  .tag-chip {
-    padding: 0.3rem 0.75rem 0.2rem;
-    cursor: pointer;
-  }
-
-  .tag-chip:hover {
+  :global(.chip:hover) {
     background-color: var(--accent-color);
     color: #ffffff;
     border-color: var(--accent-color);
-  }
-
-  .tag-chip.active {
-    background-color: var(--selected-bg);
-    color: var(--selected-text);
-    border-color: var(--selected-bg);
   }
 
   .empty {

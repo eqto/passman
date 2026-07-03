@@ -6,6 +6,7 @@
   import { showToast } from "../stores/toast.js";
   import { closeAllContextMenus } from "../stores/contextMenu.js";
   import EntryContextMenu from "./EntryContextMenu.svelte";
+  import Chip from "./form/Chip.svelte";
   import { onMount } from "svelte";
 
   const SEARCH_DEBOUNCE_MS = 150;
@@ -180,13 +181,16 @@
               {#if freeTags(entry.tags, $groups).length > 0}
                 <div class="entry-tags">
                   {#each freeTags(entry.tags, $groups) as tag}
-                    <button
-                      class="entry-tag"
-                      class:active={selectedTags.includes(tag)}
-                      on:click|stopPropagation={() => toggleTag(tag)}
+                    <Chip
+                      size="small"
+                      active={selectedTags.includes(tag)}
+                      on:click={(event) => {
+                        event.stopPropagation();
+                        toggleTag(tag);
+                      }}
                     >
                       {tag}
-                    </button>
+                    </Chip>
                   {/each}
                 </div>
               {/if}
@@ -339,32 +343,13 @@
     max-width: 50%;
   }
 
-  .entry-tag {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.125rem 0.375rem;
-    background-color: var(--hover-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 9999px;
-    color: var(--muted-color);
-    font-size: 0.7rem;
-    line-height: 1;
-    cursor: pointer;
-  }
-
-  .entry-tag.active {
-    background-color: var(--selected-bg);
-    color: var(--selected-text);
-    border-color: var(--selected-bg);
-  }
-
-  .entry-row.selected .entry-tag {
+  :global(.entry-row.selected .chip) {
     color: var(--selected-text);
     border-color: rgba(255, 255, 255, 0.3);
     background-color: rgba(255, 255, 255, 0.15);
   }
 
-  .entry-row.selected .entry-tag.active {
+  :global(.entry-row.selected .chip.active) {
     background-color: var(--selected-text);
     color: var(--selected-bg);
     border-color: var(--selected-text);

@@ -415,16 +415,6 @@ button,
   background-color: var(--hover-bg);
 }
 
-/* Tag/Chip Styles */
-.tag-chip {
-  padding: 0.3rem 0.75rem 0.2rem;
-  background-color: var(--hover-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 9999px;
-  color: var(--text-color);
-  font-size: 0.875rem;
-}
-
 /* Empty State */
 .empty-state {
   color: var(--muted-color);
