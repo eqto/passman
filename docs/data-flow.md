@@ -36,6 +36,8 @@ Textual diagrams showing how data moves through the Passman application.
 │  │ saveStatus  │  ◄── updated via Tauri event listener     │
 │  │ (writable)  │      "save-status" → "saving"/"saved"     │
 │  └─────────────┘                                           │
+│                                                            │
+│  Derived stores also include `trash`.
 │                                                             │
 │  stores/entries.js          stores/groups.js                │
 │  ┌────────────────┐        ┌──────────────────┐             │
@@ -171,25 +173,28 @@ VaultFile (decrypted, in-memory)
 │   ├── nonce: base64 (12 bytes)
 │   └── tag: base64 (16 bytes)
 ├── payload: VaultPayload
-│   ├── format_version: 2
-│   ├── vault_metadata: VaultMetadata
-│   │   ├── name: String
-│   │   ├── created_at: DateTime
-│   │   └── updated_at: DateTime
-│   ├── groups: Vec<String>
+│   ├── name: String
+│   ├── created_at: DateTime
+│   ├── updated_at: DateTime
+│   ├── groups: Vec<Group>
+│   │   └── Group { id: String, name: String, parent_id: Option<String> }
 │   ├── tags: Vec<String>
-│   └── entries: Vec<VaultEntry>
-│       └── VaultEntry {
-│             id: String (UUID),
-│             title: String,
-│             username: String,
-│             password: String,
-│             url: String,
-│             notes: String,
-│             tags: Vec<String>,
-│             created_at: DateTime,
-│             updated_at: DateTime
-│           }
+│   ├── entries: Vec<VaultEntry>
+│   │   └── VaultEntry {
+│   │         id: String (UUID),
+│   │         title: String,
+│   │         username: String,
+│   │         password: String,
+│   │         url: String,
+│   │         notes: String,
+│   │         tags: Vec<String>,
+│   │         group_id: Option<String>,
+│   │         created_at: DateTime,
+│   │         updated_at: DateTime
+│   │       }
+│   └── trash: Trash
+│       ├── groups: Vec<Group>
+│       └── entries: Vec<VaultEntry>
 └── needs_save: bool
 
 On-disk format (PMV file):
@@ -255,7 +260,7 @@ Unlock flow:
   User enters password
     → open_vault(path, password) invoke
     → Rust: open_vault_file() → derive_vault_key() → store OpenVault
-    → Frontend: vaultData[path] = { unlocked, groups, tags, entries }
+    → Frontend: vaultData[path] = { unlocked, groups, tags, entries, trash }
     → Derived stores propagate to components
 
 Cross-vault move:

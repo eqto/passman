@@ -74,7 +74,7 @@ pub async fn register_and_open_vault(
     let (vault, vault_key) =
         vault::open_vault_file_with_key(&path, &password).map_err(|e| e.to_string())?;
     let needs_save = vault.needs_save;
-    let name = vault.payload.vault_metadata.name.clone();
+    let name = vault.payload.name.clone();
     config::add_vault(&id, &name, &path).map_err(|e| e.to_string())?;
     let dto = vault_to_dto(&vault);
 
@@ -147,7 +147,7 @@ pub fn rename_vault(
     {
         let mut guard = state.inner.lock().unwrap();
         if let Some(open_vault) = guard.open_vaults.get_mut(&path) {
-            open_vault.vault.payload.vault_metadata.name = name;
+            open_vault.vault.payload.name = name;
             open_vault.vault.payload.touch();
         }
     }

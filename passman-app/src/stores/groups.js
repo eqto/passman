@@ -19,12 +19,12 @@ export async function addTag(tag) {
   return list;
 }
 
-export async function deleteGroup(group) {
+export async function deleteGroup(groupId) {
   const vault = get(currentVault);
   if (!vault) return [];
   const { groups, entries, trash } = await invoke("delete_group", {
     path: vault.path,
-    group,
+    groupId: groupId,
   });
   updateVaultData(vault.path, { groups, entries, trash });
   return groups;
@@ -41,14 +41,14 @@ export async function reorderGroups(orderedGroups) {
   return list;
 }
 
-export async function mergeGroups(source, target) {
+export async function mergeGroups(sourceId, targetId) {
   const vault = get(currentVault);
-  if (!vault || !source || !target || source === target) return;
+  if (!vault || !sourceId || !targetId || sourceId === targetId) return;
   try {
     const [groups, entries] = await invoke("merge_groups", {
       path: vault.path,
-      source,
-      target,
+      sourceId,
+      targetId,
     });
     updateVaultData(vault.path, { groups, entries });
     return groups;
@@ -58,15 +58,15 @@ export async function mergeGroups(source, target) {
   }
 }
 
-export async function moveGroupToVault(sourceGroup, targetPath, targetGroup) {
+export async function moveGroupToVault(sourceId, targetPath, targetGroupId) {
   const vault = get(currentVault);
-  if (!vault || !sourceGroup || !targetPath || !targetGroup || vault.path === targetPath) return;
+  if (!vault || !sourceId || !targetPath || !targetGroupId || vault.path === targetPath) return;
   try {
     const result = await invoke("move_group_to_vault", {
       sourcePath: vault.path,
       targetPath,
-      group: sourceGroup,
-      targetGroup,
+      groupId: sourceId,
+      targetGroupId,
     });
     updateVaultData(vault.path, {
       groups: result.source_groups,
@@ -83,15 +83,15 @@ export async function moveGroupToVault(sourceGroup, targetPath, targetGroup) {
   }
 }
 
-export async function copyGroupToVault(sourceGroup, targetPath, targetGroup) {
+export async function copyGroupToVault(sourceId, targetPath, targetGroupId) {
   const vault = get(currentVault);
-  if (!vault || !sourceGroup || !targetPath || !targetGroup || vault.path === targetPath) return;
+  if (!vault || !sourceId || !targetPath || !targetGroupId || vault.path === targetPath) return;
   try {
     const [groups, entries] = await invoke("copy_group_to_vault", {
       sourcePath: vault.path,
       targetPath,
-      group: sourceGroup,
-      targetGroup,
+      groupId: sourceId,
+      targetGroupId,
     });
     updateVaultData(targetPath, { groups, entries });
     return { groups, entries };

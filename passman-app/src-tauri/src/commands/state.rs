@@ -1,5 +1,5 @@
 use passman_core::vault;
-use passman_core::{TrashGroup, VaultEntry, VaultPayload};
+use passman_core::{Group, VaultEntry, VaultPayload};
 use std::collections::{HashMap, HashSet};
 use std::sync::{mpsc, Arc, Mutex};
 use tauri::{AppHandle, Emitter};
@@ -23,8 +23,8 @@ pub fn validate_reorder<T: std::hash::Hash + Eq + Clone>(
     Ok(())
 }
 
-/// Move entries into the trash group with the given name, creating the group if it doesn't exist.
-pub fn move_entries_to_trash(payload: &mut VaultPayload, group: String, entries: Vec<VaultEntry>) {
+/// Move entries into the trash, clearing their group association.
+pub fn move_entries_to_trash(payload: &mut VaultPayload, entries: Vec<VaultEntry>) {
     if entries.is_empty() {
         return;
     }
@@ -32,15 +32,33 @@ pub fn move_entries_to_trash(payload: &mut VaultPayload, group: String, entries:
     let entries: Vec<VaultEntry> = entries
         .into_iter()
         .map(|mut e| {
-            e.tags = vec![group.clone()];
+            e.group_id = None;
             e.updated_at = now;
             e
         })
         .collect();
-    match payload.trash.iter_mut().find(|tg| tg.group == group) {
-        Some(tg) => tg.entries.extend(entries),
-        None => payload.trash.push(TrashGroup { group, entries }),
-    }
+    payload.trash.entries.extend(entries);
+}
+
+/// Move a group and its entries into the trash. The group is added to trash.groups
+/// and its entries keep their group_id pointing to it.
+pub fn move_group_to_trash(
+    payload: &mut VaultPayload,
+    group: Group,
+    entries: Vec<VaultEntry>,
+) {
+    let now = chrono::Utc::now();
+    let group_id = group.id.clone();
+    payload.trash.groups.push(group);
+    let entries: Vec<VaultEntry> = entries
+        .into_iter()
+        .map(|mut e| {
+            e.group_id = Some(group_id.clone());
+            e.updated_at = now;
+            e
+        })
+        .collect();
+    payload.trash.entries.extend(entries);
 }
 
 /// Data required to save a vault without holding the global state lock.

@@ -1,7 +1,7 @@
 <script>
   import { Dialog, DialogHeader, DialogBody, DialogFooter, DialogActions } from "../dialog";
 
-  export let group = "";
+  export let group = null;
   export let onDelete;
   export let onCancel;
 </script>
@@ -9,7 +9,7 @@
 <Dialog>
   <DialogHeader on:close={onCancel}>Delete Group</DialogHeader>
   <DialogBody>
-    <p>Delete group "{group}"? Entries in this group will keep their other tags.</p>
+    <p>Delete group "{group?.name ?? group}"? Entries in this group will be moved to trash.</p>
   </DialogBody>
   <DialogFooter>
     <DialogActions>

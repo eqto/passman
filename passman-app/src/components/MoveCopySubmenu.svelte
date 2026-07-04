@@ -37,11 +37,11 @@
   afterUpdate(() => adjustPosition());
 
   function selectGroup(group) {
-    dispatch("selectGroup", group);
+    dispatch("selectGroup", group.id);
   }
 
   function selectVaultGroup(vault, group) {
-    dispatch("selectVaultGroup", { vault, group });
+    dispatch("selectVaultGroup", { vault, groupId: group.id });
   }
 
   function handleVaultHover(vault, event) {
@@ -65,7 +65,7 @@
     {#if groups.length > 0}
       {#each groups as group}
         <div class="menu-item" on:click={() => selectGroup(group)}>
-          {group}
+          {group.name}
         </div>
       {/each}
     {/if}
@@ -99,7 +99,7 @@
               {#if targetVaultGroups(activeVault).length > 0}
                 {#each targetVaultGroups(activeVault) as group}
                   <div class="menu-item" on:click={() => selectVaultGroup(activeVault, group)}>
-                    {group}
+                    {group.name}
                   </div>
                 {/each}
               {:else}

@@ -1,6 +1,6 @@
 <script>
   import { writeText } from "@tauri-apps/plugin-clipboard-manager";
-  import { currentVault, vaultData, setVaultViewState, groups } from "../stores/vaults";
+  import { currentVault, vaultData, setVaultViewState } from "../stores/vaults";
   import { freeTags } from "../lib/tags.js";
   import { debounce } from "../lib/debounce.js";
   import { showToast } from "../stores/toast.js";
@@ -179,9 +179,9 @@
           <div class="entry-info">
             <div class="entry-title-row">
               <div class="entry-title">{entry.title}</div>
-              {#if freeTags(entry.tags, $groups).length > 0}
+              {#if freeTags(entry.tags).length > 0}
                 <div class="entry-tags">
-                  {#each freeTags(entry.tags, $groups) as tag}
+                  {#each freeTags(entry.tags) as tag}
                     <Chip
                       size="small"
                       active={selectedTags.includes(tag)}

@@ -11,6 +11,7 @@
   let vaultName = "";
   let error = "";
   let loading = false;
+  let passwordInput;
 
   const dispatch = createEventDispatcher();
 
@@ -22,6 +23,7 @@
     });
     if (selected) {
       bcupPath = selected;
+      passwordInput.focus();
     }
   }
 
@@ -94,6 +96,9 @@
 
   function handleKeydown(event) {
     if (event.key === "Escape") handleCancel();
+    if (event.key === "Enter" && step === 1 && bcupPath && password) {
+      handleDecrypt();
+    }
   }
 </script>
 
@@ -129,15 +134,12 @@
             type="password"
             placeholder="Buttercup master password"
             disabled={loading}
+            bind:this={passwordInput}
           />
         </div>
       {:else}
         <div class="success-message">
-          ✓ Successfully decrypted buttercup vault
-        </div>
-        <div class="form-group">
-          <label for="vault-name">Vault name</label>
-          <input id="vault-name" class="modal-input" bind:value={vaultName} placeholder="Vault name" disabled />
+          Successfully opening {vaultName}. Select where to save the new file
         </div>
         <div class="form-group">
           <label for="output-path">Save as</label>
@@ -173,7 +175,7 @@
           on:click={handleImport}
           disabled={!outputPath || loading}
         >
-          {loading ? "Importing..." : "Import"}
+          {loading ? "Saving..." : "Save"}
         </button>
       {/if}
     </DialogActions>

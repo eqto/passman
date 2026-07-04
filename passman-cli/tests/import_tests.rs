@@ -17,16 +17,17 @@ fn test_import_creates_pmv() {
 
     let json = serde_json::json!({
         "name": "Imported",
-        "groups": ["General"],
+        "groups": [{"id": "g1", "name": "General"}],
         "entries": [
             {
                 "id": "e1",
-                "tags": ["General"],
+                "group_id": "g1",
                 "title": "Example",
                 "username": "user",
                 "password": "pass",
                 "url": "https://example.com",
                 "notes": "",
+                "tags": [],
                 "fields": [
                     {
                         "id": "f1",
@@ -53,10 +54,15 @@ fn test_import_creates_pmv() {
     assert!(fs::metadata(&output).unwrap().len() > 0);
 
     let opened = passman_core::open_vault_file(output.to_str().unwrap(), "testpass").unwrap();
-    assert_eq!(opened.payload.groups, vec!["General"]);
-    assert_eq!(opened.payload.trash.len(), 0);
+    assert_eq!(opened.payload.groups.len(), 1);
+    assert_eq!(opened.payload.groups[0].id, "g1");
+    assert_eq!(opened.payload.groups[0].name, "General");
+    assert_eq!(opened.payload.groups[0].parent_id, None);
+    assert_eq!(opened.payload.trash.entries.len(), 0);
+    assert_eq!(opened.payload.trash.groups.len(), 0);
     assert_eq!(opened.payload.entries.len(), 1);
-    assert_eq!(opened.payload.entries[0].tags, vec!["General"]);
+    assert_eq!(opened.payload.entries[0].group_id, Some("g1".to_string()));
+    assert!(opened.payload.entries[0].tags.is_empty());
     assert_eq!(opened.payload.entries[0].fields.len(), 1);
     assert_eq!(opened.payload.entries[0].fields[0].label, "PIN");
     assert_eq!(opened.payload.entries[0].fields[0].field_type, "password");
@@ -96,7 +102,15 @@ fn test_convert_creates_pmv_from_bcup() {
     assert!(fs::metadata(&output).unwrap().len() > 0);
 
     let opened = passman_core::open_vault_file(output.to_str().unwrap(), "testpass").unwrap();
-    assert_eq!(opened.payload.vault_metadata.name, "test");
+    assert_eq!(opened.payload.name, "test");
+    // The sample fixture uses the Buttercup bc_group_role="trash" attribute.
+    // Its trash root has no children, so PMV trash should be empty.
+    assert_eq!(opened.payload.trash.groups.len(), 0);
+    assert_eq!(opened.payload.trash.entries.len(), 0);
+    assert!(
+        !opened.payload.groups.iter().any(|g| g.name == "Trash"),
+        "Buttercup trash root should not appear in regular groups"
+    );
 }
 
 #[test]
@@ -120,7 +134,46 @@ fn test_import_buttercup_uses_name_flag() {
     assert!(output.exists());
 
     let opened = passman_core::open_vault_file(output.to_str().unwrap(), "testpass").unwrap();
-    assert_eq!(opened.payload.vault_metadata.name, "Custom Vault");
+    assert_eq!(opened.payload.name, "Custom Vault");
+}
+
+#[test]
+fn test_convert_trash_bcup_promotes_child_groups_to_trash() {
+    let dir = tempdir().unwrap();
+    let input = dir.path().join("trash.bcup").to_string_lossy().to_string();
+    let output = dir.path().join("vault.pmv");
+
+    let fixture = Path::new("../fixtures/buttercup/trash.bcup");
+    fs::copy(fixture, &input).expect("failed to copy trash bcup fixture");
+
+    let mut cmd = Command::cargo_bin("passman-cli").unwrap();
+    cmd.arg("convert")
+        .arg(&input)
+        .arg(&output)
+        .env("BCUP_PASSWORD", "test")
+        .env("PASSMAN_PASSWORD", "test");
+    cmd.assert().success();
+
+    let opened = passman_core::open_vault_file(output.to_str().unwrap(), "test").unwrap();
+    // The Buttercup trash root itself should not appear in PMV trash.
+    assert!(
+        !opened.payload.trash.groups.iter().any(|g| g.name == "Trash"),
+        "Buttercup trash root should not appear as a group inside PMV trash"
+    );
+    // The child group inside the Buttercup trash root should be promoted to a root trash group.
+    assert_eq!(opened.payload.trash.groups.len(), 1);
+    assert_eq!(opened.payload.trash.groups[0].name, "groupt");
+    assert_eq!(opened.payload.trash.groups[0].parent_id, None);
+    // The entry inside the child group should be in trash.entries with its group_id preserved.
+    assert_eq!(opened.payload.trash.entries.len(), 1);
+    assert_eq!(
+        opened.payload.trash.entries[0].group_id,
+        Some(opened.payload.trash.groups[0].id.clone())
+    );
+    // Neither the trash root nor the child group should appear in regular groups.
+    assert!(
+        !opened.payload.groups.iter().any(|g| g.name == "Trash" || g.name == "groupt")
+    );
 }
 
 #[test]
@@ -160,6 +213,6 @@ fn test_extract_creates_header_and_payload_json() {
 
     let payload: serde_json::Value =
         serde_json::from_str(&fs::read_to_string(&payload_path).unwrap()).unwrap();
-    assert_eq!(payload["vault_metadata"]["name"], "Diva Vault");
+    assert_eq!(payload["name"], "Diva Vault");
     assert_eq!(payload["entries"], serde_json::json!([]));
 }

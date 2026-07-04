@@ -1,8 +1,6 @@
 <script>
   import { addEntry, updateEntry, generatePassword } from "../stores/entries";
-  import { groups } from "../stores/vaults";
   import { DEFAULT_PASSWORD_LENGTH } from "../lib/constants.js";
-  import { freeTags } from "../lib/tags.js";
   import CustomFieldEditor from "./CustomFieldEditor.svelte";
   import Chip from "./form/Chip.svelte";
   import TagContextMenu from "./TagContextMenu.svelte";
@@ -14,7 +12,7 @@
   export let onDelete = null;
 
   let form = { ...entry, tags: entry.tags || [], fields: entry.fields || [] };
-  $: displayTags = freeTags(form.tags, $groups);
+  $: displayTags = form.tags || [];
   let error = "";
   let tagInput = "";
   let showTagInput = false;
@@ -74,11 +72,8 @@
   async function handleSave() {
     error = "";
     try {
-      if (selectedGroup && !form.tags.includes(selectedGroup)) {
-        form = { ...form, tags: [...form.tags, selectedGroup] };
-      }
       const now = new Date().toISOString();
-      const updated = { ...form, updated_at: now };
+      const updated = { ...form, group_id: selectedGroup || form.group_id || null, updated_at: now };
       if (entry.title) {
         await updateEntry(updated);
       } else {

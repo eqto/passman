@@ -1,38 +1,28 @@
 /**
  * Split an entry's tags into group tags and free-form tags.
  *
- * In Passman, an entry's `tags` array stores both group membership (tags that
- * match the vault's group list) and free-form labels. This helper returns the
- * two sets separately so callers don't re-implement the filter logic.
+ * With the hierarchical group format, entries use `group_id` for group
+ * membership and `tags` for free-form labels only. This helper now returns
+ * all tags as free-form tags and an empty groupTags list.
  *
  * @param {string[]} entryTags
- * @param {string[]} groups
  * @returns {{ groupTags: string[]; freeTags: string[] }}
  */
-export function splitTags(entryTags, groups) {
-  const groupSet = new Set(groups || []);
-  const groupTags = [];
-  const freeTags = [];
-  for (const tag of entryTags || []) {
-    if (groupSet.has(tag)) {
-      groupTags.push(tag);
-    } else {
-      freeTags.push(tag);
-    }
-  }
-  return { groupTags, freeTags };
+export function splitTags(entryTags) {
+  return { groupTags: [], freeTags: entryTags || [] };
 }
 
 /**
- * Return only the free-form tags from an entry, excluding group membership tags.
+ * Return only the free-form tags from an entry.
  */
-export function freeTags(entryTags, groups) {
-  return splitTags(entryTags, groups).freeTags;
+export function freeTags(entryTags) {
+  return entryTags || [];
 }
 
 /**
- * Return only the group membership tags from an entry.
+ * Return only the group membership tags from an entry. Always empty in the
+ * new format because group membership is stored on `group_id`.
  */
-export function groupTags(entryTags, groups) {
-  return splitTags(entryTags, groups).groupTags;
+export function groupTags() {
+  return [];
 }

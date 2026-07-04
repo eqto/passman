@@ -2,7 +2,6 @@ import { get, writable, derived } from "svelte/store";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { SAVE_LISTENER_TIMEOUT_MS, SAVE_STATUS_IDLE_TIMEOUT_MS } from "../lib/constants.js";
-import { splitTags } from "../lib/tags.js";
 
 export const vaults = writable([]);
 export const currentVault = writable(null);
@@ -34,22 +33,21 @@ export const entries = derived(
 export const trash = derived(
   [currentVault, vaultData],
   ([$currentVault, $vaultData]) => {
-    return $currentVault ? $vaultData[$currentVault.path]?.trash || [] : [];
+    return $currentVault
+      ? $vaultData[$currentVault.path]?.trash || { groups: [], entries: [] }
+      : { groups: [], entries: [] };
   }
 );
 
 export const tags = derived(
-  [currentVault, vaultData, groups],
-  ([$currentVault, $vaultData, $groups]) => {
+  [currentVault, vaultData],
+  ([$currentVault, $vaultData]) => {
     if (!$currentVault) return [];
     const allEntries = $vaultData[$currentVault.path]?.entries || [];
     const storedTags = $vaultData[$currentVault.path]?.tags || [];
-    const set = new Set();
-    for (const tag of splitTags(storedTags, $groups).freeTags) {
-      set.add(tag);
-    }
+    const set = new Set(storedTags);
     for (const entry of allEntries) {
-      for (const tag of splitTags(entry.tags, $groups).freeTags) {
+      for (const tag of entry.tags || []) {
         set.add(tag);
       }
     }
@@ -100,7 +98,7 @@ function setVaultData(path, vault) {
     groups: vault.groups || [],
     tags: vault.tags || [],
     entries: vault.entries || [],
-    trash: vault.trash || [],
+    trash: vault.trash || { groups: [], entries: [] },
   });
 }
 

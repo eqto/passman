@@ -26,8 +26,15 @@
  */
 
 /**
- * @typedef {Object} TrashGroup
- * @property {string} group
+ * @typedef {Object} Group
+ * @property {string} id
+ * @property {string} name
+ * @property {string} [parent_id]
+ */
+
+/**
+ * @typedef {Object} Trash
+ * @property {Group[]} groups
  * @property {VaultEntry[]} entries
  */
 
@@ -35,10 +42,10 @@
  * @typedef {Object} VaultFileDTO
  * @property {string} path
  * @property {string} name
- * @property {string[]} groups
+ * @property {Group[]} groups
  * @property {string[]} tags
  * @property {VaultEntry[]} entries
- * @property {TrashGroup[]} trash
+ * @property {Trash} trash
  */
 
 /**
@@ -61,22 +68,23 @@
 /**
  * @typedef {Object} EntryDeletionResult
  * @property {VaultEntry[]} entries
- * @property {TrashGroup[]} trash
+ * @property {Trash} trash
  */
 
 /**
  * @typedef {Object} TrashMutationResult
- * @property {string} group
- * @property {string[]} groups
+ * @property {string} group_id
+ * @property {string} group_name
+ * @property {Group[]} groups
  * @property {VaultEntry[]} entries
- * @property {TrashGroup[]} trash
+ * @property {Trash} trash
  */
 
 /**
  * @typedef {Object} GroupDeletionResult
- * @property {string[]} groups
+ * @property {Group[]} groups
  * @property {VaultEntry[]} entries
- * @property {TrashGroup[]} trash
+ * @property {Trash} trash
  */
 
 /**

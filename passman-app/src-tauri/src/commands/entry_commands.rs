@@ -1,4 +1,4 @@
-use passman_core::{TrashGroup, VaultEntry};
+use passman_core::{Group, Trash, VaultEntry};
 use serde::Serialize;
 use tauri::State;
 
@@ -12,15 +12,16 @@ pub(crate) struct EntryMutationResult {
 #[derive(Serialize)]
 pub(crate) struct EntryDeletionResult {
     pub entries: Vec<VaultEntry>,
-    pub trash: Vec<TrashGroup>,
+    pub trash: Trash,
 }
 
 #[derive(Serialize)]
 pub(crate) struct TrashMutationResult {
-    pub group: String,
-    pub groups: Vec<String>,
+    pub group_id: Option<String>,
+    pub group_name: String,
+    pub groups: Vec<Group>,
     pub entries: Vec<VaultEntry>,
-    pub trash: Vec<TrashGroup>,
+    pub trash: Trash,
 }
 
 #[tauri::command]
@@ -79,24 +80,21 @@ pub fn update_entry(
 pub fn delete_entry(
     path: String,
     id: String,
-    group: String,
+    _group_id: Option<String>,
+    _group_name: String,
     state: State<'_, AppState>,
 ) -> Result<EntryDeletionResult, String> {
     state.with_open_vault_save(&path, |open_vault| {
-        let mut deleted_from_trash = false;
-        for trash_group in &mut open_vault.vault.payload.trash {
-            if let Some(pos) = trash_group.entries.iter().position(|e| e.id == id) {
-                trash_group.entries.remove(pos);
-                deleted_from_trash = true;
-                break;
-            }
-        }
-        if deleted_from_trash {
-            open_vault
-                .vault
-                .payload
-                .trash
-                .retain(|tg| !tg.entries.is_empty());
+        // First try to delete from trash
+        if let Some(pos) = open_vault
+            .vault
+            .payload
+            .trash
+            .entries
+            .iter()
+            .position(|e| e.id == id)
+        {
+            open_vault.vault.payload.trash.entries.remove(pos);
             open_vault.vault.payload.touch();
             return Ok(EntryDeletionResult {
                 entries: open_vault.vault.payload.entries.clone(),
@@ -114,7 +112,7 @@ pub fn delete_entry(
             }
         });
         if let Some(entry) = entry_to_trash {
-            move_entries_to_trash(&mut open_vault.vault.payload, group, vec![entry]);
+            move_entries_to_trash(&mut open_vault.vault.payload, vec![entry]);
         }
         open_vault.vault.payload.touch();
         Ok(EntryDeletionResult {
@@ -132,24 +130,62 @@ pub fn restore_trash_entry(
 ) -> Result<TrashMutationResult, String> {
     state.with_open_vault_save(&path, |open_vault| {
         let now = chrono::Utc::now();
-        let mut restored: Option<(String, VaultEntry)> = None;
-        for trash_group in &mut open_vault.vault.payload.trash {
-            if let Some(pos) = trash_group.entries.iter().position(|e| e.id == id) {
-                let mut entry = trash_group.entries.remove(pos);
-                entry.tags = vec![trash_group.group.clone()];
-                entry.updated_at = now;
-                restored = Some((trash_group.group.clone(), entry));
-                break;
-            }
+        let mut restored: Option<(Option<String>, String, VaultEntry)> = None;
+        if let Some(pos) = open_vault
+            .vault
+            .payload
+            .trash
+            .entries
+            .iter()
+            .position(|e| e.id == id)
+        {
+            let mut entry = open_vault.vault.payload.trash.entries.remove(pos);
+            let group_id = entry.group_id.clone();
+            let group_name = group_id
+                .as_ref()
+                .and_then(|gid| {
+                    open_vault
+                        .vault
+                        .payload
+                        .trash
+                        .groups
+                        .iter()
+                        .find(|g| &g.id == gid)
+                        .map(|g| g.name.clone())
+                })
+                .unwrap_or_default();
+            entry.updated_at = now;
+            restored = Some((group_id, group_name, entry));
         }
-        if let Some((group, entry)) = restored {
-            open_vault
-                .vault
-                .payload
-                .trash
-                .retain(|tg| !tg.entries.is_empty());
-            if !open_vault.vault.payload.groups.contains(&group) {
-                open_vault.vault.payload.groups.push(group.clone());
+        if let Some((group_id, group_name, mut entry)) = restored {
+            // Restore the group if it was deleted with the entry
+            if let Some(ref gid) = group_id {
+                if !open_vault
+                    .vault
+                    .payload
+                    .groups
+                    .iter()
+                    .any(|g| g.id == *gid)
+                {
+                    if let Some(trash_group) = open_vault
+                        .vault
+                        .payload
+                        .trash
+                        .groups
+                        .iter()
+                        .find(|g| g.id == *gid)
+                        .cloned()
+                    {
+                        open_vault.vault.payload.groups.push(trash_group);
+                    } else {
+                        open_vault.vault.payload.groups.push(Group {
+                            id: gid.clone(),
+                            name: group_name.clone(),
+                            parent_id: None,
+                        });
+                    }
+                }
+                entry.group_id = Some(gid.clone());
             }
             if !open_vault
                 .vault
@@ -162,7 +198,8 @@ pub fn restore_trash_entry(
             }
             open_vault.vault.payload.touch();
             Ok(TrashMutationResult {
-                group,
+                group_id,
+                group_name,
                 groups: open_vault.vault.payload.groups.clone(),
                 entries: open_vault.vault.payload.entries.clone(),
                 trash: open_vault.vault.payload.trash.clone(),
@@ -178,23 +215,21 @@ pub fn delete_trash_entry(
     path: String,
     id: String,
     state: State<'_, AppState>,
-) -> Result<Vec<TrashGroup>, String> {
+) -> Result<Trash, String> {
     state.with_open_vault_save(&path, |open_vault| {
-        for trash_group in &mut open_vault.vault.payload.trash {
-            trash_group.entries.retain(|e| e.id != id);
-        }
         open_vault
             .vault
             .payload
             .trash
-            .retain(|tg| !tg.entries.is_empty());
+            .entries
+            .retain(|e| e.id != id);
         open_vault.vault.payload.touch();
         Ok(open_vault.vault.payload.trash.clone())
     })
 }
 
 #[tauri::command]
-pub fn list_trash(path: String, state: State<'_, AppState>) -> Result<Vec<TrashGroup>, String> {
+pub fn list_trash(path: String, state: State<'_, AppState>) -> Result<Trash, String> {
     state.with_open_vault(&path, |open_vault| {
         Ok(open_vault.vault.payload.trash.clone())
     })

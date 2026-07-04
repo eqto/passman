@@ -23,8 +23,8 @@
 
   const MENU_WIDTH = CONTEXT_MENU_WIDTH;
 
-  $: currentGroupTags = (entry?.tags || []).filter((tag) => $groups.includes(tag));
-  $: moveGroups = ($groups || []).filter((group) => !currentGroupTags.includes(group));
+  $: currentGroupId = entry?.group_id || null;
+  $: moveGroups = ($groups || []).filter((group) => group.id !== currentGroupId);
   $: moveVaults = ($vaults || []).filter((vault) => vault.path !== $currentVault?.path);
 
   $: submenuLeft = computeSubmenuLeft(left, mainWidth);

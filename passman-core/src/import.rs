@@ -1,5 +1,6 @@
 use crate::buttercup::ButtercupVault;
-use crate::vault::{CustomField, VaultEntry, VaultFile, VaultMetadata, PAYLOAD_FORMAT_VERSION};
+use crate::vault::{CustomField, Group, Trash, VaultEntry, VaultFile};
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 
@@ -7,17 +8,40 @@ use std::path::Path;
 pub struct ImportJson {
     #[serde(default = "default_vault_name")]
     pub name: String,
+    #[serde(default = "chrono::Utc::now")]
+    pub created_at: DateTime<Utc>,
+    #[serde(default = "chrono::Utc::now")]
+    pub updated_at: DateTime<Utc>,
     #[serde(default)]
-    pub groups: Vec<String>,
+    pub groups: Vec<ImportGroup>,
     #[serde(default)]
     pub entries: Vec<ImportEntry>,
+    #[serde(default)]
+    pub trash: ImportTrash,
+}
+
+#[derive(Debug, Deserialize, Serialize, Default)]
+pub struct ImportTrash {
+    #[serde(default)]
+    pub groups: Vec<ImportGroup>,
+    #[serde(default)]
+    pub entries: Vec<ImportEntry>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct ImportGroup {
+    pub id: String,
+    #[serde(default)]
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub parent_id: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ImportEntry {
     pub id: String,
     #[serde(default)]
-    pub tags: Vec<String>,
+    pub group_id: Option<String>,
     #[serde(default)]
     pub title: String,
     #[serde(default)]
@@ -28,6 +52,8 @@ pub struct ImportEntry {
     pub url: String,
     #[serde(default)]
     pub notes: String,
+    #[serde(default)]
+    pub tags: Vec<String>,
     #[serde(default)]
     pub fields: Vec<ImportCustomField>,
 }
@@ -58,65 +84,102 @@ pub fn derive_vault_name(source_name: &str, input_path: &str) -> String {
     }
 }
 
-pub fn build_payload(vault: &mut VaultFile, imported: ImportJson) {
-    let now = chrono::Utc::now();
-    vault.payload.vault_metadata = VaultMetadata {
-        name: imported.name,
+fn map_import_entry_to_vault_entry(e: ImportEntry, now: DateTime<Utc>) -> VaultEntry {
+    VaultEntry {
+        id: e.id,
+        title: e.title,
+        username: e.username,
+        password: e.password,
+        url: e.url,
+        notes: e.notes,
+        tags: e.tags,
+        group_id: e.group_id,
+        fields: e
+            .fields
+            .into_iter()
+            .map(|f| CustomField {
+                id: f.id,
+                label: f.label,
+                field_type: f.field_type,
+                value: f.value,
+            })
+            .collect(),
         created_at: now,
         updated_at: now,
-        format_version: PAYLOAD_FORMAT_VERSION,
-    };
+    }
+}
+
+fn map_import_group_to_group(g: ImportGroup) -> Group {
+    Group {
+        id: g.id,
+        name: g.name.trim().to_string(),
+        parent_id: g.parent_id,
+    }
+}
+
+pub fn build_payload(vault: &mut VaultFile, imported: ImportJson) {
+    let now = chrono::Utc::now();
+    vault.payload.name = imported.name;
+    vault.payload.created_at = imported.created_at;
+    vault.payload.updated_at = now;
 
     vault.payload.groups = imported
         .groups
         .into_iter()
-        .map(|g| g.trim().to_string())
-        .filter(|g| !g.is_empty())
+        .map(map_import_group_to_group)
+        .filter(|g| !g.name.is_empty())
         .collect();
 
     vault.payload.entries = imported
         .entries
         .into_iter()
-        .map(|e| VaultEntry {
-            id: e.id,
-            title: e.title,
-            username: e.username,
-            password: e.password,
-            url: e.url,
-            notes: e.notes,
-            tags: e.tags,
-            fields: e
-                .fields
-                .into_iter()
-                .map(|f| CustomField {
-                    id: f.id,
-                    label: f.label,
-                    field_type: f.field_type,
-                    value: f.value,
-                })
-                .collect(),
-            created_at: now,
-            updated_at: now,
-        })
+        .map(|e| map_import_entry_to_vault_entry(e, now))
         .collect();
+
+    vault.payload.trash = Trash {
+        groups: imported
+            .trash
+            .groups
+            .into_iter()
+            .map(map_import_group_to_group)
+            .filter(|g| !g.name.is_empty())
+            .collect(),
+        entries: imported
+            .trash
+            .entries
+            .into_iter()
+            .map(|e| map_import_entry_to_vault_entry(e, now))
+            .collect(),
+    };
 }
 
 impl From<ButtercupVault> for ImportJson {
     fn from(vault: ButtercupVault) -> Self {
         ImportJson {
             name: vault.name,
-            groups: vault.groups,
+            created_at: chrono::Utc::now(),
+            updated_at: chrono::Utc::now(),
+            groups: vault
+                .groups
+                .into_iter()
+                .map(|g| ImportGroup {
+                    id: g.id,
+                    name: g.name,
+                    parent_id: g.parent_id,
+                })
+                .collect(),
             entries: vault
                 .entries
                 .into_iter()
                 .map(|e| ImportEntry {
                     id: e.id,
-                    tags: e.tags,
+                    group_id: e.group_id,
                     title: e.title,
                     username: e.username,
                     password: e.password,
                     url: e.url,
                     notes: e.notes,
+                    tags: Vec::new(),
                     fields: e
                         .fields
                         .into_iter()
@@ -129,6 +192,43 @@ impl From<ButtercupVault> for ImportJson {
                         .collect(),
                 })
                 .collect(),
+            trash: ImportTrash {
+                groups: vault
+                    .trash
+                    .groups
+                    .into_iter()
+                    .map(|g| ImportGroup {
+                        id: g.id,
+                        name: g.name,
+                        parent_id: g.parent_id,
+                    })
+                    .collect(),
+                entries: vault
+                    .trash
+                    .entries
+                    .into_iter()
+                    .map(|e| ImportEntry {
+                        id: e.id,
+                        group_id: e.group_id,
+                        title: e.title,
+                        username: e.username,
+                        password: e.password,
+                        url: e.url,
+                        notes: e.notes,
+                        tags: Vec::new(),
+                        fields: e
+                            .fields
+                            .into_iter()
+                            .map(|f| ImportCustomField {
+                                id: f.id,
+                                label: f.label,
+                                field_type: f.field_type,
+                                value: f.value,
+                            })
+                            .collect(),
+                    })
+                    .collect(),
+            },
         }
     }
 }

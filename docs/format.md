@@ -158,45 +158,44 @@ The decrypted payload is a JSON object representing the contents of the vault.
 
 ```json
 {
-  "groups": [ ... ],
-  "vault_metadata": { ... },
-  "entries": [ ... ]
-}
-```
-
-| Field            | Type     | Description                                          |
-|------------------|----------|------------------------------------------------------|
-| `groups`         | `array`  | List of group name strings, in display order.        |
-| `vault_metadata` | `object` | Metadata about the vault.                            |
-| `entries`        | `array`  | List of `VaultEntry` objects.                        |
-
-### 5.2 `VaultMetadata`
-
-```json
-{
   "name": "My Vault",
   "created_at": "2026-06-26T02:25:00Z",
   "updated_at": "2026-06-26T02:25:00Z",
-  "format_version": 2
+  "groups": [ ... ],
+  "tags": [ ... ],
+  "entries": [ ... ],
+  "trash": { ... }
 }
 ```
 
-| Field            | Type     | Description                                      |
-|------------------|----------|--------------------------------------------------|
-| `name`           | `string` | Human-readable vault name.                       |
-| `created_at`     | `string` | ISO 8601 UTC timestamp of vault creation.        |
-| `updated_at`     | `string` | ISO 8601 UTC timestamp of last content change.   |
-| `format_version` | `uint32` | Payload format version. Currently `2`.           |
+| Field        | Type     | Description                                          |
+|--------------|----------|------------------------------------------------------|
+| `name`       | `string` | Human-readable vault name.                           |
+| `created_at` | `string` | ISO 8601 UTC timestamp of vault creation.            |
+| `updated_at` | `string` | ISO 8601 UTC timestamp of last content change.         |
+| `groups`     | `array`  | List of `VaultGroup` objects, in display order.      |
+| `tags`       | `array`  | List of free-form tag strings.                       |
+| `entries`    | `array`  | List of `VaultEntry` objects.                        |
+| `trash`      | `object` | `Trash` object holding deleted groups and entries.   |
 
 ### 5.3 `VaultGroup`
 
-`groups` is a JSON array of unique, non-empty group name strings:
+`groups` is a JSON array of `VaultGroup` objects. Each group has a unique identifier, a display name, and an optional parent identifier for nested groups:
 
 ```json
-["Group A", "Group B"]
+[
+  { "id": "g1", "name": "Group A" },
+  { "id": "g2", "name": "Group B", "parent_id": "g1" }
+]
 ```
 
-The order of the strings is preserved and used as the display order in the UI.
+| Field        | Type     | Description                                           |
+|--------------|----------|-------------------------------------------------------|
+| `id`         | `string` | Unique group identifier.                              |
+| `name`       | `string` | Human-readable group name.                          |
+| `parent_id`  | `string` | Optional identifier of the parent group.              |
+
+The order of the objects is preserved and used as the display order in the UI. Groups are displayed as a tree, with child groups nested under their parent.
 
 ### 5.4 `VaultEntry`
 
@@ -208,7 +207,8 @@ The order of the strings is preserved and used as the display order in the UI.
   "password": "pass",
   "url": "https://example.com",
   "notes": "",
-  "tags": ["Group A", "work"],
+  "tags": ["work"],
+  "group_id": "g1",
   "created_at": "2026-06-26T02:25:00Z",
   "updated_at": "2026-06-26T02:25:00Z"
 }
@@ -222,9 +222,32 @@ The order of the strings is preserved and used as the display order in the UI.
 | `password`   | `string` | Account password.                                     |
 | `url`        | `string` | Associated website or service URL.                    |
 | `notes`      | `string` | Free-form notes.                                      |
-| `tags`       | `array`  | Array of tag strings associated with the entry.       |
+| `tags`       | `array`  | Array of free-form tag strings.                       |
+| `group_id`   | `string` | Optional identifier of the group containing the entry.|
 | `created_at` | `string` | ISO 8601 UTC timestamp.                               |
 | `updated_at` | `string`  | ISO 8601 UTC timestamp.                               |
+
+### 5.5 `Trash`
+
+The `trash` object mirrors the main payload structure to support nested deleted groups and direct placement of deleted entries:
+
+```json
+{
+  "groups": [
+    { "id": "tg1", "name": "Deleted Group", "parent_id": "tg2" }
+  ],
+  "entries": [
+    { "id": "te1", "title": "Old account", "group_id": "tg1", ... }
+  ]
+}
+```
+
+| Field     | Type    | Description                                                  |
+|-----------|---------|--------------------------------------------------------------|
+| `groups`  | `array` | List of deleted `VaultGroup` objects. Supports `parent_id`.  |
+| `entries` | `array` | List of deleted `VaultEntry` objects.                        |
+
+Deleted entries placed directly in the trash (not inside a deleted group) have `group_id` set to `null` or omitted. Entries inside a deleted group keep their `group_id` pointing to the deleted group in `trash.groups`.
 
 ## 6. Example
 
@@ -272,33 +295,33 @@ Where:
 
 ```json
 {
+  "name": "Demo",
+  "created_at": "2026-06-26T02:25:00Z",
+  "updated_at": "2026-06-26T02:25:00Z",
   "groups": [],
-  "vault_metadata": {
-    "name": "Demo",
-    "created_at": "2026-06-26T02:25:00Z",
-    "updated_at": "2026-06-26T02:25:00Z",
-    "format_version": 2
-  },
-  "entries": []
+  "tags": [],
+  "entries": [],
+  "trash": {
+    "groups": [],
+    "entries": []
+  }
 }
 ```
 
 ## 7. Versioning
 
 - The binary file version and header `version` remain `1`.
-- The payload `format_version` is `2` for new vaults. Payload `format_version` `1` files are automatically migrated on open.
 - Implementations must reject files whose binary file version is not `1` and whose `header.version` is not `1`.
 - Future versions may introduce incompatible changes to the byte layout, header schema, or encryption scheme. A new version number will be used; the magic `PMV ` may remain the same if only the binary version changes, or a new magic may be introduced for incompatible layouts.
 
-### Version redundancy in PMV
+### Version locations in PMV
 
-For PMV, the version number appears in three places:
+For PMV, the version number appears in two places:
 
 1. The 2-byte binary file version after the magic.
 2. The `version` field inside the JSON header.
-3. The `format_version` field inside `vault_metadata` in the JSON payload.
 
-The binary file version remains `1`. The header `version` remains `1`. The payload `format_version` is `2` for new vaults. Implementations should treat the binary file version as the authoritative sentinel for rejecting incompatible files, and treat the header and payload versions as a consistency check. Old payload format version `1` files are automatically migrated on open.
+The binary file version remains `1`. The header `version` remains `1`. Implementations should treat the binary file version as the authoritative sentinel for rejecting incompatible files, and treat the header version as a consistency check.
 
 ## 8. Reference Implementation
 
@@ -319,3 +342,40 @@ The canonical implementation is in `passman-core/src/vault.rs` and `passman-core
 - The Argon2id parameters in `kdf_params` are part of the file format and are stored unencrypted in the header. They are not secret; they only need to be authentic. Changing them after creation will prevent the original password from deriving the same vault key.
 - The authentication tag in the AES-256-GCM ciphertext protects both the DEK and the payload from tampering. Implementations must verify this tag before using decrypted data.
 - The DEK never changes unless the user explicitly rotates it. Password changes only re-encrypt the DEK.
+
+## 10. Buttercup Import Compatibility
+
+Passman can import Buttercup `.bcup` vaults (Format B). This section documents how Buttercup data is mapped to the PMV payload.
+
+### 10.1 Buttercup Format B structure
+
+A decrypted Buttercup Format B vault is a JSON object with the following relevant fields:
+
+| Field | Description |
+|-------|-------------|
+| `id`  | Vault UUID. |
+| `a`   | Vault attributes (arbitrary key/value map). |
+| `g`   | Array of groups. Each group has `id`, `t` (title/name), `g` (parent group id, `"0"` for root), and `a` (attributes). |
+| `e`   | Array of entries. Each entry has `id`, `g` (parent group id), `p` (properties such as title, username, password), and `a` (attributes). |
+| `c`   | Vault creation timestamp. |
+
+### 10.2 Trash group handling
+
+Buttercup does not store trash in a separate top-level section. Instead, the trash group is a normal group whose attributes contain `bc_group_role = "trash"`. The official Buttercup importer (`buttercup/buttercup-importer`) locates trash using the `Group.Attribute.Role` constant, which maps to this attribute:
+
+```javascript
+const trashGroup = vaultFacade.groups.find(
+    (group) =>
+        group.attributes &&
+        group.attributes[Group.Attribute.Role] === "trash"
+);
+```
+
+In the raw Buttercup Format B JSON, `Group.Attribute.Role` is stored as `bc_group_role`. The official importer removes the trash group entirely when converting from one Buttercup vault to another. Passman, however, preserves the trash group's contents by placing them in the PMV `trash` object:
+
+- The Buttercup trash root itself is **not** added as a `Group` in `trash.groups`; it is the container, not an item inside trash.
+- Child groups of the trash group are recursively included in `trash.groups`, preserving their nested structure. Direct children of the trash root become root-level trash groups in PMV.
+- Entries inside the trash subtree become `VaultEntry` items in `trash.entries`. Entries directly in the trash root have their `group_id` cleared; entries in child groups retain their `group_id` pointing to the child group.
+- Deleted entries (entries with a `deleted` timestamp) are also moved to `trash.entries`; their `group_id` is cleared if they were in the root of the trash group.
+
+Passman detects the trash group **only by the `bc_group_role` attribute** (`bc_group_role = "trash"`), matching the official Buttercup behaviour. A group named `"Trash"` without a `bc_group_role="trash"` attribute is treated as a normal group and placed in `groups`.

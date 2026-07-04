@@ -1,7 +1,8 @@
 <script>
   import { Dialog, DialogHeader, DialogBody, DialogFooter, DialogActions } from "../dialog";
 
-  export let group = "";
+  export let groupId = "";
+  export let groupName = "";
   export let vaultName = "";
   export let action = "move";
   export let onMerge;
@@ -12,7 +13,7 @@
   let newName = "";
 
   function startCopyAsNew() {
-    newName = `${group} (copy)`;
+    newName = `${groupName} (copy)`;
     showNameInput = true;
   }
 
@@ -47,7 +48,7 @@
   {:else}
     <DialogHeader on:close={onCancel}>{action === "copy" ? "Copy" : "Move"} to {vaultName}</DialogHeader>
     <DialogBody>
-      <p>Vault "{vaultName}" already has a group named "{group}".</p>
+      <p>Vault "{vaultName}" already has a group named "{groupName}".</p>
     </DialogBody>
     <DialogFooter>
       <DialogActions>

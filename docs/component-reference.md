@@ -11,14 +11,14 @@ Rust library implementing vault file format, cryptography, and Buttercup import.
 ### `passman-core/src/lib.rs`
 Re-exports `buttercup`, `config`, `crypto`, `vault` modules. Defines `VaultConfig`, `AppConfig`, `VaultFile`, `VaultEntry` public types. Contains integration tests for create/open/save vaults.
 
-- **Exports**: `VaultConfig`, `AppConfig`, `VaultFile`, `VaultEntry`, `VaultHeader`, `VaultMetadata`, `VaultPayload`, `KdfParams`, `TrashGroup`
+- **Exports**: `VaultConfig`, `AppConfig`, `VaultFile`, `VaultEntry`, `VaultHeader`, `VaultPayload`, `KdfParams`, `Trash`
 - **Dependencies**: `serde`, `serde_json`, `chrono`
 
 ### `passman-core/src/vault.rs`
-Core vault data structures and file I/O. Defines `VaultHeader`, `KdfParamsJson`, `VaultMetadata`, `VaultEntry`, `VaultPayload`, `VaultFile`, `TrashGroup`. Handles vault creation, opening, saving, key derivation, and v1→v2 payload migration.
+Core vault data structures and file I/O. Defines `VaultHeader`, `KdfParamsJson`, `VaultEntry`, `VaultPayload`, `VaultFile`, `Trash`. Handles vault creation, opening, saving, and key derivation.
 
 - **Key functions**: `create_vault_file`, `create_vault_file_with_key`, `open_vault_file`, `open_vault_file_with_key`, `save_vault_file`, `save_vault_file_with_key`, `derive_vault_key`, `vault_exists`
-- **Constants**: `MAGIC` = `"PMV "`, `VERSION` = 1, `PAYLOAD_FORMAT_VERSION` = 2
+- **Constants**: `MAGIC` = `"PMV "`, `VERSION` = 1, `PAYLOAD_FORMAT_VERSION` = 1
 - **Dependencies**: `crypto` module, `serde`, `serde_json`, `chrono`, `zeroize`
 
 ### `passman-core/src/crypto.rs` (129 lines)
@@ -35,7 +35,7 @@ Application config file (`~/.config/passman/vaults.json`) read/write. Defines `V
 - **Dependencies**: `serde`, `serde_json`, `dirs`
 
 ### `passman-core/src/buttercup.rs`
-Buttercup vault format parser for import. Supports CBC and GCM decryption. Defines `ButtercupVault`, `ButtercupEntry`, `ButtercupError`.
+Buttercup vault format parser for import. Supports CBC and GCM decryption. Defines `ButtercupVault`, `ButtercupTrash`, `ButtercupGroup`, `ButtercupEntry`, `ButtercupError`. Detects the Buttercup trash group by its `bc_group_role` attribute (value `"trash"`), matching the official Buttercup behaviour, and preserves deleted group hierarchy.
 
 - **Key functions**: `decrypt_buttercup_file`, `decrypt_buttercup_vault`
 - **Constants**: `FORMAT_B_SIGNATURE` = `"b~>buttercup/b"`, `DEFAULT_ALGORITHM` = `"cbc"`, `PASSWORD_KEY_SIZE` = 32, `HMAC_KEY_SIZE` = 32
@@ -84,18 +84,24 @@ Tauri commands for vault CRUD: `list_vaults`, `create_vault`, `open_vault`, `reg
 ### `passman-app/src-tauri/src/commands/group_commands.rs`
 Tauri commands for group/tag management: `list_groups`, `add_group`, `delete_group`, `reorder_groups`, `merge_groups`, `move_group_to_vault`, `copy_group_to_vault`, `add_tag`.
 
-- **Dependencies**: `passman-core::{VaultEntry, TrashGroup, random_bytes}`, `state`
+- **Dependencies**: `passman-core::{VaultEntry, Trash, random_bytes}`, `state`
 
 ### `passman-app/src-tauri/src/commands/entry_commands.rs`
 Tauri commands for entry CRUD and trash: `list_entries`, `add_entry`, `update_entry`, `delete_entry`, `restore_trash_entry`, `delete_trash_entry`, `list_trash`.
 
-- **Dependencies**: `passman-core::{VaultEntry, TrashGroup}`, `state`
+- **Dependencies**: `passman-core::{VaultEntry, Trash}`, `state`
+
+### `passman-app/src-tauri/src/commands/dto.rs`
+DTO types for transferring vault state to the frontend. Defines `VaultFileDTO` and `vault_to_dto`.
+
+- **Key functions**: `vault_to_dto`
+- **Dependencies**: `passman-core::{VaultEntry, VaultFile, Group, Trash}`
 
 ### `passman-app/src-tauri/src/commands/password.rs`
-Password generation command and DTO types. Defines `PasswordOptions`, `VaultFileDTO`, `vault_to_dto`. Contains unit tests for password generation.
+Password generation command. Defines `PasswordOptions`. Contains unit tests for password generation.
 
-- **Key functions**: `generate_password`, `vault_to_dto`
-- **Dependencies**: `rand`, `passman-core::{VaultEntry, VaultFile}`
+- **Key functions**: `generate_password`
+- **Dependencies**: `rand`
 
 ---
 

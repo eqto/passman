@@ -4,7 +4,6 @@ use crate::crypto::{
 use base64::{engine::general_purpose, Engine as _};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::io::Write;
 use std::path::Path;
@@ -12,7 +11,7 @@ use thiserror::Error;
 
 pub const MAGIC: &[u8] = b"PMV ";
 pub const VERSION: u32 = 1;
-pub const PAYLOAD_FORMAT_VERSION: u32 = 2;
+pub const PAYLOAD_FORMAT_VERSION: u32 = 1;
 
 #[derive(Debug, Error)]
 pub enum VaultError {
@@ -82,11 +81,11 @@ impl TryFrom<KdfParamsJson> for KdfParams {
 }
 
 #[derive(Debug, Serialize, Deserialize, Default, Clone)]
-pub struct VaultMetadata {
-    pub name: String,
-    pub created_at: DateTime<Utc>,
-    pub updated_at: DateTime<Utc>,
-    pub format_version: u32,
+pub struct Trash {
+    #[serde(default)]
+    pub groups: Vec<Group>,
+    #[serde(default)]
+    pub entries: Vec<VaultEntry>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Default, Clone)]
@@ -96,6 +95,14 @@ pub struct CustomField {
     #[serde(rename = "type")]
     pub field_type: String,
     pub value: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Default, Clone, PartialEq, Eq, Hash)]
+pub struct Group {
+    pub id: String,
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub parent_id: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Default, Clone)]
@@ -110,112 +117,28 @@ pub struct VaultEntry {
     pub tags: Vec<String>,
     #[serde(default)]
     pub fields: Vec<CustomField>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub group_id: Option<String>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Default, Clone)]
 pub struct VaultPayload {
-    pub groups: Vec<String>,
+    pub name: String,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+    pub groups: Vec<Group>,
     #[serde(default)]
     pub tags: Vec<String>,
-    pub vault_metadata: VaultMetadata,
     pub entries: Vec<VaultEntry>,
     #[serde(default)]
-    pub trash: Vec<TrashGroup>,
+    pub trash: Trash,
 }
 
 impl VaultPayload {
     pub fn touch(&mut self) {
-        self.vault_metadata.updated_at = chrono::Utc::now();
-    }
-}
-
-#[derive(Debug, Serialize, Deserialize, Default, Clone)]
-pub struct TrashGroup {
-    pub group: String,
-    pub entries: Vec<VaultEntry>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-struct LegacyVaultGroup {
-    pub id: String,
-    pub name: String,
-    #[serde(default)]
-    pub deleted: bool,
-    pub created_at: DateTime<Utc>,
-    pub updated_at: DateTime<Utc>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-struct LegacyVaultEntry {
-    pub id: String,
-    pub title: String,
-    pub username: String,
-    pub password: String,
-    pub url: String,
-    pub notes: String,
-    #[serde(default)]
-    pub group_id: String,
-    pub created_at: DateTime<Utc>,
-    pub updated_at: DateTime<Utc>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-struct LegacyVaultPayload {
-    pub vault_metadata: VaultMetadata,
-    pub groups: Vec<LegacyVaultGroup>,
-    pub entries: Vec<LegacyVaultEntry>,
-}
-
-fn migrate_v1_to_v2(legacy: LegacyVaultPayload) -> VaultPayload {
-    let now = Utc::now();
-    let mut seen_names: HashSet<String> = HashSet::new();
-    let mut id_to_name: HashMap<String, String> = HashMap::new();
-    for group in &legacy.groups {
-        if group.deleted || group.id == "default" || group.name == "All Entries" {
-            continue;
-        }
-        if seen_names.insert(group.name.clone()) {
-            id_to_name.insert(group.id.clone(), group.name.clone());
-        }
-    }
-    let group_names: Vec<String> = seen_names.into_iter().collect();
-    let entries = legacy
-        .entries
-        .into_iter()
-        .map(|e| {
-            let mut tags = Vec::new();
-            if !e.group_id.is_empty() && e.group_id != "default" {
-                if let Some(name) = id_to_name.get(&e.group_id) {
-                    tags.push(name.clone());
-                }
-            }
-            VaultEntry {
-                id: e.id,
-                title: e.title,
-                username: e.username,
-                password: e.password,
-                url: e.url,
-                notes: e.notes,
-                tags,
-                fields: Vec::new(),
-                created_at: e.created_at,
-                updated_at: e.updated_at,
-            }
-        })
-        .collect();
-    VaultPayload {
-        groups: group_names,
-        tags: Vec::new(),
-        vault_metadata: VaultMetadata {
-            name: legacy.vault_metadata.name,
-            created_at: legacy.vault_metadata.created_at,
-            updated_at: now,
-            format_version: PAYLOAD_FORMAT_VERSION,
-        },
-        entries,
-        trash: Vec::new(),
+        self.updated_at = chrono::Utc::now();
     }
 }
 
@@ -245,18 +168,14 @@ pub fn create_vault_file_with_key(
     let encrypted_dek = encrypt(&dek, &vault_key);
 
     let now = Utc::now();
-    let metadata = VaultMetadata {
+    let payload = VaultPayload {
         name: name.to_string(),
         created_at: now,
         updated_at: now,
-        format_version: PAYLOAD_FORMAT_VERSION,
-    };
-    let payload = VaultPayload {
         groups: Vec::new(),
         tags: Vec::new(),
-        vault_metadata: metadata,
         entries: Vec::new(),
-        trash: Vec::new(),
+        trash: Trash::default(),
     };
     let payload_json = serde_json::to_vec(&payload)?;
     let encrypted_payload = encrypt(&payload_json, &dek_array);
@@ -307,19 +226,13 @@ pub fn open_vault_file_with_key(
 
     let payload_nonce = general_purpose::STANDARD.decode(&header.payload_nonce)?;
     let payload_json = decrypt(&encrypted_payload, &dek_array, &payload_nonce)?;
-    let (payload, migrated) = match serde_json::from_slice(&payload_json) {
-        Ok(p) => (p, false),
-        Err(_) => {
-            let legacy: LegacyVaultPayload = serde_json::from_slice(&payload_json)?;
-            (migrate_v1_to_v2(legacy), true)
-        }
-    };
+    let payload: VaultPayload = serde_json::from_slice(&payload_json)?;
 
     let vault = VaultFile {
         header,
         payload,
         path: path.to_string(),
-        needs_save: migrated,
+        needs_save: false,
     };
     Ok((vault, vault_key))
 }
@@ -451,76 +364,3 @@ pub fn vault_exists(path: &str) -> bool {
     Path::new(path).exists()
 }
 
-#[cfg(test)]
-mod migration_tests {
-    use super::*;
-
-    #[test]
-    fn test_migrate_v1_to_v2() {
-        let now = Utc::now();
-        let legacy = LegacyVaultPayload {
-            vault_metadata: VaultMetadata {
-                name: "Test".to_string(),
-                created_at: now,
-                updated_at: now,
-                format_version: 1,
-            },
-            groups: vec![
-                LegacyVaultGroup {
-                    id: "default".to_string(),
-                    name: "All Entries".to_string(),
-                    deleted: false,
-                    created_at: now,
-                    updated_at: now,
-                },
-                LegacyVaultGroup {
-                    id: "g1".to_string(),
-                    name: "Group A".to_string(),
-                    deleted: false,
-                    created_at: now,
-                    updated_at: now,
-                },
-                LegacyVaultGroup {
-                    id: "g2".to_string(),
-                    name: "Group B".to_string(),
-                    deleted: true,
-                    created_at: now,
-                    updated_at: now,
-                },
-            ],
-            entries: vec![
-                LegacyVaultEntry {
-                    id: "e1".to_string(),
-                    title: "Entry 1".to_string(),
-                    username: "".to_string(),
-                    password: "".to_string(),
-                    url: "".to_string(),
-                    notes: "".to_string(),
-                    group_id: "g1".to_string(),
-                    created_at: now,
-                    updated_at: now,
-                },
-                LegacyVaultEntry {
-                    id: "e2".to_string(),
-                    title: "Entry 2".to_string(),
-                    username: "".to_string(),
-                    password: "".to_string(),
-                    url: "".to_string(),
-                    notes: "".to_string(),
-                    group_id: "default".to_string(),
-                    created_at: now,
-                    updated_at: now,
-                },
-            ],
-        };
-        let migrated = migrate_v1_to_v2(legacy);
-        assert_eq!(migrated.groups, vec!["Group A"]);
-        assert_eq!(migrated.entries.len(), 2);
-        assert_eq!(migrated.entries[0].tags, vec!["Group A"]);
-        assert!(migrated.entries[1].tags.is_empty());
-        assert_eq!(
-            migrated.vault_metadata.format_version,
-            PAYLOAD_FORMAT_VERSION
-        );
-    }
-}

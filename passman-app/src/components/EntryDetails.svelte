@@ -1,5 +1,4 @@
 <script>
-  import { groups } from "../stores/vaults";
   import { writeText } from "@tauri-apps/plugin-clipboard-manager";
   import { showToast } from "../stores/toast.js";
   import { updateEntry } from "../stores/entries";
@@ -21,7 +20,7 @@
   let tagContextMenu = { show: false, x: 0, y: 0, tag: null };
   let confirmDeleteTag = null;
 
-  $: visibleTags = (entry?.tags || []).filter((tag) => !$groups.includes(tag));
+  $: visibleTags = entry?.tags || [];
   $: if (showTagInput && tagInputEl) tagInputEl.focus();
 
   async function addTag() {

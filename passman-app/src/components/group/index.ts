@@ -4,3 +4,5 @@ export { default as AddGroupDialog } from './AddGroupDialog.svelte';
 export { default as DeleteGroupDialog } from './DeleteGroupDialog.svelte';
 export { default as GroupTagContextMenu } from './GroupTagContextMenu.svelte';
 export { default as GroupVaultMoveDialog } from './GroupVaultMoveDialog.svelte';
+export { default as GroupTree } from './GroupTree.svelte';
+export { default as GroupItem } from './GroupItem.svelte';

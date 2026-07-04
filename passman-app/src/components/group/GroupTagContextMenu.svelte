@@ -21,10 +21,15 @@
 
   const MENU_WIDTH = 160;
 
-  $: mergeTargets = type === "group" ? groups.filter((g) => g !== item) : [];
+  $: mergeTargets = type === "group" ? groups.filter((g) => g.id !== item) : [];
   $: moveToGroupTargets = type === "tag" ? groups : [];
   $: unlockedVaults = vaults.filter((v) => $vaultData[v.path]?.unlocked);
   $: submenuLeft = computeSubmenuLeft(x, mainWidth);
+
+  function getGroupName(groupId) {
+    const group = groups.find((g) => g.id === groupId);
+    return group ? group.name : groupId;
+  }
 
   function openMenu(menu) {
     activeMenu = menu;
@@ -40,19 +45,19 @@
   }
 
   function handleMerge(target) {
-    dispatch("mergeGroup", { source: item, target });
+    dispatch("mergeGroup", { sourceId: item, targetId: target.id });
   }
 
   function handleMoveToGroup(target) {
-    dispatch("moveToGroup", { item, target });
+    dispatch("moveToGroup", { item, target: target.id });
   }
 
   function handleMoveToVault(vault) {
-    dispatch("moveToVault", { source: item, targetPath: vault.path });
+    dispatch("moveToVault", { sourceId: item, targetPath: vault.path });
   }
 
   function handleCopyToVault(vault) {
-    dispatch("copyToVault", { source: item, targetPath: vault.path });
+    dispatch("copyToVault", { sourceId: item, targetPath: vault.path });
   }
 </script>
 
@@ -105,7 +110,7 @@
       {#if mergeTargets.length > 0}
         {#each mergeTargets as target}
           <div class="menu-item" on:click={() => handleMerge(target)}>
-            {target}
+            {target.name}
           </div>
         {/each}
       {:else}
@@ -114,9 +119,9 @@
     {:else if activeMenu === "moveToGroup"}
       {#if moveToGroupTargets.length > 0}
         {#each moveToGroupTargets as target}
-          {#if target !== item}
+          {#if target.id !== item}
             <div class="menu-item" on:click={() => handleMoveToGroup(target)}>
-              {target}
+              {target.name}
             </div>
           {/if}
         {/each}

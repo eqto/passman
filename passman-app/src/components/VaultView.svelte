@@ -114,27 +114,38 @@
     resetVaultView();
   }
 
-  $: trashGroups = $trash.map((tg) => tg.group);
+  $: trashGroups = $trash.groups || [];
+  $: trashGroupIds = trashGroups.map((g) => g.id);
+  $: hasUngroupedTrashEntries = ($trash.entries || []).some((e) => !e.group_id);
 
-  $: if (trashMode && selectedTrashGroup && !trashGroups.includes(selectedTrashGroup)) {
-    selectedTrashGroup = trashGroups[0] || "";
+  $: if (trashMode && selectedTrashGroup && !trashGroupIds.includes(selectedTrashGroup)) {
+    selectedTrashGroup = trashGroupIds[0] || "";
     saveViewState();
   }
 
   $: selectedEntryData = selectedEntry
     ? (trashMode
-        ? $trash.find((tg) => tg.group === selectedTrashGroup)?.entries.find((e) => e.id === selectedEntry.id)
+        ? $trash.entries.find((e) => e.id === selectedEntry.id)
         : $entries.find((e) => e.id === selectedEntry.id)) || selectedEntry
     : null;
 
   $: filteredEntries = trashMode
-    ? $trash.find((tg) => tg.group === selectedTrashGroup)?.entries || []
+    ? $trash.entries.filter((e) => {
+        if (!selectedTrashGroup) return true;
+        if (selectedTrashGroup === "__ungrouped__") return !e.group_id;
+        return e.group_id === selectedTrashGroup;
+      })
     : $entries.filter((e) => {
-        if (selectedGroup && !(e.tags || []).includes(selectedGroup)) {
+        if (selectedGroup && e.group_id !== selectedGroup) {
           return false;
         }
         return true;
       });
+
+  function selectedGroupName() {
+    const group = $groups.find((g) => g.id === selectedGroup);
+    return group ? group.name : selectedGroup;
+  }
 
   function handleNew() {
     editingEntry = {
@@ -144,7 +155,8 @@
       password: "",
       url: "",
       notes: "",
-      tags: selectedGroup ? [selectedGroup] : [],
+      tags: [],
+      group_id: selectedGroup || null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -183,8 +195,8 @@
     saveViewState();
   }
 
-  function handleSelectTrashGroup(group) {
-    selectedTrashGroup = group;
+  function handleSelectTrashGroup(groupId) {
+    selectedTrashGroup = groupId;
     trashMode = true;
     resetSelection();
     saveViewState();
@@ -192,11 +204,17 @@
 
   function handleTrashClick() {
     trashMode = true;
-    if (!$trash.some((tg) => tg.group === selectedTrashGroup)) {
-      selectedTrashGroup = $trash.length > 0 ? $trash[0].group : "";
+    const ids = ($trash.groups || []).map((g) => g.id);
+    if (!ids.includes(selectedTrashGroup)) {
+      selectedTrashGroup = ids.length > 0 ? ids[0] : "__ungrouped__";
     }
     resetSelection();
     saveViewState();
+  }
+
+  function getGroupName(groupId) {
+    const group = $groups.find((g) => g.id === groupId);
+    return group ? group.name : groupId;
   }
 
   function handleSelect(entry) {
@@ -218,8 +236,7 @@
       await deleteTrashEntry(entry.id);
     } else {
       if (!confirm(`Move "${entry.title}" to Trash?`)) return;
-      const sourceGroup = selectedGroup || (entry.tags || []).find((t) => $groups.includes(t)) || "";
-      await deleteEntry(entry.id, sourceGroup);
+      await deleteEntry(entry.id, entry.group_id, getGroupName(entry.group_id));
     }
     if (selectedEntry?.id === entry.id || editingEntry?.id === entry.id) {
       resetSelection();
@@ -229,10 +246,17 @@
 
   async function handleRestore(entry) {
     if (!confirm(`Restore "${entry.title}"?`)) return;
-    const group = await restoreEntry(entry.id);
-    if (group) {
+    const groupName = await restoreEntry(entry.id);
+    if (groupName) {
       trashMode = false;
-      selectedGroup = group;
+      const restored = $entries.find((e) => e.id === entry.id);
+      if (restored?.group_id) {
+        selectedGroup = restored.group_id;
+      } else if (selectedGroup) {
+        // keep current group if restored entry has no group
+      } else {
+        selectedGroup = "";
+      }
     }
     if (selectedEntry?.id === entry.id || editingEntry?.id === entry.id) {
       resetSelection();
@@ -240,31 +264,31 @@
     saveViewState();
   }
 
-  async function handleMoveToGroup(entry, group) {
-    await moveEntryToGroup(entry, group);
+  async function handleMoveToGroup(entry, groupId) {
+    await moveEntryToGroup(entry, groupId);
     if (selectedEntry?.id === entry.id || editingEntry?.id === entry.id) {
       resetSelection();
     }
     saveViewState();
   }
 
-  async function handleMoveToVault(entry, vault, group) {
+  async function handleMoveToVault(entry, vault, groupId) {
     if (!$vaultData[vault.path]?.unlocked) return;
-    await moveEntryToVault(entry, vault.path, group);
+    await moveEntryToVault(entry, vault.path, groupId);
     if (selectedEntry?.id === entry.id || editingEntry?.id === entry.id) {
       resetSelection();
     }
     saveViewState();
   }
 
-  async function handleCopyToGroup(entry, group) {
-    await copyEntryToGroup(entry, group);
+  async function handleCopyToGroup(entry, groupId) {
+    await copyEntryToGroup(entry, groupId);
     saveViewState();
   }
 
-  async function handleCopyToVault(entry, vault, group) {
+  async function handleCopyToVault(entry, vault, groupId) {
     if (!$vaultData[vault.path]?.unlocked) return;
-    await copyEntryToVault(entry, vault.path, group);
+    await copyEntryToVault(entry, vault.path, groupId);
     saveViewState();
   }
 
@@ -305,6 +329,7 @@
         trashMode={trashMode}
         selectedTrashGroup={selectedTrashGroup}
         trashGroups={trashGroups}
+        hasUngroupedTrashEntries={hasUngroupedTrashEntries}
         onSelectGroup={handleSelectGroup}
         onSelectTag={handleSelectTag}
         onSelectTrashGroup={handleSelectTrashGroup}

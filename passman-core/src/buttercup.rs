@@ -50,8 +50,22 @@ pub enum ButtercupError {
 #[derive(Debug, Clone)]
 pub struct ButtercupVault {
     pub name: String,
-    pub groups: Vec<String>,
+    pub groups: Vec<ButtercupGroup>,
     pub entries: Vec<ButtercupEntry>,
+    pub trash: ButtercupTrash,
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct ButtercupTrash {
+    pub groups: Vec<ButtercupGroup>,
+    pub entries: Vec<ButtercupEntry>,
+}
+
+#[derive(Debug, Clone)]
+pub struct ButtercupGroup {
+    pub id: String,
+    pub name: String,
+    pub parent_id: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -65,7 +79,7 @@ pub struct ButtercupCustomField {
 #[derive(Debug, Clone)]
 pub struct ButtercupEntry {
     pub id: String,
-    pub tags: Vec<String>,
+    pub group_id: Option<String>,
     pub title: String,
     pub username: String,
     pub password: String,
@@ -94,13 +108,11 @@ struct RawVault {
 struct RawGroup {
     id: String,
     #[serde(default)]
-    #[allow(dead_code)]
     g: String,
     #[serde(default)]
     t: String,
-    #[serde(default)]
-    #[allow(dead_code)]
-    _a: HashMap<String, RawValue>,
+    #[serde(default, rename = "a")]
+    a: HashMap<String, RawValue>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -112,6 +124,8 @@ struct RawEntry {
     p: HashMap<String, RawValue>,
     #[serde(default)]
     a: HashMap<String, RawValue>,
+    #[serde(default)]
+    deleted: Option<u64>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -161,28 +175,83 @@ pub fn decrypt_buttercup_vault(
             .unwrap_or_default(),
         groups: Vec::new(),
         entries: Vec::new(),
+        trash: ButtercupTrash::default(),
     };
 
-    let group_titles: HashMap<String, String> =
-        raw.g.iter().map(|g| (g.id.clone(), g.t.clone())).collect();
-
-    let mut seen_groups: HashSet<String> = HashSet::new();
-    for group in raw.g {
-        if !group.t.is_empty() {
-            seen_groups.insert(group.t);
+    // Identify the trash group by its role attribute
+    let mut trash_group_id: Option<String> = None;
+    for group in &raw.g {
+        if is_trash_group(group) {
+            trash_group_id = Some(group.id.clone());
+            break;
         }
     }
-    vault.groups = seen_groups.into_iter().collect();
 
-    for entry in raw.e {
-        let mut tags = Vec::new();
-        if !entry.g.is_empty() {
-            if let Some(title) = group_titles.get(&entry.g) {
-                if !title.is_empty() {
-                    tags.push(title.clone());
+    // Determine all groups that live inside the trash subtree
+    let mut trash_group_ids: HashSet<String> = HashSet::new();
+    if let Some(tid) = &trash_group_id {
+        trash_group_ids.insert(tid.clone());
+        // Collect children recursively until no new groups are added
+        loop {
+            let mut changed = false;
+            for group in &raw.g {
+                if !trash_group_ids.contains(&group.id)
+                    && !group.g.is_empty()
+                    && trash_group_ids.contains(&group.g)
+                {
+                    trash_group_ids.insert(group.id.clone());
+                    changed = true;
                 }
             }
+            if !changed {
+                break;
+            }
         }
+    }
+
+    // Build regular and trash groups
+    let mut seen_group_ids: HashSet<String> = HashSet::new();
+    for group in raw.g {
+        if group.t.is_empty() || !seen_group_ids.insert(group.id.clone()) {
+            continue;
+        }
+
+        let parent_id = if group.g.is_empty() {
+            None
+        } else {
+            Some(group.g)
+        };
+
+        let buttercup_group = ButtercupGroup {
+            id: group.id,
+            name: group.t,
+            parent_id: parent_id.clone(),
+        };
+
+        if trash_group_id.as_ref() == Some(&buttercup_group.id) {
+            // The Buttercup trash root is the container, not an item inside trash.
+            // Its children will be promoted to root trash groups in PMV.
+            continue;
+        }
+
+        if trash_group_ids.contains(&buttercup_group.id) {
+            // If this group is a direct child of the trash root, make it a root trash group
+            let mut trash_group = buttercup_group;
+            if parent_id.as_ref() == trash_group_id.as_ref() {
+                trash_group.parent_id = None;
+            }
+            vault.trash.groups.push(trash_group);
+        } else {
+            vault.groups.push(buttercup_group);
+        }
+    }
+
+    for entry in raw.e {
+        let group_id = if entry.g.is_empty() {
+            None
+        } else {
+            Some(entry.g)
+        };
 
         let standard_properties: HashSet<String> =
             ["title", "username", "password", "URL", "notes"]
@@ -208,19 +277,42 @@ pub fn decrypt_buttercup_vault(
             field_index += 1;
         }
 
-        vault.entries.push(ButtercupEntry {
+        let mut buttercup_entry = ButtercupEntry {
             id: entry.id,
-            tags,
+            group_id: group_id.clone(),
             title: get_property(&entry.p, "title"),
             username: get_property(&entry.p, "username"),
             password: get_property(&entry.p, "password"),
             url: get_property(&entry.p, "URL"),
             notes: get_property(&entry.p, "notes"),
             fields,
-        });
+        };
+
+        let is_in_trash_group = group_id
+            .as_ref()
+            .map_or(false, |gid| trash_group_ids.contains(gid));
+        let is_trash = entry.deleted.is_some() || is_in_trash_group;
+
+        if is_trash {
+            // Entries placed directly in the trash root have no group
+            if group_id.as_ref() == trash_group_id.as_ref() {
+                buttercup_entry.group_id = None;
+            }
+            vault.trash.entries.push(buttercup_entry);
+        } else {
+            vault.entries.push(buttercup_entry);
+        }
     }
 
     Ok(vault)
+}
+
+fn is_trash_group(group: &RawGroup) -> bool {
+    group
+        .a
+        .get("bc_group_role")
+        .map(|v| v.value.eq_ignore_ascii_case("trash"))
+        .unwrap_or(false)
 }
 
 fn get_field_type(attributes: &HashMap<String, RawValue>, property: &str) -> String {
@@ -384,5 +476,43 @@ mod tests {
         let text = "content$iv$salt$auth$125000";
         let components = parse_encrypted_components(text).unwrap();
         assert_eq!(components.method, "cbc");
+    }
+
+    #[test]
+    fn test_is_trash_group_detects_by_bc_group_role() {
+        let mut role_attrs = HashMap::new();
+        role_attrs.insert(
+            "bc_group_role".to_string(),
+            RawValue {
+                value: "trash".to_string(),
+                deleted: None,
+            },
+        );
+        let role_group = RawGroup {
+            id: "g1".to_string(),
+            g: "0".to_string(),
+            t: "Trash".to_string(),
+            a: role_attrs,
+        };
+        assert!(is_trash_group(&role_group));
+
+        let name_only_group = RawGroup {
+            id: "g2".to_string(),
+            g: "0".to_string(),
+            t: "Trash".to_string(),
+            a: HashMap::new(),
+        };
+        assert!(
+            !is_trash_group(&name_only_group),
+            "groups named 'Trash' without a bc_group_role='trash' attribute must not be treated as trash"
+        );
+
+        let normal_group = RawGroup {
+            id: "g3".to_string(),
+            g: "0".to_string(),
+            t: "General".to_string(),
+            a: HashMap::new(),
+        };
+        assert!(!is_trash_group(&normal_group));
     }
 }
