@@ -290,7 +290,7 @@ pub fn decrypt_buttercup_vault(
 
         let is_in_trash_group = group_id
             .as_ref()
-            .map_or(false, |gid| trash_group_ids.contains(gid));
+            .is_some_and(|gid| trash_group_ids.contains(gid));
         let is_trash = entry.deleted.is_some() || is_in_trash_group;
 
         if is_trash {
