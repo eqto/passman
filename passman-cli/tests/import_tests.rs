@@ -157,7 +157,12 @@ fn test_convert_trash_bcup_promotes_child_groups_to_trash() {
     let opened = passman_core::open_vault_file(output.to_str().unwrap(), "test").unwrap();
     // The Buttercup trash root itself should not appear in PMV trash.
     assert!(
-        !opened.payload.trash.groups.iter().any(|g| g.name == "Trash"),
+        !opened
+            .payload
+            .trash
+            .groups
+            .iter()
+            .any(|g| g.name == "Trash"),
         "Buttercup trash root should not appear as a group inside PMV trash"
     );
     // The child group inside the Buttercup trash root should be promoted to a root trash group.
@@ -171,9 +176,11 @@ fn test_convert_trash_bcup_promotes_child_groups_to_trash() {
         Some(opened.payload.trash.groups[0].id.clone())
     );
     // Neither the trash root nor the child group should appear in regular groups.
-    assert!(
-        !opened.payload.groups.iter().any(|g| g.name == "Trash" || g.name == "groupt")
-    );
+    assert!(!opened
+        .payload
+        .groups
+        .iter()
+        .any(|g| g.name == "Trash" || g.name == "groupt"));
 }
 
 #[test]

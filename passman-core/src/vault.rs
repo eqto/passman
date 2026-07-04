@@ -363,4 +363,3 @@ fn write_vault_file(
 pub fn vault_exists(path: &str) -> bool {
     Path::new(path).exists()
 }
-

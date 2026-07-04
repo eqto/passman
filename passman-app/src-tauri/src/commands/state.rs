@@ -42,11 +42,7 @@ pub fn move_entries_to_trash(payload: &mut VaultPayload, entries: Vec<VaultEntry
 
 /// Move a group and its entries into the trash. The group is added to trash.groups
 /// and its entries keep their group_id pointing to it.
-pub fn move_group_to_trash(
-    payload: &mut VaultPayload,
-    group: Group,
-    entries: Vec<VaultEntry>,
-) {
+pub fn move_group_to_trash(payload: &mut VaultPayload, group: Group, entries: Vec<VaultEntry>) {
     let now = chrono::Utc::now();
     let group_id = group.id.clone();
     payload.trash.groups.push(group);

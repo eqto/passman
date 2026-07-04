@@ -160,13 +160,7 @@ pub fn restore_trash_entry(
         if let Some((group_id, group_name, mut entry)) = restored {
             // Restore the group if it was deleted with the entry
             if let Some(ref gid) = group_id {
-                if !open_vault
-                    .vault
-                    .payload
-                    .groups
-                    .iter()
-                    .any(|g| g.id == *gid)
-                {
+                if !open_vault.vault.payload.groups.iter().any(|g| g.id == *gid) {
                     if let Some(trash_group) = open_vault
                         .vault
                         .payload

@@ -1,4 +1,4 @@
-use passman_core::{Group, random_bytes, Trash, VaultEntry};
+use passman_core::{random_bytes, Group, Trash, VaultEntry};
 use serde::Serialize;
 use std::collections::HashSet;
 use tauri::State;
@@ -69,13 +69,22 @@ pub fn delete_group(
     state: State<'_, AppState>,
 ) -> Result<GroupDeletionResult, String> {
     state.with_open_vault_save(&path, |open_vault| {
-        if !open_vault.vault.payload.groups.iter().any(|g| g.id == group_id) {
+        if !open_vault
+            .vault
+            .payload
+            .groups
+            .iter()
+            .any(|g| g.id == group_id)
+        {
             return Err("group does not exist".to_string());
         }
 
         let mut ids_to_remove: HashSet<String> = HashSet::new();
         ids_to_remove.insert(group_id.clone());
-        ids_to_remove.extend(collect_child_ids(&open_vault.vault.payload.groups, &group_id));
+        ids_to_remove.extend(collect_child_ids(
+            &open_vault.vault.payload.groups,
+            &group_id,
+        ));
 
         let group = open_vault
             .vault
@@ -98,7 +107,10 @@ pub fn delete_group(
 
         let mut entries_to_trash: Vec<VaultEntry> = Vec::new();
         open_vault.vault.payload.entries.retain(|e| {
-            if e.group_id.as_deref().map_or(false, |gid| ids_to_remove.contains(gid)) {
+            if e.group_id
+                .as_deref()
+                .map_or(false, |gid| ids_to_remove.contains(gid))
+            {
                 entries_to_trash.push(e.clone());
                 false
             } else {
@@ -148,10 +160,22 @@ pub fn merge_groups(
         return Err("cannot merge a group into itself".to_string());
     }
     state.with_open_vault_save(&path, |open_vault| {
-        if !open_vault.vault.payload.groups.iter().any(|g| g.id == source_id) {
+        if !open_vault
+            .vault
+            .payload
+            .groups
+            .iter()
+            .any(|g| g.id == source_id)
+        {
             return Err("source group does not exist".to_string());
         }
-        if !open_vault.vault.payload.groups.iter().any(|g| g.id == target_id) {
+        if !open_vault
+            .vault
+            .payload
+            .groups
+            .iter()
+            .any(|g| g.id == target_id)
+        {
             return Err("target group does not exist".to_string());
         }
         open_vault
@@ -236,7 +260,13 @@ pub fn move_group_to_vault(
             .open_vaults
             .get_mut(&target_path)
             .ok_or("target vault is not open")?;
-        if !target.vault.payload.groups.iter().any(|g| g.id == target_group_id) {
+        if !target
+            .vault
+            .payload
+            .groups
+            .iter()
+            .any(|g| g.id == target_group_id)
+        {
             target.vault.payload.groups.push(source_group);
         }
         for mut entry in entries_to_move {
@@ -321,7 +351,13 @@ pub fn copy_group_to_vault(
             .open_vaults
             .get_mut(&target_path)
             .ok_or("target vault is not open")?;
-        if !target.vault.payload.groups.iter().any(|g| g.id == target_group_id) {
+        if !target
+            .vault
+            .payload
+            .groups
+            .iter()
+            .any(|g| g.id == target_group_id)
+        {
             target.vault.payload.groups.push(source_group);
         }
         for entry in entries_to_copy {
