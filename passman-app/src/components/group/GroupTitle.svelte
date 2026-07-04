@@ -19,8 +19,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.5rem 0.5rem 0.5rem 0.25rem;
-    margin-bottom: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 0;
     font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;

@@ -250,60 +250,65 @@
       {/if}
     {/if}
   {:else}
-    <GroupTitle title="Groups" showButton={true} onButtonClick={() => showAdd = true} />
+    <div class="group-list-main">
+      <GroupTitle title="Groups" showButton={true} onButtonClick={() => showAdd = true} />
 
-    {#if $groups.length === 0}
-      <p class="empty-state">No groups.</p>
-    {:else}
-      <GroupTree
-        nodes={groupTree}
-        {selectedGroup}
-        onSelectGroup={onSelectGroup}
-        onContextMenu={(e, id) => openContextMenu(e, "group", id)}
-        onDelete={(group) => deleteTarget = group}
-        dragItem={dragItem}
-        dragOver={dragOver}
-        insertBefore={insertBefore}
-        dragStart={drag.dragStart}
-        dragEnd={drag.dragEnd}
-        handleDragOver={drag.handleDragOver}
-        dragLeave={drag.dragLeave}
-        drop={drag.drop}
-        flatGroups={$groups}
-      />
-    {/if}
+      {#if $groups.length === 0}
+        <p class="empty-state">No groups.</p>
+      {:else}
+        <GroupTree
+          nodes={groupTree}
+          {selectedGroup}
+          onSelectGroup={onSelectGroup}
+          onContextMenu={(e, id) => openContextMenu(e, "group", id)}
+          onDelete={(group) => deleteTarget = group}
+          dragItem={dragItem}
+          dragOver={dragOver}
+          insertBefore={insertBefore}
+          dragStart={drag.dragStart}
+          dragEnd={drag.dragEnd}
+          handleDragOver={drag.handleDragOver}
+          dragLeave={drag.dragLeave}
+          drop={drag.drop}
+          flatGroups={$groups}
+        />
+      {/if}
 
-    <GroupTitle title="Tags" showButton={true} onButtonClick={() => showAddTag = true} />
+      <GroupTitle title="Tags" showButton={true} onButtonClick={() => showAddTag = true} />
 
-    {#if $tags.length === 0}
-      <p class="empty-state">No tags.</p>
-    {:else}
-      <div class="tags">
-        {#each $tags as tag}
-          <Chip
-            size="medium"
-            active={selectedTags.includes(tag)}
-            on:click={() => onSelectTag(tag)}
-            on:contextmenu={(e) => openContextMenu(e, "tag", tag)}
-            on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelectTag(tag); } }}
-          >
-            {tag}
-          </Chip>
-        {/each}
-      </div>
-    {/if}
+      {#if $tags.length === 0}
+        <p class="empty-state">No tags.</p>
+      {:else}
+        <div class="tags">
+          {#each $tags as tag}
+            <Chip
+              size="medium"
+              active={selectedTags.includes(tag)}
+              on:click={() => onSelectTag(tag)}
+              on:contextmenu={(e) => openContextMenu(e, "tag", tag)}
+              on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelectTag(tag); } }}
+            >
+              {tag}
+            </Chip>
+          {/each}
+        </div>
+      {/if}
+    </div>
 
-    <GroupTitle title="Trash" isTrash={true} />
-    <div class="group-row trash-row" class:selected={trashMode}>
-      <div
-        class="group-item"
-        role="button"
-        tabindex="0"
-        on:click={onTrashClick}
-        on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onTrashClick(); } }}
-      >
-        <span class="group-icon">🗑️</span>
-        <span class="group-name">Trash</span>
+    <div class="trash-row-container">
+      <div class="group-row trash-row" class:selected={trashMode}>
+        <div
+          class="group-item"
+          role="button"
+          tabindex="0"
+          on:click={onTrashClick}
+          on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onTrashClick(); } }}
+        >
+          <span class="group-icon trash-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          </span>
+          <span class="group-name">Trash</span>
+        </div>
       </div>
     </div>
   {/if}
@@ -361,8 +366,20 @@
     background-color: var(--sidebar-bg);
     border-right: 1px solid var(--border-color);
     padding: 0;
-    overflow-y: auto;
+    overflow: hidden;
     text-align: left;
+  }
+
+  .group-list-main {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+  }
+
+  .trash-row-container {
+    flex-shrink: 0;
+    border-top: 1px solid var(--border-color);
+    background-color: var(--sidebar-bg);
   }
 
   .group-row {
@@ -396,6 +413,10 @@
     border-bottom: 2px solid var(--accent-color);
   }
 
+  .group-row.selected {
+    background-color: var(--selected-bg);
+  }
+
   .group-row.selected .group-item,
   .group-row.selected .btn-icon-danger {
     color: var(--selected-text);
@@ -415,7 +436,7 @@
     align-items: center;
     justify-content: flex-start;
     gap: 0.5rem;
-    padding: 0.5rem 0.5rem 0.5rem 0.25rem;
+    padding: 0.5rem;
     background: transparent;
     border: none;
     border-radius: 0;
@@ -440,6 +461,27 @@
     opacity: 0.8;
   }
 
+  .trash-icon {
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
+    transform: translateY(-2px);
+    color: var(--muted-color);
+    opacity: 0.9;
+  }
+
+  .group-row.selected .trash-icon {
+    color: var(--selected-text);
+  }
+
+  .trash-row .group-item {
+    gap: 0.35rem;
+  }
+
+  .trash-row .group-name {
+    transform: translateY(1px);
+  }
+
   .group-name {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -451,6 +493,19 @@
     flex-wrap: wrap;
     gap: 0.5rem;
     padding: 0 0.5rem;
+  }
+
+  .trash-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.5rem 0.5rem 0.25rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--muted-color);
+    letter-spacing: 0.05em;
   }
 
   :global(.chip:hover) {
