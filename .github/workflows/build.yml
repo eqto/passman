@@ -123,10 +123,12 @@ jobs:
           key: ${{ matrix.os }}
       - name: Install Linux dependencies
         if: matrix.os == 'ubuntu-latest'
-        uses: awalsh128/cache-apt-pkgs-action@v1
-        with:
-          packages: libwebkit2gtk-4.1-dev libjavascriptcoregtk-4.1-dev libgtk-3-dev libsoup2.4-dev build-essential curl wget libssl-dev libayatana-appindicator3-dev librsvg2-dev
-          version: ${{ hashFiles('.github/workflows/build.yml') }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libjavascriptcoregtk-4.1-dev libgtk-3-dev libsoup-3.0-dev libglib2.0-dev libgobject-2.0-dev build-essential curl wget libssl-dev libayatana-appindicator3-dev librsvg2-dev pkg-config
+      - name: Verify pkg-config
+        if: matrix.os == 'ubuntu-latest'
+        run: pkg-config --exists glib-2.0 gobject-2.0 gtk+-3.0
       - run: bun install --frozen-lockfile
         working-directory: ./passman-app
       - uses: tauri-apps/tauri-action@v1
