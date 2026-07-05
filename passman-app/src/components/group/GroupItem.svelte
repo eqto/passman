@@ -14,6 +14,10 @@
   export let dragLeave;
   export let drop;
   export let flatGroups = [];
+  export let hasChildren = false;
+  export let isCollapsed = false;
+  export let toggleGroup = () => {};
+  export let hasAnyChildren = false;
 </script>
 
 <div
@@ -46,6 +50,40 @@
     }}
     on:contextmenu={(e) => onContextMenu(e, group.id)}
   >
+    {#if hasAnyChildren}
+      {#if hasChildren}
+        <span
+          class="expand-icon"
+          class:collapsed={isCollapsed}
+          role="button"
+          tabindex="0"
+          aria-label={isCollapsed ? "Expand group" : "Collapse group"}
+          on:click|stopPropagation={(e) => toggleGroup(group.id)}
+          on:keydown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              e.stopPropagation();
+              toggleGroup(group.id);
+            }
+          }}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            ><polyline points="9 18 15 12 9 6"></polyline></svg
+          >
+        </span>
+      {:else}
+        <span class="expand-icon-spacer"></span>
+      {/if}
+    {/if}
     <div class="group-icon folder-icon">
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -132,6 +170,36 @@
 
   .group-row:hover .btn-icon-danger {
     display: inline-flex;
+  }
+
+  .expand-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1rem;
+    height: 1rem;
+    color: var(--muted-color);
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    transform: rotate(90deg);
+  }
+
+  .expand-icon-spacer {
+    display: inline-flex;
+    width: 0.75rem;
+    height: 1rem;
+  }
+
+  .expand-icon.collapsed {
+    transform: rotate(0deg);
+  }
+
+  .expand-icon:hover {
+    color: var(--text-color);
+  }
+
+  .group-row.selected .expand-icon {
+    color: var(--selected-text);
   }
 
   .folder-icon {

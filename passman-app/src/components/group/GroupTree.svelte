@@ -1,5 +1,5 @@
 <script>
-  import GroupItem from './GroupItem.svelte';
+  import GroupItem from "./GroupItem.svelte";
 
   export let nodes = [];
   export let selectedGroup = "";
@@ -16,6 +16,27 @@
   export let dragLeave;
   export let drop;
   export let flatGroups = [];
+  export let collapsed = new Set();
+  export let toggleGroup = (groupId) => {
+    collapsed = new Set(collapsed);
+    if (collapsed.has(groupId)) {
+      collapsed.delete(groupId);
+    } else {
+      collapsed.add(groupId);
+    }
+  };
+  export let hasAnyChildren = false;
+
+  function checkAnyChildren(nodes) {
+    for (const node of nodes) {
+      if (node.children.length > 0 || checkAnyChildren(node.children)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  $: hasAnyChildren = checkAnyChildren(nodes);
 </script>
 
 {#each nodes as { group, children } (group.id)}
@@ -35,8 +56,12 @@
     {dragLeave}
     {drop}
     {flatGroups}
+    hasChildren={children.length > 0}
+    isCollapsed={collapsed.has(group.id)}
+    {toggleGroup}
+    {hasAnyChildren}
   />
-  {#if children.length > 0}
+  {#if children.length > 0 && !collapsed.has(group.id)}
     <svelte:self
       nodes={children}
       {selectedGroup}
@@ -53,6 +78,9 @@
       {dragLeave}
       {drop}
       {flatGroups}
+      {collapsed}
+      {toggleGroup}
+      {hasAnyChildren}
     />
   {/if}
 {/each}

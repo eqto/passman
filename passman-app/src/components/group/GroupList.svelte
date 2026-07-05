@@ -1,5 +1,12 @@
 <script>
-  import { groups, tags, vaults, currentVault, vaultData, setVaultViewState } from "../../stores/vaults";
+  import {
+    groups,
+    tags,
+    vaults,
+    currentVault,
+    vaultData,
+    setVaultViewState,
+  } from "../../stores/vaults";
   import { showToast } from "../../stores/toast.js";
   import { closeAllContextMenus } from "../../stores/contextMenu.js";
   import { onMount } from "svelte";
@@ -13,7 +20,14 @@
     copyGroupToVault,
   } from "../../stores/groups";
   import { moveEntriesWithTagToGroup } from "../../stores/entries";
-  import { AddGroupDialog, DeleteGroupDialog, GroupTagContextMenu, GroupVaultMoveDialog, GroupTitle, GroupTree } from "./index";
+  import {
+    AddGroupDialog,
+    DeleteGroupDialog,
+    GroupTagContextMenu,
+    GroupVaultMoveDialog,
+    GroupTitle,
+    GroupTree,
+  } from "./index";
   import { createDragList } from "../../lib/dragList.js";
   import Chip from "../form/Chip.svelte";
 
@@ -37,9 +51,9 @@
   let moveToVaultAction = "move";
 
   onMount(() => {
-    window.addEventListener('close-all-context-menus', closeContextMenu);
+    window.addEventListener("close-all-context-menus", closeContextMenu);
     return () => {
-      window.removeEventListener('close-all-context-menus', closeContextMenu);
+      window.removeEventListener("close-all-context-menus", closeContextMenu);
     };
   });
 
@@ -84,7 +98,13 @@
   function openContextMenu(event, type, item) {
     event.preventDefault();
     closeAllContextMenus();
-    contextMenu = { show: true, x: event.clientX, y: event.clientY, type, item };
+    contextMenu = {
+      show: true,
+      x: event.clientX,
+      y: event.clientY,
+      type,
+      item,
+    };
   }
 
   function getGroupName(groupId) {
@@ -97,7 +117,11 @@
     for (const group of groups) {
       const isRoot = !group.parent_id || group.parent_id === "0";
       if (group.parent_id === parentId || (parentId === null && isRoot)) {
-        result.push({ group, depth, children: buildTree(groups, group.id, depth + 1) });
+        result.push({
+          group,
+          depth,
+          children: buildTree(groups, group.id, depth + 1),
+        });
       }
     }
     return result;
@@ -135,7 +159,9 @@
   async function handleVaultAction(event, action) {
     const { sourceId, targetPath } = event.detail;
     const target = $vaults.find((v) => v.path === targetPath);
-    const targetGroups = ($vaultData[targetPath]?.groups || []).map((g) => g.id);
+    const targetGroups = ($vaultData[targetPath]?.groups || []).map(
+      (g) => g.id,
+    );
     if (target && targetGroups.includes(sourceId)) {
       moveToVaultGroup = sourceId;
       moveToVaultTarget = target;
@@ -146,7 +172,9 @@
         const fn = action === "copy" ? copyGroupToVault : moveGroupToVault;
         await fn(sourceId, targetPath, sourceId);
         switchToVaultAndGroup(target, sourceId);
-        showToast(`${action === "copy" ? "Copied" : "Moved"} "${getGroupName(sourceId)}" to ${target.name}`);
+        showToast(
+          `${action === "copy" ? "Copied" : "Moved"} "${getGroupName(sourceId)}" to ${target.name}`,
+        );
       } catch (e) {
         console.error(e);
         alert(`${action === "copy" ? "Copy" : "Move"} failed: ${e}`);
@@ -166,14 +194,19 @@
   async function handleVaultResolve(targetId) {
     if (moveToVaultTarget && moveToVaultGroup) {
       try {
-        const fn = moveToVaultAction === "copy" ? copyGroupToVault : moveGroupToVault;
+        const fn =
+          moveToVaultAction === "copy" ? copyGroupToVault : moveGroupToVault;
         await fn(moveToVaultGroup, moveToVaultTarget.path, targetId);
         switchToVaultAndGroup(moveToVaultTarget, targetId);
         const verb = moveToVaultAction === "copy" ? "Copied" : "Moved";
         if (targetId === moveToVaultGroup) {
-          showToast(`${verb} "${getGroupName(moveToVaultGroup)}" into ${moveToVaultTarget.name}`);
+          showToast(
+            `${verb} "${getGroupName(moveToVaultGroup)}" into ${moveToVaultTarget.name}`,
+          );
         } else {
-          showToast(`${verb} "${getGroupName(moveToVaultGroup)}" to ${moveToVaultTarget.name} as "${getGroupName(targetId)}"`);
+          showToast(
+            `${verb} "${getGroupName(moveToVaultGroup)}" to ${moveToVaultTarget.name} as "${getGroupName(targetId)}"`,
+          );
         }
       } catch (e) {
         console.error(e);
@@ -191,12 +224,11 @@
     moveToVaultGroup = "";
     moveToVaultAction = "move";
   }
-
 </script>
 
 <svelte:window on:click={closeContextMenu} />
 
-  <div class="group-list">
+<div class="group-list">
   {#if trashMode}
     <div class="trash-header">
       <button
@@ -223,7 +255,12 @@
             role="button"
             tabindex="0"
             on:click={() => onSelectTrashGroup(group.id)}
-            on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelectTrashGroup(group.id); } }}
+            on:keydown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onSelectTrashGroup(group.id);
+              }
+            }}
           >
             <span class="group-icon">📁</span>
             <span class="group-name">{group.name}</span>
@@ -241,7 +278,12 @@
             role="button"
             tabindex="0"
             on:click={() => onSelectTrashGroup("__ungrouped__")}
-            on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelectTrashGroup("__ungrouped__"); } }}
+            on:keydown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onSelectTrashGroup("__ungrouped__");
+              }
+            }}
           >
             <span class="group-icon">📄</span>
             <span class="group-name">Ungrouped</span>
@@ -251,7 +293,11 @@
     {/if}
   {:else}
     <div class="group-list-main">
-      <GroupTitle title="Groups" showButton={true} onButtonClick={() => showAdd = true} />
+      <GroupTitle
+        title="Groups"
+        showButton={true}
+        onButtonClick={() => (showAdd = true)}
+      />
 
       {#if $groups.length === 0}
         <p class="empty-state">No groups.</p>
@@ -259,12 +305,12 @@
         <GroupTree
           nodes={groupTree}
           {selectedGroup}
-          onSelectGroup={onSelectGroup}
+          {onSelectGroup}
           onContextMenu={(e, id) => openContextMenu(e, "group", id)}
-          onDelete={(group) => deleteTarget = group}
-          dragItem={dragItem}
-          dragOver={dragOver}
-          insertBefore={insertBefore}
+          onDelete={(group) => (deleteTarget = group)}
+          {dragItem}
+          {dragOver}
+          {insertBefore}
           dragStart={drag.dragStart}
           dragEnd={drag.dragEnd}
           handleDragOver={drag.handleDragOver}
@@ -274,7 +320,11 @@
         />
       {/if}
 
-      <GroupTitle title="Tags" showButton={true} onButtonClick={() => showAddTag = true} />
+      <GroupTitle
+        title="Tags"
+        showButton={true}
+        onButtonClick={() => (showAddTag = true)}
+      />
 
       {#if $tags.length === 0}
         <p class="empty-state">No tags.</p>
@@ -286,7 +336,12 @@
               active={selectedTags.includes(tag)}
               on:click={() => onSelectTag(tag)}
               on:contextmenu={(e) => openContextMenu(e, "tag", tag)}
-              on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelectTag(tag); } }}
+              on:keydown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onSelectTag(tag);
+                }
+              }}
             >
               {tag}
             </Chip>
@@ -302,10 +357,28 @@
           role="button"
           tabindex="0"
           on:click={onTrashClick}
-          on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onTrashClick(); } }}
+          on:keydown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              onTrashClick();
+            }
+          }}
         >
           <span class="group-icon trash-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              ><polyline points="3 6 5 6 21 6"></polyline><path
+                d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+              ></path></svg
+            >
           </span>
           <span class="group-name">Trash</span>
         </div>
@@ -315,18 +388,22 @@
 </div>
 
 {#if showAdd}
-  <AddGroupDialog onAdd={handleAddGroup} onCancel={() => showAdd = false} />
+  <AddGroupDialog onAdd={handleAddGroup} onCancel={() => (showAdd = false)} />
 {/if}
 
 {#if showAddTag}
-  <AddGroupDialog title="Add Tag" onAdd={handleAddTag} onCancel={() => showAddTag = false} />
+  <AddGroupDialog
+    title="Add Tag"
+    onAdd={handleAddTag}
+    onCancel={() => (showAddTag = false)}
+  />
 {/if}
 
 {#if deleteTarget}
   <DeleteGroupDialog
     group={deleteTarget}
     onDelete={handleDeleteGroup}
-    onCancel={() => deleteTarget = null}
+    onCancel={() => (deleteTarget = null)}
   />
 {/if}
 
@@ -476,6 +553,7 @@
 
   .trash-row .group-item {
     gap: 0.35rem;
+    padding: 1rem 0.5rem;
   }
 
   .trash-row .group-name {
