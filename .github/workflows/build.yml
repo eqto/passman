@@ -102,6 +102,9 @@ jobs:
           - os: macos-latest
             bundle: dmg
             artifact: '**/*.dmg'
+          - os: macos-13
+            bundle: dmg
+            artifact: '**/*.dmg'
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
