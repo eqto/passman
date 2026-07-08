@@ -2,9 +2,8 @@
   import { writeText } from "@tauri-apps/plugin-clipboard-manager";
   import { showToast } from "../stores/toast.js";
   import { updateEntry } from "../stores/entries";
-  import Chip from "./form/Chip.svelte";
-  import TagContextMenu from "./TagContextMenu.svelte";
-  import Confirm from "./dialog/Confirm.svelte";
+  import TagManager from "./TagManager.svelte";
+  import CustomFieldDisplay from "./CustomFieldDisplay.svelte";
 
   export let entry;
   export let onEdit;
@@ -13,64 +12,27 @@
   export let trashMode = false;
 
   let passwordVisible = false;
-  let visibleCustomFieldIds = new Set();
-  let tagInput = "";
-  let showTagInput = false;
-  let tagInputEl;
-  let tagContextMenu = { show: false, x: 0, y: 0, tag: null };
-  let confirmDeleteTag = null;
 
   $: visibleTags = entry?.tags || [];
-  $: if (showTagInput && tagInputEl) tagInputEl.focus();
 
-  async function addTag() {
-    const raw = tagInput.split(",").map((t) => t.trim()).filter((t) => t);
-    if (raw.length === 0) return;
+  async function addTags(raw) {
     const nextTags = [...new Set([...(entry.tags || []), ...raw])];
-    const updated = { ...entry, tags: nextTags, updated_at: new Date().toISOString() };
+    const updated = {
+      ...entry,
+      tags: nextTags,
+      updated_at: new Date().toISOString(),
+    };
     await updateEntry(updated);
-    tagInput = "";
-    showTagInput = false;
   }
 
-  function openTagContextMenu(event, tag) {
-    if (trashMode) return;
-    event.preventDefault();
-    tagContextMenu = { show: true, x: event.clientX, y: event.clientY, tag };
-  }
-
-  function handleTagDelete(tag) {
-    tagContextMenu = { ...tagContextMenu, show: false };
-    confirmDeleteTag = tag;
-  }
-
-  async function confirmTagDelete() {
-    if (!confirmDeleteTag) return;
-    const tag = confirmDeleteTag;
+  async function removeTag(tag) {
     const nextTags = (entry.tags || []).filter((t) => t !== tag);
-    const updated = { ...entry, tags: nextTags, updated_at: new Date().toISOString() };
+    const updated = {
+      ...entry,
+      tags: nextTags,
+      updated_at: new Date().toISOString(),
+    };
     await updateEntry(updated);
-    confirmDeleteTag = null;
-  }
-
-  function handleTagKeydown(event) {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      addTag();
-    } else if (event.key === "Escape") {
-      tagInput = "";
-      showTagInput = false;
-    }
-  }
-
-  function toggleCustomFieldVisibility(id) {
-    const next = new Set(visibleCustomFieldIds);
-    if (next.has(id)) {
-      next.delete(id);
-    } else {
-      next.add(id);
-    }
-    visibleCustomFieldIds = next;
   }
 
   async function copy(text, type = "item") {
@@ -86,7 +48,6 @@
   async function handleRestore() {
     await onRestore(entry);
   }
-
 </script>
 
 {#if entry}
@@ -111,8 +72,26 @@
         <div class="field-row">
           <input type="text" value={entry.username} readonly />
           {#if entry.username}
-            <button class="btn-copy-solid" aria-label="Copy username" on:click={() => copy(entry.username, "Username")}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <button
+              class="btn-copy-solid"
+              aria-label="Copy username"
+              on:click={() => copy(entry.username, "Username")}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                ><rect x="9" y="9" width="13" height="13" rx="2" ry="2"
+                ></rect><path
+                  d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                ></path></svg
+              >
             </button>
           {/if}
         </div>
@@ -121,17 +100,70 @@
       <div class="field">
         <span class="label">Password</span>
         <div class="field-row">
-          <input type={passwordVisible ? "text" : "password"} value={entry.password} readonly />
+          <input
+            type={passwordVisible ? "text" : "password"}
+            value={entry.password}
+            readonly
+          />
           {#if entry.password}
-            <button class="btn-copy-solid" aria-label={passwordVisible ? "Hide password" : "Reveal password"} on:click={() => (passwordVisible = !passwordVisible)}>
+            <button
+              class="btn-copy-solid"
+              aria-label={passwordVisible ? "Hide password" : "Reveal password"}
+              on:click={() => (passwordVisible = !passwordVisible)}
+            >
               {#if passwordVisible}
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path><line x1="2" x2="22" y1="2" y2="22"></line></svg>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  ><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path><path
+                    d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"
+                  ></path><path
+                    d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"
+                  ></path><line x1="2" x2="22" y1="2" y2="22"></line></svg
+                >
               {:else}
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  ><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"
+                  ></path><circle cx="12" cy="12" r="3"></circle></svg
+                >
               {/if}
             </button>
-            <button class="btn-copy-solid" aria-label="Copy password" on:click={() => copy(entry.password, "Password")}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <button
+              class="btn-copy-solid"
+              aria-label="Copy password"
+              on:click={() => copy(entry.password, "Password")}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                ><rect x="9" y="9" width="13" height="13" rx="2" ry="2"
+                ></rect><path
+                  d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                ></path></svg
+              >
             </button>
           {/if}
         </div>
@@ -156,100 +188,16 @@
       {#if visibleTags.length > 0 || !trashMode}
         <div class="field">
           <span class="label">Tags</span>
-          <div class="tags">
-            {#each visibleTags as tag}
-              <Chip
-                size="medium"
-                as="span"
-                title={trashMode ? "" : "Right-click to delete"}
-                role="button"
-                tabindex="0"
-                on:contextmenu={(event) => openTagContextMenu(event, tag)}
-              >
-                {tag}
-              </Chip>
-            {/each}
-            {#if !trashMode && !showTagInput}
-              <button
-                class="add-tag-chip"
-                type="button"
-                on:click={() => showTagInput = true}
-              >
-                + add tag
-              </button>
-            {/if}
-          </div>
-          {#if showTagInput}
-            <div class="tag-input-row">
-              <input
-                class="tag-input"
-                type="text"
-                placeholder="Add tag"
-                maxlength="20"
-                bind:this={tagInputEl}
-                bind:value={tagInput}
-                on:keydown={handleTagKeydown}
-              />
-              <button class="btn-secondary" type="button" on:click={addTag}>
-                Save
-              </button>
-              <button
-                class="btn-icon"
-                type="button"
-                aria-label="Cancel"
-                on:click={() => {
-                  tagInput = "";
-                  showTagInput = false;
-                }}
-              >
-                ×
-              </button>
-            </div>
-          {/if}
+          <TagManager
+            tags={visibleTags}
+            readOnly={trashMode}
+            onAddTag={addTags}
+            onRemoveTag={removeTag}
+          />
         </div>
       {/if}
 
-      {#each (entry?.fields || []) as field (field.id)}
-        <div class="field">
-          <span class="label">{field.label || "Custom field"}</span>
-          {#if field.type === "note"}
-            <div class="notes">{field.value}</div>
-          {:else if field.type === "password" || field.type === "otp"}
-            <div class="field-row">
-              <input
-                type={visibleCustomFieldIds.has(field.id) ? "text" : "password"}
-                value={field.value}
-                readonly
-              />
-              {#if field.value}
-                <button
-                  class="btn-copy-solid"
-                  aria-label={visibleCustomFieldIds.has(field.id) ? "Hide password" : "Reveal password"}
-                  on:click={() => toggleCustomFieldVisibility(field.id)}
-                >
-                  {#if visibleCustomFieldIds.has(field.id)}
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path><line x1="2" x2="22" y1="2" y2="22"></line></svg>
-                  {:else}
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                  {/if}
-                </button>
-                <button class="btn-copy-solid" aria-label="Copy password" on:click={() => copy(field.value, field.label || "Password")}>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                </button>
-              {/if}
-            </div>
-          {:else}
-            <div class="field-row">
-              <input type="text" value={field.value} readonly />
-              {#if field.value}
-                <button class="btn-copy-solid" aria-label="Copy value" on:click={() => copy(field.value, field.label || "Value")}>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                </button>
-              {/if}
-            </div>
-          {/if}
-        </div>
-      {/each}
+      <CustomFieldDisplay fields={entry?.fields || []} />
     </div>
 
     <div class="details-footer" class:justify-end={!trashMode}>
@@ -273,7 +221,7 @@
       x={tagContextMenu.x}
       y={tagContextMenu.y}
       on:delete={() => handleTagDelete(tagContextMenu.tag)}
-      on:close={() => tagContextMenu = { ...tagContextMenu, show: false }}
+      on:close={() => (tagContextMenu = { ...tagContextMenu, show: false })}
     />
   {/if}
 
@@ -283,13 +231,11 @@
       message={`Delete tag "${confirmDeleteTag}"?`}
       confirmLabel="Delete"
       on:confirm={confirmTagDelete}
-      on:cancel={() => confirmDeleteTag = null}
+      on:cancel={() => (confirmDeleteTag = null)}
     />
   {/if}
 {:else}
-  <div class="empty-details">
-    Select an entry to view details.
-  </div>
+  <div class="empty-details">Select an entry to view details.</div>
 {/if}
 
 <style>
@@ -397,38 +343,6 @@
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
-  }
-
-  .add-tag-chip {
-    padding: 0.25rem 0.75rem;
-    background-color: transparent;
-    border: 1px dashed var(--border-color);
-    border-radius: 0.5rem;
-    color: var(--muted-color);
-    font-size: 0.875rem;
-    cursor: pointer;
-  }
-
-  .add-tag-chip:hover {
-    color: var(--text-color);
-    border-color: var(--accent-color);
-  }
-
-  .tag-input-row {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-    margin-left: 0.5rem;
-  }
-
-  .tag-input {
-    width: 8rem;
-    padding: 0.25rem 0.5rem;
-    background-color: var(--input-bg);
-    border: 1px solid var(--input-border);
-    border-radius: 0.5rem;
-    color: var(--text-color);
-    font-size: 0.875rem;
   }
 
   .details-footer {

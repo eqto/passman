@@ -27,9 +27,11 @@
     GroupVaultMoveDialog,
     GroupTitle,
     GroupTree,
+    TrashSidebar,
+    TagSidebar,
   } from "./index";
   import { createDragList } from "../../lib/dragList.js";
-  import Chip from "../form/Chip.svelte";
+  import { buildTree } from "../../lib/groupTree.js";
 
   export let selectedGroup = "";
   export let selectedTags = [];
@@ -110,21 +112,6 @@
   function getGroupName(groupId) {
     const group = $groups.find((g) => g.id === groupId);
     return group ? group.name : groupId;
-  }
-
-  function buildTree(groups, parentId = null, depth = 0) {
-    const result = [];
-    for (const group of groups) {
-      const isRoot = !group.parent_id || group.parent_id === "0";
-      if (group.parent_id === parentId || (parentId === null && isRoot)) {
-        result.push({
-          group,
-          depth,
-          children: buildTree(groups, group.id, depth + 1),
-        });
-      }
-    }
-    return result;
   }
 
   $: groupTree = buildTree($groups);
@@ -230,67 +217,15 @@
 
 <div class="group-list">
   {#if trashMode}
-    <div class="trash-header">
-      <button
-        class="btn-icon"
-        title="Back to groups"
-        on:click={() => onSelectGroup(selectedGroup || ($groups[0]?.id ?? ""))}
-      >
-        ←
-      </button>
-      <span>Trash</span>
-    </div>
-
-    {#if trashGroups.length === 0}
-      <p class="empty-state">No deleted items.</p>
-    {:else}
-      {#each trashGroups as group (group.id)}
-        <div
-          class="group-row"
-          class:selected={selectedTrashGroup === group.id}
-          role="listitem"
-        >
-          <div
-            class="group-item"
-            role="button"
-            tabindex="0"
-            on:click={() => onSelectTrashGroup(group.id)}
-            on:keydown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                onSelectTrashGroup(group.id);
-              }
-            }}
-          >
-            <span class="group-icon">📁</span>
-            <span class="group-name">{group.name}</span>
-          </div>
-        </div>
-      {/each}
-      {#if hasUngroupedTrashEntries}
-        <div
-          class="group-row"
-          class:selected={selectedTrashGroup === "__ungrouped__"}
-          role="listitem"
-        >
-          <div
-            class="group-item"
-            role="button"
-            tabindex="0"
-            on:click={() => onSelectTrashGroup("__ungrouped__")}
-            on:keydown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                onSelectTrashGroup("__ungrouped__");
-              }
-            }}
-          >
-            <span class="group-icon">📄</span>
-            <span class="group-name">Ungrouped</span>
-          </div>
-        </div>
-      {/if}
-    {/if}
+    <TrashSidebar
+      {trashGroups}
+      {selectedTrashGroup}
+      {hasUngroupedTrashEntries}
+      {selectedGroup}
+      groups={$groups}
+      {onSelectTrashGroup}
+      {onSelectGroup}
+    />
   {:else}
     <div class="group-list-main">
       <GroupTitle
@@ -320,34 +255,13 @@
         />
       {/if}
 
-      <GroupTitle
-        title="Tags"
-        showButton={true}
-        onButtonClick={() => (showAddTag = true)}
+      <TagSidebar
+        tags={$tags}
+        {selectedTags}
+        {onSelectTag}
+        onAddTag={() => (showAddTag = true)}
+        onContextMenu={(e, tag) => openContextMenu(e, "tag", tag)}
       />
-
-      {#if $tags.length === 0}
-        <p class="empty-state">No tags.</p>
-      {:else}
-        <div class="tags">
-          {#each $tags as tag}
-            <Chip
-              size="medium"
-              active={selectedTags.includes(tag)}
-              on:click={() => onSelectTag(tag)}
-              on:contextmenu={(e) => openContextMenu(e, "tag", tag)}
-              on:keydown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  onSelectTag(tag);
-                }
-              }}
-            >
-              {tag}
-            </Chip>
-          {/each}
-        </div>
-      {/if}
     </div>
 
     <div class="trash-row-container">
@@ -564,32 +478,6 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-
-  .tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    padding: 0 0.5rem;
-  }
-
-  .trash-header {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 0.5rem 0.5rem 0.25rem;
-    margin-bottom: 0.5rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    color: var(--muted-color);
-    letter-spacing: 0.05em;
-  }
-
-  :global(.chip:hover) {
-    background-color: var(--accent-color);
-    color: #ffffff;
-    border-color: var(--accent-color);
   }
 
   .empty {

@@ -1,5 +1,4 @@
 use passman_core::vault;
-use passman_core::{Group, VaultEntry, VaultPayload};
 use std::collections::{HashMap, HashSet};
 use std::sync::{mpsc, Arc, Mutex};
 use tauri::{AppHandle, Emitter};
@@ -21,40 +20,6 @@ pub fn validate_reorder<T: std::hash::Hash + Eq + Clone>(
         return Err("invalid list".to_string());
     }
     Ok(())
-}
-
-/// Move entries into the trash, clearing their group association.
-pub fn move_entries_to_trash(payload: &mut VaultPayload, entries: Vec<VaultEntry>) {
-    if entries.is_empty() {
-        return;
-    }
-    let now = chrono::Utc::now();
-    let entries: Vec<VaultEntry> = entries
-        .into_iter()
-        .map(|mut e| {
-            e.group_id = None;
-            e.updated_at = now;
-            e
-        })
-        .collect();
-    payload.trash.entries.extend(entries);
-}
-
-/// Move a group and its entries into the trash. The group is added to trash.groups
-/// and its entries keep their group_id pointing to it.
-pub fn move_group_to_trash(payload: &mut VaultPayload, group: Group, entries: Vec<VaultEntry>) {
-    let now = chrono::Utc::now();
-    let group_id = group.id.clone();
-    payload.trash.groups.push(group);
-    let entries: Vec<VaultEntry> = entries
-        .into_iter()
-        .map(|mut e| {
-            e.group_id = Some(group_id.clone());
-            e.updated_at = now;
-            e
-        })
-        .collect();
-    payload.trash.entries.extend(entries);
 }
 
 /// Data required to save a vault without holding the global state lock.

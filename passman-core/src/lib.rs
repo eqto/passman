@@ -3,12 +3,14 @@ pub mod config;
 pub mod crypto;
 pub mod import;
 pub mod vault;
+pub mod vault_operations;
 
 pub use buttercup::*;
 pub use config::*;
 pub use crypto::*;
 pub use import::*;
 pub use vault::*;
+pub use vault_operations::*;
 
 #[cfg(test)]
 mod integration_tests {

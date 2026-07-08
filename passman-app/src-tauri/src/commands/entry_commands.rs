@@ -2,7 +2,9 @@ use passman_core::{Group, Trash, VaultEntry};
 use serde::Serialize;
 use tauri::State;
 
-use crate::commands::state::{move_entries_to_trash, AppState};
+use passman_core::vault_operations::move_entries_to_trash;
+
+use crate::commands::state::AppState;
 
 #[derive(Serialize)]
 pub(crate) struct EntryMutationResult {

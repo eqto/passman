@@ -2,8 +2,7 @@
   import { addEntry, updateEntry, generatePassword } from "../stores/entries";
   import { DEFAULT_PASSWORD_LENGTH } from "../lib/constants.js";
   import CustomFieldEditor from "./CustomFieldEditor.svelte";
-  import Chip from "./form/Chip.svelte";
-  import TagContextMenu from "./TagContextMenu.svelte";
+  import TagManager from "./TagManager.svelte";
   import Confirm from "./dialog/Confirm.svelte";
 
   export let entry;
@@ -14,11 +13,6 @@
   let form = { ...entry, tags: entry.tags || [], fields: entry.fields || [] };
   $: displayTags = form.tags || [];
   let error = "";
-  let tagInput = "";
-  let showTagInput = false;
-  let tagInputEl;
-  let tagContextMenu = { show: false, x: 0, y: 0, tag: null };
-  let confirmDeleteTag = null;
   let confirmDeleteEntry = false;
   let passwordLength = DEFAULT_PASSWORD_LENGTH;
   let passwordOptions = {
@@ -28,8 +22,7 @@
     symbols: true,
   };
 
-  function addTag() {
-    const raw = tagInput.split(",").map((t) => t.trim()).filter((t) => t);
+  function addTags(raw) {
     let next = form.tags;
     for (const tag of raw) {
       if (!next.includes(tag)) {
@@ -37,43 +30,21 @@
       }
     }
     form = { ...form, tags: next };
-    tagInput = "";
-    showTagInput = false;
   }
 
-  function openTagContextMenu(event, tag) {
-    event.preventDefault();
-    tagContextMenu = { show: true, x: event.clientX, y: event.clientY, tag };
+  function removeTag(tag) {
+    form = { ...form, tags: form.tags.filter((t) => t !== tag) };
   }
-
-  function handleTagDelete(tag) {
-    tagContextMenu = { ...tagContextMenu, show: false };
-    confirmDeleteTag = tag;
-  }
-
-  function confirmTagDelete() {
-    if (!confirmDeleteTag) return;
-    form = { ...form, tags: form.tags.filter((t) => t !== confirmDeleteTag) };
-    confirmDeleteTag = null;
-  }
-
-  function handleTagKeydown(event) {
-    if (event.key === "Enter" || event.key === ",") {
-      event.preventDefault();
-      addTag();
-    } else if (event.key === "Escape") {
-      tagInput = "";
-      showTagInput = false;
-    }
-  }
-
-  $: if (showTagInput && tagInputEl) tagInputEl.focus();
 
   async function handleSave() {
     error = "";
     try {
       const now = new Date().toISOString();
-      const updated = { ...form, group_id: selectedGroup || form.group_id || null, updated_at: now };
+      const updated = {
+        ...form,
+        group_id: selectedGroup || form.group_id || null,
+        updated_at: now,
+      };
       if (entry.title) {
         await updateEntry(updated);
       } else {
@@ -104,7 +75,11 @@
     <input bind:value={form.title} placeholder="Title" />
     <input bind:value={form.username} placeholder="Username" />
     <div class="password-row">
-      <input bind:value={form.password} type="password" placeholder="Password" />
+      <input
+        bind:value={form.password}
+        type="password"
+        placeholder="Password"
+      />
       <button class="btn-secondary generate-btn" on:click={handleGenerate}>
         Generate
       </button>
@@ -115,60 +90,10 @@
     {#if entry.title && form.notes}
       <textarea bind:value={form.notes} placeholder="Notes" rows="6"></textarea>
     {/if}
-    <div class="tags-section">
-      <div class="tags-list">
-        {#each displayTags as tag}
-          <Chip
-            size="medium"
-            as="span"
-            title="Right-click to delete"
-            role="button"
-            tabindex="0"
-            on:contextmenu={(event) => openTagContextMenu(event, tag)}
-          >
-            {tag}
-          </Chip>
-        {/each}
-        {#if !showTagInput}
-          <button
-            class="add-tag-chip"
-            type="button"
-            on:click={() => showTagInput = true}
-          >
-            + add tag
-          </button>
-        {/if}
-      </div>
-      {#if showTagInput}
-        <div class="tag-input-row">
-          <input
-            class="tag-input"
-            bind:this={tagInputEl}
-            bind:value={tagInput}
-            placeholder="Add tag"
-            maxlength="20"
-            on:keydown={handleTagKeydown}
-          />
-          <button class="btn-secondary" type="button" on:click={addTag}>
-            Save
-          </button>
-          <button
-            class="btn-icon"
-            type="button"
-            aria-label="Cancel"
-            on:click={() => {
-              tagInput = "";
-              showTagInput = false;
-            }}
-          >
-            ×
-          </button>
-        </div>
-      {/if}
-    </div>
+    <TagManager tags={displayTags} onAddTag={addTags} onRemoveTag={removeTag} />
     <CustomFieldEditor
       customFields={form.fields}
-      onChange={(fields) => form = { ...form, fields }}
+      onChange={(fields) => (form = { ...form, fields })}
     />
   </div>
   {#if error}
@@ -176,37 +101,17 @@
   {/if}
   <div class="actions">
     {#if entry.title && onDelete}
-      <button class="btn-danger delete-action" on:click={() => confirmDeleteEntry = true}>
+      <button
+        class="btn-danger delete-action"
+        on:click={() => (confirmDeleteEntry = true)}
+      >
         Delete
       </button>
     {/if}
-    <button class="modal-cancel-btn" on:click={onClose}>
-      Cancel
-    </button>
-    <button class="btn-primary" on:click={handleSave}>
-      Save
-    </button>
+    <button class="modal-cancel-btn" on:click={onClose}> Cancel </button>
+    <button class="btn-primary" on:click={handleSave}> Save </button>
   </div>
 </div>
-
-{#if tagContextMenu.show}
-  <TagContextMenu
-    x={tagContextMenu.x}
-    y={tagContextMenu.y}
-    on:delete={() => handleTagDelete(tagContextMenu.tag)}
-    on:close={() => tagContextMenu = { ...tagContextMenu, show: false }}
-  />
-{/if}
-
-{#if confirmDeleteTag}
-  <Confirm
-    title="Delete Tag"
-    message={`Delete tag "${confirmDeleteTag}"?`}
-    confirmLabel="Delete"
-    on:confirm={confirmTagDelete}
-    on:cancel={() => confirmDeleteTag = null}
-  />
-{/if}
 
 {#if confirmDeleteEntry}
   <Confirm
@@ -214,7 +119,7 @@
     message={`Delete entry "${form.title}"?`}
     confirmLabel="Delete"
     on:confirm={handleConfirmDelete}
-    on:cancel={() => confirmDeleteEntry = false}
+    on:cancel={() => (confirmDeleteEntry = false)}
   />
 {/if}
 
@@ -269,50 +174,6 @@
     gap: 0.5rem;
   }
 
-  .tags-section {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .tags-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-
-  .add-tag-chip {
-    padding: 0.25rem 0.75rem;
-    background-color: transparent;
-    border: 1px dashed var(--border-color);
-    border-radius: 0.5rem;
-    color: var(--muted-color);
-    font-size: 0.875rem;
-    cursor: pointer;
-  }
-
-  .add-tag-chip:hover {
-    color: var(--text-color);
-    border-color: var(--accent-color);
-  }
-
-  .tag-input-row {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-    margin-left: 0.5rem;
-  }
-
-  .tag-input {
-    width: 8rem;
-    padding: 0.25rem 0.5rem;
-    background-color: var(--input-bg);
-    border: 1px solid var(--input-border);
-    border-radius: 0.5rem;
-    color: var(--text-color);
-    font-size: 0.875rem;
-  }
-
   .error {
     margin: 0.5rem 0 0;
     font-size: 0.875rem;
@@ -331,5 +192,4 @@
   .delete-action {
     margin-right: auto;
   }
-
 </style>
