@@ -143,6 +143,14 @@
     await handleVaultAction(event, "copy");
   }
 
+  function handleMoveToTrash(event) {
+    const group = $groups.find((g) => g.id === event.detail.groupId);
+    if (group) {
+      deleteTarget = group;
+    }
+    closeContextMenu();
+  }
+
   async function handleVaultAction(event, action) {
     const { sourceId, targetPath } = event.detail;
     const target = $vaults.find((v) => v.path === targetPath);
@@ -333,6 +341,7 @@
     on:mergeGroup={handleMergeGroup}
     on:moveToVault={handleMoveToVault}
     on:copyToVault={handleCopyToVault}
+    on:moveToTrash={handleMoveToTrash}
   />
 {/if}
 

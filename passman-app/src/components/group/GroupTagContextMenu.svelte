@@ -38,7 +38,7 @@
     else if (menu === "moveToVault") itemEl = moveToVaultItemEl;
     else if (menu === "copyToVault") itemEl = copyToVaultItemEl;
     else if (menu === "moveToGroup") itemEl = moveToGroupItemEl;
-    
+
     if (itemEl) {
       submenuTop = itemEl.getBoundingClientRect().top;
     }
@@ -59,6 +59,10 @@
   function handleCopyToVault(vault) {
     dispatch("copyToVault", { sourceId: item, targetPath: vault.path });
   }
+
+  function handleMoveToTrash() {
+    dispatch("moveToTrash", { groupId: item });
+  }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
@@ -75,22 +79,37 @@
         <span class="context-menu-arrow">▶</span>
       </div>
     </div>
-    <div class="menu-item-wrapper" on:mouseenter={() => openMenu("moveToVault")}>
+    <div
+      class="menu-item-wrapper"
+      on:mouseenter={() => openMenu("moveToVault")}
+    >
       <div bind:this={moveToVaultItemEl} class="menu-item has-submenu">
         <span>Move to</span>
         <span class="context-menu-arrow">▶</span>
       </div>
     </div>
-    <div class="menu-item-wrapper" on:mouseenter={() => openMenu("copyToVault")}>
+    <div
+      class="menu-item-wrapper"
+      on:mouseenter={() => openMenu("copyToVault")}
+    >
       <div bind:this={copyToVaultItemEl} class="menu-item has-submenu">
         <span>Copy to</span>
         <span class="context-menu-arrow">▶</span>
       </div>
     </div>
+    <div class="context-menu-divider"></div>
+    <div class="menu-item-wrapper" on:mouseenter={() => openMenu(null)}>
+      <div class="menu-item danger" on:click={handleMoveToTrash}>
+        <span>Move to trash</span>
+      </div>
+    </div>
   {/if}
 
   {#if type === "tag"}
-    <div class="menu-item-wrapper" on:mouseenter={() => openMenu("moveToGroup")}>
+    <div
+      class="menu-item-wrapper"
+      on:mouseenter={() => openMenu("moveToGroup")}
+    >
       <div bind:this={moveToGroupItemEl} class="menu-item has-submenu">
         <span>Move to group</span>
         <span class="context-menu-arrow">▶</span>
@@ -134,7 +153,9 @@
           <div
             class="menu-item"
             on:click={() =>
-              activeMenu === "moveToVault" ? handleMoveToVault(vault) : handleCopyToVault(vault)}
+              activeMenu === "moveToVault"
+                ? handleMoveToVault(vault)
+                : handleCopyToVault(vault)}
           >
             {vault.name}
           </div>
@@ -165,5 +186,13 @@
     padding: 0.5rem 0.75rem;
     font-size: 0.875rem;
     color: var(--muted-color);
+  }
+
+  .menu-item.danger {
+    color: var(--danger-color);
+  }
+
+  .menu-item.danger:hover {
+    background-color: rgba(239, 68, 68, 0.1);
   }
 </style>
