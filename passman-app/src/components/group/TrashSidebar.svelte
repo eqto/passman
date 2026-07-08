@@ -1,4 +1,8 @@
 <script>
+  import Tree from "../Tree.svelte";
+  import TrashTreeItem from "./TrashTreeItem.svelte";
+  import { buildTree } from "../../lib/groupTree.js";
+
   export let trashGroups = [];
   export let selectedTrashGroup = "";
   export let hasUngroupedTrashEntries = false;
@@ -6,6 +10,12 @@
   export let groups = [];
   export let onSelectTrashGroup;
   export let onSelectGroup;
+
+  $: trashGroupTree = buildTree(trashGroups);
+
+  $: itemProps = {
+    onSelectTrashGroup,
+  };
 </script>
 
 <div class="trash-header">
@@ -19,47 +29,15 @@
   <span>Trash</span>
 </div>
 
-{#if trashGroups.length === 0}
+{#if trashGroups.length === 0 && !hasUngroupedTrashEntries}
   <p class="empty-state">No deleted items.</p>
 {:else}
-  {#each trashGroups as group (group.id)}
-    <div
-      class="group-row"
-      class:selected={selectedTrashGroup === group.id}
-      role="listitem"
-    >
-      <div
-        class="group-item"
-        role="button"
-        tabindex="0"
-        on:click={() => onSelectTrashGroup(group.id)}
-        on:keydown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            onSelectTrashGroup(group.id);
-          }
-        }}
-      >
-        <span class="group-icon folder-icon">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            ><path
-              d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"
-            /></svg
-          >
-        </span>
-        <span class="group-name">{group.name}</span>
-      </div>
-    </div>
-  {/each}
+  <Tree
+    nodes={trashGroupTree}
+    selectedId={selectedTrashGroup}
+    itemComponent={TrashTreeItem}
+    {itemProps}
+  />
   {#if hasUngroupedTrashEntries}
     <div
       class="group-row"
@@ -134,16 +112,6 @@
   .group-icon {
     font-size: 1rem;
     opacity: 0.8;
-  }
-
-  .folder-icon {
-    display: flex;
-    align-items: center;
-    color: var(--muted-color);
-  }
-
-  .group-row.selected .folder-icon {
-    color: var(--selected-text);
   }
 
   .group-name {
