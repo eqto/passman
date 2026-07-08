@@ -6,7 +6,6 @@
   export let selectedGroup = "";
   export let onSelectGroup;
   export let onContextMenu;
-  export let onDelete;
   export let dragItem;
   export let dragOver;
   export let insertBefore;
@@ -31,7 +30,6 @@
   $: itemProps = {
     onSelectGroup,
     onContextMenu,
-    onDelete,
     dragItem,
     dragOver,
     insertBefore,

@@ -4,7 +4,6 @@
   export let depth = 0;
   export let onSelectGroup;
   export let onContextMenu;
-  export let onDelete;
   export let dragItem;
   export let dragOver;
   export let insertBefore;
@@ -102,13 +101,6 @@
     </div>
     <div class="group-name">{group.name}</div>
   </div>
-  <button
-    class="btn-icon-danger"
-    title="Delete group"
-    on:click={() => onDelete(group)}
-  >
-    ×
-  </button>
 </div>
 
 <style>
@@ -126,10 +118,6 @@
     padding-left: 1.5rem;
   }
 
-  .group-row.dragging .btn-icon-danger {
-    display: none;
-  }
-
   .group-row.drop-before {
     border-top: 2px solid var(--accent-color);
   }
@@ -142,8 +130,7 @@
     background-color: var(--selected-bg);
   }
 
-  .group-row.selected .group-item,
-  .group-row.selected .btn-icon-danger {
+  .group-row.selected .group-item {
     color: var(--selected-text);
   }
 
@@ -162,14 +149,6 @@
     gap: 0.35rem;
     padding: 0.5rem;
     cursor: pointer;
-  }
-
-  .btn-icon-danger {
-    display: none;
-  }
-
-  .group-row:hover .btn-icon-danger {
-    display: inline-flex;
   }
 
   .expand-icon {

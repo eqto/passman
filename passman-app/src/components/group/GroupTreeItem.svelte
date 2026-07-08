@@ -11,7 +11,6 @@
 
   export let onSelectGroup;
   export let onContextMenu;
-  export let onDelete;
   export let dragItem;
   export let dragOver;
   export let insertBefore;
@@ -30,7 +29,6 @@
   {depth}
   {onSelectGroup}
   {onContextMenu}
-  {onDelete}
   {dragItem}
   {dragOver}
   {insertBefore}

@@ -250,7 +250,6 @@
           {selectedGroup}
           {onSelectGroup}
           onContextMenu={(e, id) => openContextMenu(e, "group", id)}
-          onDelete={(group) => (deleteTarget = group)}
           {dragItem}
           {dragOver}
           {insertBefore}
@@ -401,10 +400,6 @@
     opacity: 0.6;
   }
 
-  .group-row.dragging .btn-icon-danger {
-    display: none;
-  }
-
   .group-row.drop-before {
     border-top: 2px solid var(--accent-color);
   }
@@ -417,8 +412,7 @@
     background-color: var(--selected-bg);
   }
 
-  .group-row.selected .group-item,
-  .group-row.selected .btn-icon-danger {
+  .group-row.selected .group-item {
     color: var(--selected-text);
   }
 
@@ -446,14 +440,6 @@
     font-weight: 400;
     color: var(--text-color);
     line-height: 1.5;
-  }
-
-  .btn-icon-danger {
-    display: none;
-  }
-
-  .group-row:hover .btn-icon-danger {
-    display: inline-flex;
   }
 
   .group-icon {
