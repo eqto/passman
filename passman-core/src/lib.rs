@@ -52,6 +52,8 @@ mod integration_tests {
             fields: vec![],
             created_at: chrono::Utc::now(),
             updated_at: chrono::Utc::now(),
+            deleted_at: None,
+            history: vec![],
         });
         save_vault_file(&vault, "password").unwrap();
 
@@ -84,6 +86,8 @@ mod integration_tests {
             fields: vec![],
             created_at: chrono::Utc::now(),
             updated_at: chrono::Utc::now(),
+            deleted_at: None,
+            history: vec![],
         };
         // Move entry to trash (root level, no group)
         entry.group_id = None;

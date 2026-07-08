@@ -22,6 +22,7 @@ fn test_import_creates_pmv() {
 
     let json = serde_json::json!({
         "name": "Imported",
+        "uuid": "vault-uuid-1",
         "groups": [{"id": "g1", "name": "General"}],
         "entries": [
             {
@@ -33,6 +34,14 @@ fn test_import_creates_pmv() {
                 "url": "https://example.com",
                 "notes": "",
                 "tags": [],
+                "deleted_at": "2026-06-25T00:00:00Z",
+                "history": [
+                    {
+                        "property": "password",
+                        "value": "old-pass",
+                        "updated_at": "2026-06-24T00:00:00Z"
+                    }
+                ],
                 "fields": [
                     {
                         "id": "f1",
@@ -66,12 +75,17 @@ fn test_import_creates_pmv() {
     assert_eq!(opened.payload.trash.entries.len(), 0);
     assert_eq!(opened.payload.trash.groups.len(), 0);
     assert_eq!(opened.payload.entries.len(), 1);
+    assert_eq!(opened.payload.uuid, Some("vault-uuid-1".to_string()));
     assert_eq!(opened.payload.entries[0].group_id, Some("g1".to_string()));
     assert!(opened.payload.entries[0].tags.is_empty());
     assert_eq!(opened.payload.entries[0].fields.len(), 1);
     assert_eq!(opened.payload.entries[0].fields[0].label, "PIN");
     assert_eq!(opened.payload.entries[0].fields[0].field_type, "password");
     assert_eq!(opened.payload.entries[0].fields[0].value, "1234");
+    assert!(opened.payload.entries[0].deleted_at.is_some());
+    assert_eq!(opened.payload.entries[0].history.len(), 1);
+    assert_eq!(opened.payload.entries[0].history[0].property, "password");
+    assert_eq!(opened.payload.entries[0].history[0].value, "old-pass");
 }
 
 #[test]

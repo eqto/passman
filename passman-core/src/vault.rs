@@ -97,6 +97,13 @@ pub struct CustomField {
     pub value: String,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct HistoryItem {
+    pub property: String,
+    pub value: String,
+    pub updated_at: DateTime<Utc>,
+}
+
 #[derive(Debug, Serialize, Deserialize, Default, Clone, PartialEq, Eq, Hash)]
 pub struct Group {
     pub id: String,
@@ -121,11 +128,17 @@ pub struct VaultEntry {
     pub group_id: Option<String>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub deleted_at: Option<DateTime<Utc>>,
+    #[serde(default)]
+    pub history: Vec<HistoryItem>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Default, Clone)]
 pub struct VaultPayload {
     pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub uuid: Option<String>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub groups: Vec<Group>,
@@ -170,6 +183,7 @@ pub fn create_vault_file_with_key(
     let now = Utc::now();
     let payload = VaultPayload {
         name: name.to_string(),
+        uuid: None,
         created_at: now,
         updated_at: now,
         groups: Vec::new(),

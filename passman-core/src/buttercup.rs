@@ -8,11 +8,13 @@ use flate2::read::GzDecoder;
 use hmac::digest::KeyInit as HmacKeyInit;
 use hmac::{Hmac, Mac};
 use pbkdf2::pbkdf2_hmac;
+use chrono::{DateTime, Utc};
 use serde::Deserialize;
 use sha2::Sha256;
 use std::collections::{HashMap, HashSet};
 use std::io::Read;
 use thiserror::Error;
+use crate::vault::HistoryItem;
 
 const FORMAT_B_SIGNATURE: &str = "b~>buttercup/b";
 const DEFAULT_ALGORITHM: &str = "cbc";
@@ -50,6 +52,7 @@ pub enum ButtercupError {
 #[derive(Debug, Clone)]
 pub struct ButtercupVault {
     pub name: String,
+    pub uuid: Option<String>,
     pub groups: Vec<ButtercupGroup>,
     pub entries: Vec<ButtercupEntry>,
     pub trash: ButtercupTrash,
@@ -86,6 +89,8 @@ pub struct ButtercupEntry {
     pub url: String,
     pub notes: String,
     pub fields: Vec<ButtercupCustomField>,
+    pub deleted_at: Option<DateTime<Utc>>,
+    pub history: Vec<HistoryItem>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -128,12 +133,20 @@ struct RawEntry {
     deleted: Option<u64>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Default)]
 struct RawValue {
     #[serde(default)]
     value: String,
     #[serde(default)]
     deleted: Option<u64>,
+    #[serde(default)]
+    history: Vec<RawHistoryItem>,
+}
+
+#[derive(Debug, Deserialize, Default)]
+struct RawHistoryItem {
+    value: String,
+    updated: u64,
 }
 
 struct EncryptedComponents {
@@ -173,6 +186,7 @@ pub fn decrypt_buttercup_vault(
             .get("name")
             .map(|v| v.value.clone())
             .unwrap_or_default(),
+        uuid: raw._id,
         groups: Vec::new(),
         entries: Vec::new(),
         trash: ButtercupTrash::default(),
@@ -277,6 +291,17 @@ pub fn decrypt_buttercup_vault(
             field_index += 1;
         }
 
+        let mut history = Vec::new();
+        for (property, raw_value) in &entry.p {
+            for hist in &raw_value.history {
+                history.push(HistoryItem {
+                    property: property.clone(),
+                    value: hist.value.clone(),
+                    updated_at: datetime_from_millis(hist.updated),
+                });
+            }
+        }
+
         let mut buttercup_entry = ButtercupEntry {
             id: entry.id,
             group_id: group_id.clone(),
@@ -286,6 +311,8 @@ pub fn decrypt_buttercup_vault(
             url: get_property(&entry.p, "URL"),
             notes: get_property(&entry.p, "notes"),
             fields,
+            deleted_at: entry.deleted.map(datetime_from_millis),
+            history,
         };
 
         let is_in_trash_group = group_id
@@ -313,6 +340,11 @@ fn is_trash_group(group: &RawGroup) -> bool {
         .get("bc_group_role")
         .map(|v| v.value.eq_ignore_ascii_case("trash"))
         .unwrap_or(false)
+}
+
+fn datetime_from_millis(ts: u64) -> DateTime<Utc> {
+    DateTime::from_timestamp_millis(ts as i64)
+        .unwrap_or_else(|| DateTime::from_timestamp(0, 0).unwrap())
 }
 
 fn get_field_type(attributes: &HashMap<String, RawValue>, property: &str) -> String {
@@ -485,7 +517,7 @@ mod tests {
             "bc_group_role".to_string(),
             RawValue {
                 value: "trash".to_string(),
-                deleted: None,
+                ..Default::default()
             },
         );
         let role_group = RawGroup {

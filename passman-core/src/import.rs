@@ -1,5 +1,5 @@
 use crate::buttercup::ButtercupVault;
-use crate::vault::{CustomField, Group, Trash, VaultEntry, VaultFile};
+use crate::vault::{CustomField, Group, HistoryItem, Trash, VaultEntry, VaultFile};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::path::Path;
@@ -8,6 +8,8 @@ use std::path::Path;
 pub struct ImportJson {
     #[serde(default = "default_vault_name")]
     pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub uuid: Option<String>,
     #[serde(default = "chrono::Utc::now")]
     pub created_at: DateTime<Utc>,
     #[serde(default = "chrono::Utc::now")]
@@ -56,6 +58,10 @@ pub struct ImportEntry {
     pub tags: Vec<String>,
     #[serde(default)]
     pub fields: Vec<ImportCustomField>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub deleted_at: Option<DateTime<Utc>>,
+    #[serde(default)]
+    pub history: Vec<HistoryItem>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -106,6 +112,8 @@ fn map_import_entry_to_vault_entry(e: ImportEntry, now: DateTime<Utc>) -> VaultE
             .collect(),
         created_at: now,
         updated_at: now,
+        deleted_at: e.deleted_at,
+        history: e.history,
     }
 }
 
@@ -120,6 +128,7 @@ fn map_import_group_to_group(g: ImportGroup) -> Group {
 pub fn build_payload(vault: &mut VaultFile, imported: ImportJson) {
     let now = chrono::Utc::now();
     vault.payload.name = imported.name;
+    vault.payload.uuid = imported.uuid;
     vault.payload.created_at = imported.created_at;
     vault.payload.updated_at = now;
 
@@ -157,6 +166,7 @@ impl From<ButtercupVault> for ImportJson {
     fn from(vault: ButtercupVault) -> Self {
         ImportJson {
             name: vault.name,
+            uuid: vault.uuid,
             created_at: chrono::Utc::now(),
             updated_at: chrono::Utc::now(),
             groups: vault
@@ -190,6 +200,8 @@ impl From<ButtercupVault> for ImportJson {
                             value: f.value,
                         })
                         .collect(),
+                    deleted_at: e.deleted_at,
+                    history: e.history,
                 })
                 .collect(),
             trash: ImportTrash {
@@ -226,6 +238,8 @@ impl From<ButtercupVault> for ImportJson {
                                 value: f.value,
                             })
                             .collect(),
+                        deleted_at: e.deleted_at,
+                        history: e.history,
                     })
                     .collect(),
             },

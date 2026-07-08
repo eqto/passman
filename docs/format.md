@@ -159,6 +159,7 @@ The decrypted payload is a JSON object representing the contents of the vault.
 ```json
 {
   "name": "My Vault",
+  "uuid": "fb31b4a6-1e54-4460-ae03-5441a8083be5",
   "created_at": "2026-06-26T02:25:00Z",
   "updated_at": "2026-06-26T02:25:00Z",
   "groups": [ ... ],
@@ -168,15 +169,16 @@ The decrypted payload is a JSON object representing the contents of the vault.
 }
 ```
 
-| Field        | Type     | Description                                          |
-|--------------|----------|------------------------------------------------------|
-| `name`       | `string` | Human-readable vault name.                           |
-| `created_at` | `string` | ISO 8601 UTC timestamp of vault creation.            |
-| `updated_at` | `string` | ISO 8601 UTC timestamp of last content change.         |
-| `groups`     | `array`  | List of `VaultGroup` objects, in display order.      |
-| `tags`       | `array`  | List of free-form tag strings.                       |
-| `entries`    | `array`  | List of `VaultEntry` objects.                        |
-| `trash`      | `object` | `Trash` object holding deleted groups and entries.   |
+| Field        | Type     | Required | Description                                          |
+|--------------|----------|----------|------------------------------------------------------|
+| `name`       | `string` | Yes      | Human-readable vault name.                           |
+| `uuid`       | `string` | No       | Optional stable vault UUID (e.g. from Buttercup).    |
+| `created_at` | `string` | Yes      | ISO 8601 UTC timestamp of vault creation.            |
+| `updated_at` | `string` | Yes      | ISO 8601 UTC timestamp of last content change.         |
+| `groups`     | `array`  | Yes      | List of `VaultGroup` objects, in display order.      |
+| `tags`       | `array`  | No       | List of free-form tag strings.                       |
+| `entries`    | `array`  | Yes      | List of `VaultEntry` objects.                        |
+| `trash`      | `object` | No       | `Trash` object holding deleted groups and entries.   |
 
 ### 5.3 `VaultGroup`
 
@@ -210,22 +212,38 @@ The order of the objects is preserved and used as the display order in the UI. G
   "tags": ["work"],
   "group_id": "g1",
   "created_at": "2026-06-26T02:25:00Z",
-  "updated_at": "2026-06-26T02:25:00Z"
+  "updated_at": "2026-06-26T02:25:00Z",
+  "deleted_at": null,
+  "history": [
+    { "property": "password", "value": "old-pass", "updated_at": "2026-06-25T02:25:00Z" }
+  ]
 }
 ```
 
-| Field        | Type     | Description                                           |
-|--------------|----------|-------------------------------------------------------|
-| `id`         | `string` | Unique entry identifier.                              |
-| `title`      | `string` | Entry title or display name.                          |
-| `username`   | `string` | Account username.                                     |
-| `password`   | `string` | Account password.                                     |
-| `url`        | `string` | Associated website or service URL.                    |
-| `notes`      | `string` | Free-form notes.                                      |
-| `tags`       | `array`  | Array of free-form tag strings.                       |
-| `group_id`   | `string` | Optional identifier of the group containing the entry.|
-| `created_at` | `string` | ISO 8601 UTC timestamp.                               |
-| `updated_at` | `string`  | ISO 8601 UTC timestamp.                               |
+| Field        | Type     | Required | Description                                           |
+|--------------|----------|----------|-------------------------------------------------------|
+| `id`         | `string` | Yes      | Unique entry identifier.                              |
+| `title`      | `string` | Yes      | Entry title or display name.                          |
+| `username`   | `string` | Yes      | Account username.                                     |
+| `password`   | `string` | Yes      | Account password.                                     |
+| `url`        | `string` | Yes      | Associated website or service URL.                    |
+| `notes`      | `string` | Yes      | Free-form notes.                                      |
+| `tags`       | `array`  | No       | Array of free-form tag strings.                       |
+| `group_id`   | `string` | No       | Optional identifier of the group containing the entry.|
+| `created_at` | `string` | Yes      | ISO 8601 UTC timestamp.                               |
+| `updated_at` | `string` | Yes      | ISO 8601 UTC timestamp.                               |
+| `deleted_at` | `string` | No       | ISO 8601 UTC timestamp when the entry was deleted.    |
+| `history`    | `array`  | No       | Array of `HistoryItem` objects for previous values.   |
+
+### 5.4.1 `HistoryItem`
+
+Each `history` entry records a previous value of an entry property:
+
+| Field        | Type     | Required | Description                                           |
+|--------------|----------|----------|-------------------------------------------------------|
+| `property`   | `string` | Yes      | Name of the property this history item belongs to.    |
+| `value`      | `string` | Yes      | The previous value of the property.                   |
+| `updated_at` | `string` | Yes      | ISO 8601 UTC timestamp when this value was replaced.  |
 
 ### 5.5 `Trash`
 
@@ -356,8 +374,16 @@ A decrypted Buttercup Format B vault is a JSON object with the following relevan
 | `id`  | Vault UUID. |
 | `a`   | Vault attributes (arbitrary key/value map). |
 | `g`   | Array of groups. Each group has `id`, `t` (title/name), `g` (parent group id, `"0"` for root), and `a` (attributes). |
-| `e`   | Array of entries. Each entry has `id`, `g` (parent group id), `p` (properties such as title, username, password), and `a` (attributes). |
+| `e`   | Array of entries. Each entry has `id`, `g` (parent group id), `p` (properties such as title, username, password, each with optional `history` and `deleted`), and `a` (attributes). |
 | `c`   | Vault creation timestamp. |
+
+### 10.1.1 Field mapping
+
+| Buttercup field | PMV field | Notes |
+|-------------------|-----------|-------|
+| `id` (vault)      | `uuid`    | Stored as the optional vault UUID. |
+| `deleted` (entry) | `deleted_at` | Entry-level deletion timestamp. |
+| `p[*].history`    | `history` | All per-property history items are collected into the entry-level `history` array. |
 
 ### 10.2 Trash group handling
 
