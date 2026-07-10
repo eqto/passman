@@ -21,6 +21,7 @@
   export let drop;
   export let flatGroups = [];
   export let hasAnyChildren = false;
+  export let dropInto;
 </script>
 
 <GroupItem
@@ -42,4 +43,5 @@
   {isCollapsed}
   toggleGroup={() => toggle()}
   {hasAnyChildren}
+  {dropInto}
 />

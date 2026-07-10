@@ -18,6 +18,7 @@
     mergeGroups,
     moveGroupToVault,
     copyGroupToVault,
+    moveGroupToParent,
   } from "../../stores/groups";
   import { moveEntriesWithTagToGroup } from "../../stores/entries";
   import {
@@ -26,10 +27,11 @@
     GroupTagContextMenu,
     GroupVaultMoveDialog,
     GroupTitle,
-    GroupTree,
     TrashSidebar,
     TagSidebar,
   } from "./index";
+  import Tree from "../Tree.svelte";
+  import GroupTreeItem from "./GroupTreeItem.svelte";
   import { createDragList } from "../../lib/dragList.js";
   import { buildTree } from "../../lib/groupTree.js";
 
@@ -73,11 +75,15 @@
 
   const drag = createDragList({
     axis: "vertical",
+    getKey: (item) => item.id,
     onReorder: async (items) => {
       reorderGroups(items);
     },
+    onDropInto: async ({ source, target }) => {
+      await handleDropInto(source, target);
+    },
   });
-  const { dragItem, dragOver, insertBefore } = drag;
+  const { dragItem, dragOver, insertBefore, dropInto } = drag;
 
   async function handleAddGroup(name) {
     await addGroup({ id: crypto.randomUUID(), name, parent_id: null });
@@ -115,6 +121,15 @@
   }
 
   $: groupTree = buildTree($groups);
+
+  function hasAnyChildren(nodes) {
+    for (const node of nodes) {
+      if (node.children.length > 0 || hasAnyChildren(node.children)) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   function closeContextMenu() {
     contextMenu = { show: false, x: 0, y: 0, type: "tag", item: "" };
@@ -219,6 +234,34 @@
     moveToVaultGroup = "";
     moveToVaultAction = "move";
   }
+
+  function isDescendant(groupId, potentialParentId, groups) {
+    if (groupId === potentialParentId) return true;
+    const group = groups.find((g) => g.id === groupId);
+    if (!group || !group.parent_id) return false;
+    return isDescendant(group.parent_id, potentialParentId, groups);
+  }
+
+  async function handleDropInto(source, target) {
+    const sourceId = source.id;
+    const targetId = target.id;
+
+    // Prevent dropping into itself
+    if (sourceId === targetId) return;
+
+    // Prevent circular reference
+    if (isDescendant(targetId, sourceId, $groups)) {
+      showToast("Cannot drop a group into its own descendant");
+      return;
+    }
+
+    try {
+      await moveGroupToParent(sourceId, targetId);
+    } catch (e) {
+      console.error("Failed to move group to parent:", e);
+      showToast("Failed to move group");
+    }
+  }
 </script>
 
 <svelte:window on:click={closeContextMenu} />
@@ -245,20 +288,25 @@
       {#if $groups.length === 0}
         <p class="empty-state">No groups.</p>
       {:else}
-        <GroupTree
+        <Tree
           nodes={groupTree}
-          {selectedGroup}
-          {onSelectGroup}
-          onContextMenu={(e, id) => openContextMenu(e, "group", id)}
+          selectedId={selectedGroup}
+          itemComponent={GroupTreeItem}
+          itemProps={{
+            onSelectGroup,
+            onContextMenu: (e, id) => openContextMenu(e, "group", id),
+            hasAnyChildren: hasAnyChildren(groupTree),
+          }}
           {dragItem}
           {dragOver}
           {insertBefore}
+          {dropInto}
+          flatGroups={$groups}
           dragStart={drag.dragStart}
           dragEnd={drag.dragEnd}
           handleDragOver={drag.handleDragOver}
           dragLeave={drag.dragLeave}
           drop={drag.drop}
-          flatGroups={$groups}
         />
       {/if}
 

@@ -13,6 +13,45 @@ pub fn collect_child_ids(groups: &[Group], parent_id: &str) -> Vec<String> {
     result
 }
 
+pub fn is_descendant(groups: &[Group], group_id: &str, potential_parent_id: &str) -> bool {
+    if group_id == potential_parent_id {
+        return true;
+    }
+    let group = groups.iter().find(|g| g.id == group_id);
+    if let Some(parent_id) = group.and_then(|g| g.parent_id.as_deref()) {
+        return is_descendant(groups, parent_id, potential_parent_id);
+    }
+    false
+}
+
+pub fn move_group_to_parent(
+    payload: &mut VaultPayload,
+    group_id: &str,
+    new_parent_id: Option<&str>,
+) -> Result<Vec<Group>, String> {
+    if !payload.groups.iter().any(|g| g.id == group_id) {
+        return Err("group does not exist".to_string());
+    }
+
+    if let Some(parent_id) = new_parent_id {
+        if !payload.groups.iter().any(|g| g.id == parent_id) {
+            return Err("parent group does not exist".to_string());
+        }
+        if is_descendant(&payload.groups, parent_id, group_id) {
+            return Err("cannot move group into its own descendant".to_string());
+        }
+    }
+
+    for group in &mut payload.groups {
+        if group.id == group_id {
+            group.parent_id = new_parent_id.map(|s| s.to_string());
+            break;
+        }
+    }
+    payload.touch();
+    Ok(payload.groups.clone())
+}
+
 pub fn move_entries_to_trash(payload: &mut VaultPayload, entries: Vec<VaultEntry>) {
     if entries.is_empty() {
         return;

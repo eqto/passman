@@ -8,6 +8,18 @@
   export let itemComponent;
   export let itemProps = {};
 
+  // Optional drag-and-drop handlers to pass down to tree items
+  export let dragItem = null;
+  export let dragOver = null;
+  export let insertBefore = null;
+  export let dropInto = null;
+  export let flatGroups = [];
+  export let dragStart = null;
+  export let dragEnd = null;
+  export let handleDragOver = null;
+  export let dragLeave = null;
+  export let drop = null;
+
   const dispatch = createEventDispatcher();
 
   function getId(node) {
@@ -27,6 +39,20 @@
     }
     dispatch("toggle", { id, expanded });
   }
+
+  $: treeItemProps = {
+    ...itemProps,
+    dragItem,
+    dragOver,
+    insertBefore,
+    dropInto,
+    flatGroups,
+    dragStart,
+    dragEnd,
+    handleDragOver,
+    dragLeave,
+    drop,
+  };
 </script>
 
 {#each nodes as node (getId(node))}
@@ -43,7 +69,7 @@
     {isCollapsed}
     selected={selectedId === id}
     toggle={() => toggle(id)}
-    {...itemProps}
+    {...treeItemProps}
   />
   {#if hasChildren && !isCollapsed}
     <svelte:self
@@ -52,7 +78,7 @@
       depth={depth + 1}
       {expanded}
       {itemComponent}
-      {itemProps}
+      itemProps={treeItemProps}
     />
   {/if}
 {/each}

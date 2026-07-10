@@ -17,6 +17,26 @@
   export let isCollapsed = false;
   export let toggleGroup = () => {};
   export let hasAnyChildren = false;
+  export let dropInto;
+
+  let dropIntoValue = null;
+
+  if (dropInto && dropInto.subscribe) {
+    dropInto.subscribe((val) => (dropIntoValue = val));
+  }
+
+  $: isDropTarget = dropIntoValue && dropIntoValue.id === group.id;
+
+  function onDragStart(event, item) {
+    if (event.currentTarget) {
+      event.currentTarget.classList.add("dragging");
+    }
+    dragStart(event, item);
+  }
+
+  function onDragEnd(event) {
+    dragEnd();
+  }
 </script>
 
 <div
@@ -26,11 +46,12 @@
   class:dragging={$dragItem === group.id}
   class:drop-before={$dragOver === group.id && $insertBefore === true}
   class:drop-after={$dragOver === group.id && $insertBefore === false}
+  class:drop-into={isDropTarget}
   role="listitem"
   aria-grabbed={$dragItem === group.id}
   draggable={true}
-  on:dragstart={(e) => dragStart(e, group)}
-  on:dragend={dragEnd}
+  on:dragstart={(e) => onDragStart(e, group)}
+  on:dragend={onDragEnd}
   on:dragover={(e) => handleDragOver(e, group)}
   on:dragleave={dragLeave}
   on:drop={(e) => drop(e, flatGroups, group)}
@@ -119,11 +140,53 @@
   }
 
   .group-row.drop-before {
-    border-top: 2px solid var(--accent-color);
+    position: relative;
+  }
+
+  .group-row.drop-before::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background-color: var(--accent-color);
+    z-index: 1;
   }
 
   .group-row.drop-after {
-    border-bottom: 2px solid var(--accent-color);
+    position: relative;
+  }
+
+  .group-row.drop-after::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background-color: var(--accent-color);
+    z-index: 1;
+  }
+
+  .group-row.drop-into {
+    background-color: var(--accent-color) !important;
+    border: 3px solid var(--accent-color) !important;
+    box-shadow: 0 0 8px var(--accent-color);
+  }
+
+  .group-row.dragging {
+    position: relative;
+  }
+
+  .group-row.dragging::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: var(--accent-color);
+    opacity: 0.3;
+    pointer-events: none;
+    z-index: 0;
   }
 
   .group-row.selected {
@@ -132,10 +195,6 @@
 
   .group-row.selected .group-item {
     color: var(--selected-text);
-  }
-
-  .group-row:not(.selected) .group-item {
-    opacity: 0.85;
   }
 
   .group-row:not(.selected):hover .group-item {

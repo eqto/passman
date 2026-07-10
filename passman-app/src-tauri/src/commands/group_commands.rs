@@ -1,8 +1,8 @@
 use passman_core::{Group, Trash, VaultEntry};
 use passman_core::vault_operations::{
     apply_copy_to_target, apply_move_to_target, delete_group_with_children,
-    merge_groups_in_vault, prepare_copy_from_source, prepare_move_from_source,
-    GroupDeletionResult as CoreGroupDeletionResult,
+    merge_groups_in_vault, move_group_to_parent, prepare_copy_from_source,
+    prepare_move_from_source, GroupDeletionResult as CoreGroupDeletionResult,
 };
 use serde::Serialize;
 use tauri::State;
@@ -205,5 +205,21 @@ pub fn add_tag(
         }
         open_vault.vault.payload.touch();
         Ok(open_vault.vault.payload.tags.clone())
+    })
+}
+
+#[tauri::command]
+pub fn move_group_to_parent_cmd(
+    path: String,
+    group_id: String,
+    new_parent_id: Option<String>,
+    state: State<'_, AppState>,
+) -> Result<Vec<Group>, String> {
+    state.with_open_vault_save(&path, |open_vault| {
+        move_group_to_parent(
+            &mut open_vault.vault.payload,
+            &group_id,
+            new_parent_id.as_deref(),
+        )
     })
 }

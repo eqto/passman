@@ -91,6 +91,7 @@ fn main() {
             merge_groups,
             move_group_to_vault,
             copy_group_to_vault,
+            move_group_to_parent_cmd,
             add_tag,
             list_entries,
             add_entry,

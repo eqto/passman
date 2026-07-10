@@ -100,3 +100,20 @@ export async function copyGroupToVault(sourceId, targetPath, targetGroupId) {
     throw e;
   }
 }
+
+export async function moveGroupToParent(groupId, newParentId) {
+  const vault = get(currentVault);
+  if (!vault || !groupId) return;
+  try {
+    const groups = await invoke("move_group_to_parent_cmd", {
+      path: vault.path,
+      groupId,
+      newParentId,
+    });
+    updateVaultData(vault.path, { groups });
+    return groups;
+  } catch (e) {
+    console.error("moveGroupToParent failed:", e);
+    throw e;
+  }
+}
