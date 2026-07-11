@@ -5,13 +5,12 @@
     vaultData,
     setVaultViewState,
   } from "../../vault/store.js";
-  import { freeTags } from "../../../lib/tags.js";
   import { debounce } from "../../../lib/debounce.js";
   import { showToast } from "../../../stores/toast.js";
   import { closeAllContextMenus } from "../../../stores/contextMenu.js";
+  import { useContextMenu } from "../../../lib/createContextMenu.js";
   import EntryContextMenu from "./EntryContextMenu.svelte";
-  import Chip from "../../../components/form/Chip.svelte";
-  import { onMount } from "svelte";
+  import EntryRow from "./EntryRow.svelte";
 
   const SEARCH_DEBOUNCE_MS = 150;
 
@@ -37,12 +36,7 @@
     filterSearch = value;
   }, SEARCH_DEBOUNCE_MS);
 
-  onMount(() => {
-    window.addEventListener("close-all-context-menus", closeContextMenu);
-    return () => {
-      window.removeEventListener("close-all-context-menus", closeContextMenu);
-    };
-  });
+  useContextMenu(closeContextMenu);
 
   $: if ($currentVault) {
     const viewState = $vaultData[$currentVault.path]?.viewState || {};
@@ -54,14 +48,6 @@
     if ($currentVault) {
       setVaultViewState($currentVault.path, { search });
     }
-  }
-
-  function toggleTag(tag) {
-    onToggleTag(tag);
-  }
-
-  function clearTagFilter() {
-    onClearTags();
   }
 
   function onSearchInput(event) {
@@ -85,11 +71,12 @@
     return true;
   });
 
-  async function copyPassword(event, password) {
-    event.stopPropagation();
-    if (!password) return;
-    await writeText(password);
-    showToast("Password copied to clipboard");
+  async function handleMenuCopyPassword() {
+    if (contextMenu.entry?.password) {
+      await writeText(contextMenu.entry.password);
+      showToast("Password copied to clipboard");
+    }
+    closeContextMenu();
   }
 
   function openContextMenu(event, entry) {
@@ -103,39 +90,9 @@
     contextMenu = { show: false, x: 0, y: 0, entry: null };
   }
 
-  async function handleMenuCopyPassword() {
-    if (contextMenu.entry?.password) {
-      await writeText(contextMenu.entry.password);
-      showToast("Password copied to clipboard");
-    }
+  function handleMenuAction(handler, event) {
+    handler(event.detail.entry, event.detail.group, event.detail.vault);
     closeContextMenu();
-  }
-
-  function handleMenuMoveToGroup(event) {
-    onMoveToGroup(event.detail.entry, event.detail.group);
-    closeContextMenu();
-  }
-
-  function handleMenuMoveToVault(event) {
-    onMoveToVault(event.detail.entry, event.detail.vault, event.detail.group);
-    closeContextMenu();
-  }
-
-  function handleMenuCopyToGroup(event) {
-    onCopyToGroup(event.detail.entry, event.detail.group);
-    closeContextMenu();
-  }
-
-  function handleMenuCopyToVault(event) {
-    onCopyToVault(event.detail.entry, event.detail.vault, event.detail.group);
-    closeContextMenu();
-  }
-
-  function handleEntryKeydown(event, entry) {
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      onSelect(entry);
-    }
   }
 </script>
 
@@ -156,11 +113,11 @@
   {#if selectedTags.length > 0}
     <div class="tag-filter-bar">
       {#each selectedTags as tag}
-        <button class="tag-filter-chip" on:click={() => toggleTag(tag)}>
+        <button class="tag-filter-chip" on:click={() => onToggleTag(tag)}>
           {tag} <span class="remove">×</span>
         </button>
       {/each}
-      <button class="btn-ghost" on:click={clearTagFilter}>Clear</button>
+      <button class="btn-ghost" on:click={onClearTags}>Clear</button>
     </div>
   {/if}
 
@@ -169,65 +126,14 @@
   {:else}
     <div class="entries">
       {#each filtered as entry (entry.id)}
-        <div
-          class="entry-row"
-          class:selected={selectedEntry && selectedEntry.id === entry.id}
-          role="button"
-          tabindex="0"
-          on:click={() => onSelect(entry)}
-          on:dblclick={(e) => copyPassword(e, entry.password)}
-          on:keydown={(e) => handleEntryKeydown(e, entry)}
-          on:contextmenu={(e) => openContextMenu(e, entry)}
-        >
-          <div class="entry-info">
-            <div class="entry-title-row">
-              <div class="entry-title">{entry.title}</div>
-              {#if freeTags(entry.tags).length > 0}
-                <div class="entry-tags">
-                  {#each freeTags(entry.tags) as tag}
-                    <Chip
-                      size="small"
-                      active={selectedTags.includes(tag)}
-                      on:click={(event) => {
-                        event.stopPropagation();
-                        toggleTag(tag);
-                      }}
-                    >
-                      {tag}
-                    </Chip>
-                  {/each}
-                </div>
-              {/if}
-            </div>
-            <div class="entry-subtitle">
-              {entry.username || entry.url || "No details"}
-            </div>
-          </div>
-          {#if entry.password}
-            <button
-              class="btn-copy"
-              title="Copy password"
-              aria-label="Copy password"
-              on:click={(e) => copyPassword(e, entry.password)}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                ><rect x="9" y="9" width="13" height="13" rx="2" ry="2"
-                ></rect><path
-                  d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
-                ></path></svg
-              >
-            </button>
-          {/if}
-        </div>
+        <EntryRow
+          {entry}
+          selected={selectedEntry && selectedEntry.id === entry.id}
+          {selectedTags}
+          {onSelect}
+          {onToggleTag}
+          onContextMenu={openContextMenu}
+        />
       {/each}
     </div>
   {/if}
@@ -245,10 +151,10 @@
     y={contextMenu.y}
     entry={contextMenu.entry}
     on:copyPassword={handleMenuCopyPassword}
-    on:moveToGroup={handleMenuMoveToGroup}
-    on:moveToVault={handleMenuMoveToVault}
-    on:copyToGroup={handleMenuCopyToGroup}
-    on:copyToVault={handleMenuCopyToVault}
+    on:moveToGroup={(e) => handleMenuAction(onMoveToGroup, e)}
+    on:moveToVault={(e) => handleMenuAction(onMoveToVault, e)}
+    on:copyToGroup={(e) => handleMenuAction(onCopyToGroup, e)}
+    on:copyToVault={(e) => handleMenuAction(onCopyToVault, e)}
   />
 {/if}
 
@@ -276,103 +182,6 @@
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
-  }
-
-  .entry-row {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.5rem;
-    background: transparent;
-    border: none;
-    border-radius: 0.5rem;
-    color: var(--text-color);
-    cursor: pointer;
-    text-align: left;
-    user-select: none;
-  }
-
-  .entry-row:hover {
-    background-color: var(--hover-bg);
-  }
-
-  .entry-row:not(.selected) .entry-info {
-    opacity: 0.85;
-  }
-
-  .entry-row:not(.selected):hover .entry-info {
-    opacity: 0.8;
-  }
-
-  .entry-row.selected {
-    background-color: var(--selected-bg);
-    color: var(--selected-text);
-  }
-
-  .entry-row.selected .entry-subtitle {
-    color: var(--selected-text);
-    opacity: 0.8;
-  }
-
-  .entry-info {
-    min-width: 0;
-    flex: 1;
-  }
-
-  .entry-row:hover .btn-copy,
-  .entry-row.selected .btn-copy {
-    opacity: 1;
-  }
-
-  .entry-row.selected .btn-copy:hover {
-    background-color: rgba(255, 255, 255, 0.15);
-    color: var(--selected-text);
-  }
-
-  .entry-title-row {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    min-width: 0;
-  }
-
-  .entry-title {
-    font-weight: 400;
-    font-size: 0.875rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    flex: 1 1 auto;
-    min-width: 0;
-  }
-
-  .entry-subtitle {
-    font-size: 0.75rem;
-    color: var(--muted-color);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .entry-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.25rem;
-    flex-shrink: 0;
-    max-width: 50%;
-  }
-
-  :global(.entry-row.selected .chip) {
-    color: var(--selected-text);
-    border-color: rgba(255, 255, 255, 0.3);
-    background-color: rgba(255, 255, 255, 0.15);
-  }
-
-  :global(.entry-row.selected .chip.active) {
-    background-color: var(--selected-text);
-    color: var(--selected-bg);
-    border-color: var(--selected-text);
   }
 
   .tag-filter-bar {

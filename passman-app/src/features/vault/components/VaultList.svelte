@@ -1,6 +1,5 @@
 <script>
   import { get } from "svelte/store";
-  import { onMount } from "svelte";
   import {
     vaults,
     currentVault,
@@ -14,6 +13,7 @@
     reorderVaults,
   } from "../store.js";
   import { closeAllContextMenus } from "../../../stores/contextMenu.js";
+  import { useContextMenu } from "../../../lib/createContextMenu.js";
   import UnlockDialog from "./UnlockDialog.svelte";
   import CreateVaultDialog from "./CreateVaultDialog.svelte";
   import VaultSettingsDialog from "./VaultSettingsDialog.svelte";
@@ -22,6 +22,7 @@
   import ImportButtercupDialog from "./ImportButtercupDialog.svelte";
   import ThemeToggle from "../../../components/ThemeToggle.svelte";
   import OpenVaultMenu from "./OpenVaultMenu.svelte";
+  import VaultTab from "./VaultTab.svelte";
   import { open } from "@tauri-apps/plugin-dialog";
   import { createDragList } from "../../../lib/dragList.js";
 
@@ -43,18 +44,12 @@
   });
   const { dragItem, dropTarget } = drag;
 
-  onMount(() => {
-    window.addEventListener("close-all-context-menus", closeContextMenu);
-    window.addEventListener("close-all-context-menus", () => {
-      showOpenDropdown = false;
-    });
-    return () => {
-      window.removeEventListener("close-all-context-menus", closeContextMenu);
-      window.removeEventListener("close-all-context-menus", () => {
-        showOpenDropdown = false;
-      });
-    };
-  });
+  function handleCloseAllContextMenus() {
+    closeContextMenu();
+    showOpenDropdown = false;
+  }
+
+  useContextMenu(handleCloseAllContextMenus);
 
   async function pickExistingVault() {
     const selected = await open({
@@ -107,9 +102,7 @@
     }
   }
 
-  function handleCancelRemove() {
-    removeVault = null;
-  }
+  // handleCancelRemove inlined — removeVault = null is set directly
 
   function handleContextMenu(event, vault) {
     event.preventDefault();
@@ -137,12 +130,8 @@
   }
 
   function handleWindowClick() {
-    if (contextMenu.show) {
-      closeContextMenu();
-    }
-    if (showOpenDropdown) {
-      showOpenDropdown = false;
-    }
+    if (contextMenu.show) closeContextMenu();
+    if (showOpenDropdown) showOpenDropdown = false;
   }
 
   function closeSettings() {
@@ -167,55 +156,26 @@
 <div class="vault-tabs">
   <div class="tabs">
     {#each $vaults as vault (vault.id)}
-      <div
-        class="tab"
-        class:selected={$currentVault && $currentVault.path === vault.path}
-        class:dragging={$dragItem === vault}
-        class:drop-before={$dropTarget?.type === "before" &&
+      <VaultTab
+        {vault}
+        selected={$currentVault && $currentVault.path === vault.path}
+        dragging={$dragItem === vault}
+        dropBefore={$dropTarget?.type === "before" &&
           $dropTarget.item.id === vault.id}
-        class:drop-after={$dropTarget?.type === "after" &&
+        dropAfter={$dropTarget?.type === "after" &&
           $dropTarget.item.id === vault.id}
-        role="button"
-        tabindex="0"
-        draggable={true}
-        on:dragstart={(e) => drag.dragStart(e, vault)}
-        on:dragend={drag.dragEnd}
-        on:dragover={(e) => drag.handleDragOver(e, vault)}
-        on:dragleave={drag.dragLeave}
-        on:drop={(e) => drag.drop(e, $vaults, vault)}
-        on:click={() => selectVault(vault)}
-        on:keydown={(e) => handleTabKeydown(e, vault)}
-        on:contextmenu|preventDefault={(e) => handleContextMenu(e, vault)}
-        title={vault.path}
-      >
-        <span class="tab-name">{vault.name}</span>
-        {#if $vaultData[vault.path]?.unlocked}
-          <button
-            class="btn-icon tab-action-btn lock-tab-btn"
-            on:click|stopPropagation={() => handleLock(vault)}
-            title="Lock vault"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="18"
-              height="18"
-              viewBox="0 -960 960 960"
-              fill="currentColor"
-              ><path
-                d="M534.5-302.03Q557-324.06 557-355q0-30-22.67-54.5t-54.5-24.5q-31.83 0-54.33 24.5t-22.5 55q0 30.5 22.67 52.5t54.5 22q31.83 0 54.33-22.03ZM220-80q-24.75 0-42.37-17.63Q160-115.25 160-140v-434q0-24.75 17.63-42.38Q195.25-634 220-634h330v-96q0-78.85 55.61-134.42Q661.21-920 740.11-920q78.89 0 134.39 55.58Q930-808.85 930-730h-60q0-54-37.88-92t-92-38Q686-860 648-822.08q-38 37.91-38 92.08v96h130q24.75 0 42.38 17.62Q800-598.75 800-574v434q0 24.75-17.62 42.37Q764.75-80 740-80H220Z"
-              /></svg
-            >
-          </button>
-        {:else}
-          <button
-            class="btn-icon tab-action-btn delete-tab-btn"
-            on:click|stopPropagation={() => handleDelete(vault)}
-            title="Remove vault"
-          >
-            ×
-          </button>
-        {/if}
-      </div>
+        unlocked={$vaultData[vault.path]?.unlocked}
+        {selectVault}
+        onLock={handleLock}
+        onRemove={handleDelete}
+        onContextMenu={handleContextMenu}
+        onDragStart={(e) => drag.dragStart(e, vault)}
+        onDragEnd={drag.dragEnd}
+        onDragOver={(e) => drag.handleDragOver(e, vault)}
+        onDragLeave={drag.dragLeave}
+        onDrop={(e) => drag.drop(e, $vaults, vault)}
+        onKeydown={handleTabKeydown}
+      />
     {/each}
   </div>
 
@@ -270,7 +230,7 @@
   <RemoveVaultDialog
     vault={removeVault}
     onRemove={handleRemoveConfirmed}
-    onCancel={handleCancelRemove}
+    onCancel={() => (removeVault = null)}
   />
 {/if}
 
@@ -313,74 +273,6 @@
     gap: 0.25rem;
     overflow-x: auto;
     min-width: 0;
-  }
-
-  .tab {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 0.5rem 0.5rem 0.75rem;
-    border: none;
-    border-radius: 0.5rem;
-    background: transparent;
-    color: var(--text-color);
-    cursor: pointer;
-    white-space: nowrap;
-  }
-
-  .tab:hover {
-    background-color: var(--hover-bg);
-  }
-
-  .tab.selected {
-    background-color: var(--selected-bg);
-    color: var(--selected-text);
-  }
-
-  .tab.dragging {
-    cursor: grabbing;
-    opacity: 0.6;
-  }
-
-  .tab.drop-before {
-    border-left: 2px solid var(--selected-bg);
-  }
-
-  .tab.drop-after {
-    border-right: 2px solid var(--selected-bg);
-  }
-
-  .tab-name {
-    font-weight: 500;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 12rem;
-  }
-
-  .tab-action-btn {
-    width: 1.75rem;
-    height: 1.75rem;
-    padding: 0;
-    border-radius: 50%;
-  }
-
-  .lock-tab-btn {
-    padding: 0.25rem;
-  }
-
-  .tab.selected .lock-tab-btn {
-    color: var(--selected-text);
-    background-color: transparent;
-  }
-
-  .tab.selected .lock-tab-btn:hover {
-    color: var(--selected-text);
-    background-color: rgba(128, 128, 128, 0.2);
-  }
-
-  .delete-tab-btn:hover {
-    color: var(--danger-color);
-    background-color: rgba(239, 68, 68, 0.1);
   }
 
   .tab-actions {

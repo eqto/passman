@@ -7,7 +7,7 @@
     DialogActions,
   } from "../../../components/dialog";
 
-  export let groupId = "";
+  export const groupId = "";
   export let groupName = "";
   export let vaultName = "";
   export let action = "move";

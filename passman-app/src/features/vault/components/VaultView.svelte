@@ -71,9 +71,9 @@
         return true;
       });
 
-  function selectedGroupName() {
-    const group = $groups.find((g) => g.id === $selection.selectedGroup);
-    return group ? group.name : $selection.selectedGroup;
+  function getGroupName(groupId) {
+    const group = $groups.find((g) => g.id === groupId);
+    return group ? group.name : groupId;
   }
 
   function handleNew() {
@@ -92,11 +92,6 @@
     selection.newEntry(entry);
   }
 
-  function getGroupName(groupId) {
-    const group = $groups.find((g) => g.id === groupId);
-    return group ? group.name : groupId;
-  }
-
   async function handleDelete(entry) {
     if ($selection.trashMode) {
       if (!confirm(`Permanently delete "${entry.title}"?`)) return;
@@ -105,12 +100,7 @@
       if (!confirm(`Move "${entry.title}" to Trash?`)) return;
       await deleteEntry(entry.id, entry.group_id, getGroupName(entry.group_id));
     }
-    if (
-      $selection.selectedEntry?.id === entry.id ||
-      $selection.editingEntry?.id === entry.id
-    ) {
-      selection.resetSelection();
-    }
+    resetSelectionIfCurrent(entry);
   }
 
   async function handleRestore(entry) {
@@ -125,33 +115,18 @@
         selection.setSelectedGroup("");
       }
     }
-    if (
-      $selection.selectedEntry?.id === entry.id ||
-      $selection.editingEntry?.id === entry.id
-    ) {
-      selection.resetSelection();
-    }
+    resetSelectionIfCurrent(entry);
   }
 
   async function handleMoveToGroup(entry, groupId) {
     await moveEntryToGroup(entry, groupId);
-    if (
-      $selection.selectedEntry?.id === entry.id ||
-      $selection.editingEntry?.id === entry.id
-    ) {
-      selection.resetSelection();
-    }
+    resetSelectionIfCurrent(entry);
   }
 
   async function handleMoveToVault(entry, vault, groupId) {
     if (!$vaultData[vault.path]?.unlocked) return;
     await moveEntryToVault(entry, vault.path, groupId);
-    if (
-      $selection.selectedEntry?.id === entry.id ||
-      $selection.editingEntry?.id === entry.id
-    ) {
-      selection.resetSelection();
-    }
+    resetSelectionIfCurrent(entry);
   }
 
   async function handleCopyToGroup(entry, groupId) {
@@ -161,6 +136,15 @@
   async function handleCopyToVault(entry, vault, groupId) {
     if (!$vaultData[vault.path]?.unlocked) return;
     await copyEntryToVault(entry, vault.path, groupId);
+  }
+
+  function resetSelectionIfCurrent(entry) {
+    if (
+      $selection.selectedEntry?.id === entry.id ||
+      $selection.editingEntry?.id === entry.id
+    ) {
+      selection.resetSelection();
+    }
   }
 
   async function handleKeydown(event) {

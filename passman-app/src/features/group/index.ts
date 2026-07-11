@@ -6,6 +6,7 @@ export { default as GroupTagContextMenu } from './components/GroupTagContextMenu
 export { default as GroupVaultMoveDialog } from './components/GroupVaultMoveDialog.svelte';
 export { default as TagSidebar } from './components/TagSidebar.svelte';
 export { default as TrashSidebar } from './components/TrashSidebar.svelte';
+export { default as TrashRow } from './components/TrashRow.svelte';
 
 export * from './store.js';
 export { buildTree } from './groupTree.js';

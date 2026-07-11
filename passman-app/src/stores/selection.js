@@ -1,16 +1,18 @@
 import { writable } from "svelte/store";
 import { setVaultViewState } from "../features/vault/store.js";
 
+const DEFAULT_STATE = {
+  selectedGroup: "",
+  selectedEntry: null,
+  editingEntry: null,
+  mode: "view",
+  trashMode: false,
+  selectedTrashGroup: "",
+  selectedTags: [],
+};
+
 function createSelectionStore() {
-  const { subscribe, set, update } = writable({
-    selectedGroup: "",
-    selectedEntry: null,
-    editingEntry: null,
-    mode: "view",
-    trashMode: false,
-    selectedTrashGroup: "",
-    selectedTags: [],
-  });
+  const { subscribe, set, update } = writable({ ...DEFAULT_STATE });
 
   let currentVaultPath = null;
 
@@ -27,92 +29,67 @@ function createSelectionStore() {
     });
   }
 
+  function updateAndSave(updater) {
+    update((s) => {
+      const next = updater(s);
+      saveViewState(next);
+      return next;
+    });
+  }
+
   return {
     subscribe,
     setVaultPath(path) {
       currentVaultPath = path;
     },
     reset() {
-      set({
-        selectedGroup: "",
+      set({ ...DEFAULT_STATE });
+    },
+    selectGroup(group) {
+      updateAndSave((s) => ({
+        ...s,
+        selectedGroup: group,
+        trashMode: false,
         selectedEntry: null,
         editingEntry: null,
         mode: "view",
-        trashMode: false,
-        selectedTrashGroup: "",
-        selectedTags: [],
-      });
-    },
-    selectGroup(group) {
-      update((s) => {
-        const next = {
-          ...s,
-          selectedGroup: group,
-          trashMode: false,
-          selectedEntry: null,
-          editingEntry: null,
-          mode: "view",
-        };
-        saveViewState(next);
-        return next;
-      });
+      }));
     },
     selectTag(tag) {
-      update((s) => {
-        let selectedTags;
-        if (s.selectedTags.includes(tag)) {
-          selectedTags = s.selectedTags.filter((t) => t !== tag);
-        } else {
-          selectedTags = [...s.selectedTags, tag];
-        }
-        let selectedEntry = s.selectedEntry;
-        let editingEntry = s.editingEntry;
-        let mode = s.mode;
-        if (s.selectedEntry && !(s.selectedEntry.tags || []).includes(tag)) {
-          selectedEntry = null;
-          editingEntry = null;
-          mode = "view";
-        }
-        const next = {
+      updateAndSave((s) => {
+        const selectedTags = s.selectedTags.includes(tag)
+          ? s.selectedTags.filter((t) => t !== tag)
+          : [...s.selectedTags, tag];
+        const shouldClearEntry = s.selectedEntry && !(s.selectedEntry.tags || []).includes(tag);
+        return {
           ...s,
           selectedTags,
-          selectedEntry,
-          editingEntry,
-          mode,
+          selectedEntry: shouldClearEntry ? null : s.selectedEntry,
+          editingEntry: shouldClearEntry ? null : s.editingEntry,
+          mode: shouldClearEntry ? "view" : s.mode,
         };
-        saveViewState(next);
-        return next;
       });
     },
     clearTags() {
-      update((s) => {
-        const next = { ...s, selectedTags: [] };
-        saveViewState(next);
-        return next;
-      });
+      updateAndSave((s) => ({ ...s, selectedTags: [] }));
     },
     selectTrashGroup(groupId) {
-      update((s) => {
-        const next = {
-          ...s,
-          selectedTrashGroup: groupId,
-          trashMode: true,
-          selectedEntry: null,
-          editingEntry: null,
-          mode: "view",
-        };
-        saveViewState(next);
-        return next;
-      });
+      updateAndSave((s) => ({
+        ...s,
+        selectedTrashGroup: groupId,
+        trashMode: true,
+        selectedEntry: null,
+        editingEntry: null,
+        mode: "view",
+      }));
     },
     trashClick(trashGroupIds) {
-      update((s) => {
+      updateAndSave((s) => {
         let selectedTrashGroup = s.selectedTrashGroup;
         if (!trashGroupIds.includes(selectedTrashGroup)) {
-          selectedTrashGroup =
-            trashGroupIds.length > 0 ? trashGroupIds[0] : "__ungrouped__";
+          selectedTrashGroup = trashGroupIds.length > 0 ? trashGroupIds[0] : "__ungrouped__";
         }
-        const next = {
+        return {
           ...s,
           trashMode: true,
           selectedTrashGroup,
@@ -120,88 +97,54 @@ function createSelectionStore() {
           editingEntry: null,
           mode: "view",
         };
-        saveViewState(next);
-        return next;
       });
     },
     selectEntry(entry) {
-      update((s) => {
-        const next = {
-          ...s,
-          selectedEntry: entry,
-          editingEntry: null,
-          mode: "view",
-        };
-        saveViewState(next);
-        return next;
-      });
+      updateAndSave((s) => ({
+        ...s,
+        selectedEntry: entry,
+        editingEntry: null,
+        mode: "view",
+      }));
     },
     editEntry(entry) {
-      update((s) => {
-        const next = {
-          ...s,
-          editingEntry: { ...entry },
-          mode: "edit",
-        };
-        saveViewState(next);
-        return next;
-      });
+      updateAndSave((s) => ({
+        ...s,
+        editingEntry: { ...entry },
+        mode: "edit",
+      }));
     },
     newEntry(entry) {
-      update((s) => {
-        const next = {
-          ...s,
-          editingEntry: entry,
-          selectedEntry: null,
-          mode: "edit",
-        };
-        saveViewState(next);
-        return next;
-      });
+      updateAndSave((s) => ({
+        ...s,
+        editingEntry: entry,
+        selectedEntry: null,
+        mode: "edit",
+      }));
     },
     resetSelection() {
-      update((s) => {
-        const next = {
-          ...s,
-          selectedEntry: null,
-          editingEntry: null,
-          mode: "view",
-        };
-        saveViewState(next);
-        return next;
-      });
+      updateAndSave((s) => ({
+        ...s,
+        selectedEntry: null,
+        editingEntry: null,
+        mode: "view",
+      }));
     },
     closeEditor() {
-      update((s) => {
-        const next = {
-          ...s,
-          mode: "view",
-          editingEntry: null,
-        };
-        saveViewState(next);
-        return next;
-      });
+      updateAndSave((s) => ({
+        ...s,
+        mode: "view",
+        editingEntry: null,
+      }));
     },
     setTrashMode(trashMode) {
-      update((s) => {
-        const next = { ...s, trashMode };
-        saveViewState(next);
-        return next;
-      });
+      updateAndSave((s) => ({ ...s, trashMode }));
     },
     setSelectedGroup(group) {
-      update((s) => {
-        const next = { ...s, selectedGroup: group };
-        saveViewState(next);
-        return next;
-      });
+      updateAndSave((s) => ({ ...s, selectedGroup: group }));
     },
     setSelectedTrashGroup(groupId) {
-      update((s) => {
-        const next = { ...s, selectedTrashGroup: groupId };
-        saveViewState(next);
-        return next;
-      });
+      updateAndSave((s) => ({ ...s, selectedTrashGroup: groupId }));
     },
     save() {
       let state;

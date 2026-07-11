@@ -1,6 +1,7 @@
 <script>
   import { writeText } from "@tauri-apps/plugin-clipboard-manager";
   import { showToast } from "../../../stores/toast.js";
+  import { CopyIcon, EyeIcon, EyeOffIcon } from "../../../components/icons";
 
   export let fields = [];
 
@@ -44,36 +45,9 @@
             on:click={() => toggleCustomFieldVisibility(field.id)}
           >
             {#if visibleCustomFieldIds.has(field.id)}
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                ><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path><path
-                  d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"
-                ></path><path
-                  d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"
-                ></path><line x1="2" x2="22" y1="2" y2="22"></line></svg
-              >
+              <EyeOffIcon size={16} />
             {:else}
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                ><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"
-                ></path><circle cx="12" cy="12" r="3"></circle></svg
-              >
+              <EyeIcon size={16} />
             {/if}
           </button>
           <button
@@ -81,21 +55,7 @@
             aria-label="Copy password"
             on:click={() => copy(field.value, field.label || "Password")}
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              ><rect x="9" y="9" width="13" height="13" rx="2" ry="2"
-              ></rect><path
-                d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
-              ></path></svg
-            >
+            <CopyIcon size={16} />
           </button>
         {/if}
       </div>
@@ -108,21 +68,7 @@
             aria-label="Copy value"
             on:click={() => copy(field.value, field.label || "Value")}
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              ><rect x="9" y="9" width="13" height="13" rx="2" ry="2"
-              ></rect><path
-                d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
-              ></path></svg
-            >
+            <CopyIcon size={16} />
           </button>
         {/if}
       </div>

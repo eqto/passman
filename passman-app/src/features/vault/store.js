@@ -154,13 +154,7 @@ export async function closeVault(path) {
   clearVaultData(path);
 }
 
-export async function lockVaultByPath(path) {
-  await invoke("close_vault", { path });
-  if (get(currentVault)?.path === path) {
-    currentVault.set(null);
-  }
-  clearVaultData(path);
-}
+export const lockVaultByPath = closeVault;
 
 export async function lockVault() {
   const vault = get(currentVault);

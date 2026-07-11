@@ -1,6 +1,6 @@
 <script>
-  import { open } from "@tauri-apps/plugin-dialog";
   import { createEventDispatcher } from "svelte";
+  import { ChevronIcon } from "../../../components/icons";
 
   const dispatch = createEventDispatcher();
 
@@ -36,14 +36,23 @@
 </script>
 
 <div class="btn-secondary dropdown-button">
-  <button class="dropdown-main-btn" on:click={pickExistingVault}>Open Vault</button>
+  <button class="dropdown-main-btn" on:click={pickExistingVault}
+    >Open Vault</button
+  >
   <div class="dropdown-separator"></div>
-  <button class="btn-icon dropdown-toggle" on:click={toggleOpenDropdown} title="Open options">
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 -960 960 960" fill="currentColor"><path d="M480-345 240-585l56-56 184 184 184-184 56 56-240 240Z"/></svg>
+  <button
+    class="btn-icon dropdown-toggle"
+    on:click={toggleOpenDropdown}
+    title="Open options"
+  >
+    <ChevronIcon size={16} />
   </button>
 </div>
 {#if showDropdown}
-  <div class="dropdown-menu" style="left: {dropdownPosition.x}px; top: {dropdownPosition.y}px;">
+  <div
+    class="dropdown-menu"
+    style="left: {dropdownPosition.x}px; top: {dropdownPosition.y}px;"
+  >
     <button class="dropdown-item" on:click={handleButtercupImport}>
       Open Buttercup format
     </button>
