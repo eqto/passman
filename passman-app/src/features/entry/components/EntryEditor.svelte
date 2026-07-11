@@ -1,9 +1,9 @@
 <script>
-  import { addEntry, updateEntry, generatePassword } from "../stores/entries";
-  import { DEFAULT_PASSWORD_LENGTH } from "../lib/constants.js";
+  import { addEntry, updateEntry, generatePassword } from "../store.js";
+  import { DEFAULT_PASSWORD_LENGTH } from "../../../lib/constants.js";
   import CustomFieldEditor from "./CustomFieldEditor.svelte";
   import TagManager from "./TagManager.svelte";
-  import Confirm from "./dialog/Confirm.svelte";
+  import Confirm from "../../../components/dialog/Confirm.svelte";
 
   export let entry;
   export let selectedGroup = "";

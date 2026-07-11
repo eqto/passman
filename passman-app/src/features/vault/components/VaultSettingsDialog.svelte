@@ -1,7 +1,13 @@
 <script>
   import { createEventDispatcher } from "svelte";
-  import { renameVault } from "../stores/vaults";
-  import { Dialog, DialogHeader, DialogBody, DialogFooter, DialogActions } from "./dialog";
+  import { renameVault } from "../store.js";
+  import {
+    Dialog,
+    DialogHeader,
+    DialogBody,
+    DialogFooter,
+    DialogActions,
+  } from "../../../components/dialog";
 
   export let vault = null;
 
@@ -27,23 +33,27 @@
   <DialogHeader on:close={handleCancel}>Vault Settings</DialogHeader>
   <DialogBody>
     <div class="modal-form">
-      <input class="modal-input" bind:value={settingsName} placeholder="Vault name" />
+      <input
+        class="modal-input"
+        bind:value={settingsName}
+        placeholder="Vault name"
+      />
       <div class="path-field form-group">
         <label for="vault-path">File location</label>
-        <input id="vault-path" class="modal-input" type="text" value={vault?.path || ""} readonly />
+        <input
+          id="vault-path"
+          class="modal-input"
+          type="text"
+          value={vault?.path || ""}
+          readonly
+        />
       </div>
     </div>
   </DialogBody>
   <DialogFooter>
     <DialogActions>
-      <button class="modal-cancel-btn" on:click={handleCancel}>
-        Cancel
-      </button>
-      <button class="btn-primary" on:click={handleRename}>
-        Save
-      </button>
+      <button class="modal-cancel-btn" on:click={handleCancel}> Cancel </button>
+      <button class="btn-primary" on:click={handleRename}> Save </button>
     </DialogActions>
   </DialogFooter>
 </Dialog>
-
-

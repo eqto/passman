@@ -1,7 +1,7 @@
 <script>
   import { writeText } from "@tauri-apps/plugin-clipboard-manager";
-  import { showToast } from "../stores/toast.js";
-  import { updateEntry } from "../stores/entries";
+  import { showToast } from "../../../stores/toast.js";
+  import { updateEntry } from "../store.js";
   import TagManager from "./TagManager.svelte";
   import CustomFieldDisplay from "./CustomFieldDisplay.svelte";
 

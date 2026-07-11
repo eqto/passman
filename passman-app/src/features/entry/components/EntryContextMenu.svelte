@@ -1,8 +1,11 @@
 <script>
   import { createEventDispatcher, onMount, afterUpdate } from "svelte";
-  import { groups, vaults, currentVault } from "../stores/vaults";
-  import { CONTEXT_MENU_WIDTH, CONTEXT_MENU_PADDING } from "../lib/constants.js";
-  import { computeSubmenuLeft } from "../lib/menuPosition.js";
+  import { groups, vaults, currentVault } from "../../vault/store.js";
+  import {
+    CONTEXT_MENU_WIDTH,
+    CONTEXT_MENU_PADDING,
+  } from "../../../lib/constants.js";
+  import { computeSubmenuLeft } from "../../../lib/menuPosition.js";
   import MoveCopySubmenu from "./MoveCopySubmenu.svelte";
 
   export let x = 0;
@@ -24,8 +27,12 @@
   const MENU_WIDTH = CONTEXT_MENU_WIDTH;
 
   $: currentGroupId = entry?.group_id || null;
-  $: moveGroups = ($groups || []).filter((group) => group.id !== currentGroupId);
-  $: moveVaults = ($vaults || []).filter((vault) => vault.path !== $currentVault?.path);
+  $: moveGroups = ($groups || []).filter(
+    (group) => group.id !== currentGroupId,
+  );
+  $: moveVaults = ($vaults || []).filter(
+    (vault) => vault.path !== $currentVault?.path,
+  );
 
   $: submenuLeft = computeSubmenuLeft(left, mainWidth);
 
@@ -64,7 +71,11 @@
   }
 
   function handleMoveToVault(event) {
-    dispatch("moveToVault", { entry, vault: event.detail.vault, group: event.detail.group });
+    dispatch("moveToVault", {
+      entry,
+      vault: event.detail.vault,
+      group: event.detail.group,
+    });
   }
 
   function handleCopyToGroup(event) {
@@ -72,7 +83,11 @@
   }
 
   function handleCopyToVault(event) {
-    dispatch("copyToVault", { entry, vault: event.detail.vault, group: event.detail.group });
+    dispatch("copyToVault", {
+      entry,
+      vault: event.detail.vault,
+      group: event.detail.group,
+    });
   }
 
   function openMove() {
@@ -103,7 +118,9 @@
   <div
     class="menu-item"
     on:click={handleCopyPassword}
-    style="cursor: {!entry?.password ? 'not-allowed' : 'pointer'}; opacity: {!entry?.password ? '0.6' : '1'}"
+    style="cursor: {!entry?.password
+      ? 'not-allowed'
+      : 'pointer'}; opacity: {!entry?.password ? '0.6' : '1'}"
   >
     Copy Password
   </div>

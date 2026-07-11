@@ -1,8 +1,14 @@
 <script>
   import { createEventDispatcher } from "svelte";
   import { save } from "@tauri-apps/plugin-dialog";
-  import { createVault } from "../stores/vaults";
-  import { Dialog, DialogHeader, DialogBody, DialogFooter, DialogActions } from "./dialog";
+  import { createVault } from "../store.js";
+  import {
+    Dialog,
+    DialogHeader,
+    DialogBody,
+    DialogFooter,
+    DialogActions,
+  } from "../../../components/dialog";
 
   let newName = "";
   let newPath = "";
@@ -47,24 +53,33 @@
   <DialogHeader on:close={handleCancel}>Create Vault</DialogHeader>
   <DialogBody>
     <div class="modal-form">
-      <input class="modal-input" bind:value={newName} placeholder="Vault name" />
+      <input
+        class="modal-input"
+        bind:value={newName}
+        placeholder="Vault name"
+      />
       <div class="path-row">
-        <input class="modal-input" bind:value={newPath} placeholder="File path" />
+        <input
+          class="modal-input"
+          bind:value={newPath}
+          placeholder="File path"
+        />
         <button class="btn-secondary browse-btn" on:click={pickFile}>
           Browse
         </button>
       </div>
-      <input class="modal-input" bind:value={newPassword} type="password" placeholder="Vault password" />
+      <input
+        class="modal-input"
+        bind:value={newPassword}
+        type="password"
+        placeholder="Vault password"
+      />
     </div>
   </DialogBody>
   <DialogFooter>
     <DialogActions>
-      <button class="modal-cancel-btn" on:click={handleCancel}>
-        Cancel
-      </button>
-      <button class="btn-primary" on:click={handleCreate}>
-        Create
-      </button>
+      <button class="modal-cancel-btn" on:click={handleCancel}> Cancel </button>
+      <button class="btn-primary" on:click={handleCreate}> Create </button>
     </DialogActions>
   </DialogFooter>
 </Dialog>

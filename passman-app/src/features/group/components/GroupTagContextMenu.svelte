@@ -1,7 +1,7 @@
 <script>
   import { createEventDispatcher } from "svelte";
-  import { vaultData } from "../../stores/vaults";
-  import { computeSubmenuLeft } from "../../lib/menuPosition.js";
+  import { vaultData } from "../../vault/store.js";
+  import { computeSubmenuLeft } from "../../../lib/menuPosition.js";
 
   export let x = 0;
   export let y = 0;

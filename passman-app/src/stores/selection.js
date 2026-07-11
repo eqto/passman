@@ -1,5 +1,5 @@
 import { writable } from "svelte/store";
-import { setVaultViewState } from "./vaults";
+import { setVaultViewState } from "../features/vault/store.js";
 
 function createSelectionStore() {
   const { subscribe, set, update } = writable({

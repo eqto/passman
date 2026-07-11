@@ -1,5 +1,11 @@
 <script>
-  import { Dialog, DialogHeader, DialogBody, DialogFooter, DialogActions } from "./dialog";
+  import {
+    Dialog,
+    DialogHeader,
+    DialogBody,
+    DialogFooter,
+    DialogActions,
+  } from "../../../components/dialog";
 
   export let path;
   export let name;
@@ -52,10 +58,18 @@
   </DialogBody>
   <DialogFooter>
     <DialogActions>
-      <button class="modal-cancel-btn" on:click={onCancel} disabled={isUnlocking}>
+      <button
+        class="modal-cancel-btn"
+        on:click={onCancel}
+        disabled={isUnlocking}
+      >
         Cancel
       </button>
-      <button class="btn-primary" on:click={handleUnlock} disabled={isUnlocking}>
+      <button
+        class="btn-primary"
+        on:click={handleUnlock}
+        disabled={isUnlocking}
+      >
         Unlock
       </button>
     </DialogActions>
@@ -95,7 +109,11 @@
   .progress-indeterminate {
     width: 40%;
     height: 100%;
-    background: linear-gradient(90deg, var(--accent-color), var(--accent-hover));
+    background: linear-gradient(
+      90deg,
+      var(--accent-color),
+      var(--accent-hover)
+    );
     border-radius: 0.5rem;
     animation: indeterminate 1.5s ease-in-out infinite;
   }

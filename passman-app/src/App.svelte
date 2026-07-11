@@ -1,8 +1,8 @@
 <script>
   import { onMount, onDestroy } from "svelte";
-  import VaultList from "./components/VaultList.svelte";
-  import VaultView from "./components/VaultView.svelte";
-  import UnlockDialog from "./components/UnlockDialog.svelte";
+  import VaultList from "./features/vault/components/VaultList.svelte";
+  import VaultView from "./features/vault/components/VaultView.svelte";
+  import UnlockDialog from "./features/vault/components/UnlockDialog.svelte";
   import AutoLock from "./components/AutoLock.svelte";
   import Toast from "./components/Toast.svelte";
   import {
@@ -12,7 +12,7 @@
     lockVault,
     unlockVault,
     initSaveListener,
-  } from "./stores/vaults";
+  } from "./features/vault/store.js";
 
   let saveUnlisten = null;
 

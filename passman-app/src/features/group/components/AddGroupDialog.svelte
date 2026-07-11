@@ -1,5 +1,11 @@
 <script>
-  import { Dialog, DialogHeader, DialogBody, DialogFooter, DialogActions } from "../dialog";
+  import {
+    Dialog,
+    DialogHeader,
+    DialogBody,
+    DialogFooter,
+    DialogActions,
+  } from "../../../components/dialog";
 
   export let title = "Add Group";
   export let onAdd;
@@ -44,12 +50,8 @@
   </DialogBody>
   <DialogFooter>
     <DialogActions>
-      <button class="modal-cancel-btn" on:click={onCancel}>
-        Cancel
-      </button>
-      <button class="btn-primary" on:click={handleAdd}>
-        Add
-      </button>
+      <button class="modal-cancel-btn" on:click={onCancel}> Cancel </button>
+      <button class="btn-primary" on:click={handleAdd}> Add </button>
     </DialogActions>
   </DialogFooter>
 </Dialog>

@@ -1,8 +1,8 @@
 import { get } from "svelte/store";
 import { invoke } from "@tauri-apps/api/core";
 
-import { currentVault, vaultData, updateVaultData, groups, entries } from "./vaults";
-import { DEFAULT_PASSWORD_LENGTH } from "../lib/constants.js";
+import { currentVault, vaultData, updateVaultData, groups, entries } from "../vault/store.js";
+import { DEFAULT_PASSWORD_LENGTH } from "../../lib/constants.js";
 
 export async function addEntry(entry) {
   const vault = get(currentVault);

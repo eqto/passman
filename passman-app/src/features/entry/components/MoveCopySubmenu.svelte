@@ -1,7 +1,7 @@
 <script>
   import { createEventDispatcher, onMount, afterUpdate } from "svelte";
-  import { vaultData } from "../stores/vaults";
-  import { computeSubmenuLeft } from "../lib/menuPosition.js";
+  import { vaultData } from "../../vault/store.js";
+  import { computeSubmenuLeft } from "../../../lib/menuPosition.js";
 
   export let groups = [];
   export let vaults = [];
@@ -24,7 +24,7 @@
     if (!menuEl) return;
     const rect = menuEl.getBoundingClientRect();
     const viewportHeight = window.innerHeight;
-    
+
     if (rect.top + rect.height > viewportHeight - PADDING) {
       adjustedTop = viewportHeight - rect.height - PADDING;
       if (adjustedTop < PADDING) adjustedTop = PADDING;
@@ -80,7 +80,9 @@
         >
           <div
             class="menu-item has-submenu"
-            style="cursor: {!$vaultData[vault.path]?.unlocked ? 'not-allowed' : 'default'}"
+            style="cursor: {!$vaultData[vault.path]?.unlocked
+              ? 'not-allowed'
+              : 'default'}"
           >
             <span>{vault.name}</span>
             {#if !$vaultData[vault.path]?.unlocked}
@@ -98,7 +100,10 @@
             >
               {#if targetVaultGroups(activeVault).length > 0}
                 {#each targetVaultGroups(activeVault) as group}
-                  <div class="menu-item" on:click={() => selectVaultGroup(activeVault, group)}>
+                  <div
+                    class="menu-item"
+                    on:click={() => selectVaultGroup(activeVault, group)}
+                  >
                     {group.name}
                   </div>
                 {/each}

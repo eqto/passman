@@ -1,8 +1,14 @@
 <script>
   import { createEventDispatcher } from "svelte";
   import { open, save } from "@tauri-apps/plugin-dialog";
-  import { convertButtercupVault } from "../stores/vaults";
-  import { Dialog, DialogHeader, DialogBody, DialogFooter, DialogActions } from "./dialog";
+  import { convertButtercupVault } from "../store.js";
+  import {
+    Dialog,
+    DialogHeader,
+    DialogBody,
+    DialogFooter,
+    DialogActions,
+  } from "../../../components/dialog";
 
   let step = 1;
   let bcupPath = "";
@@ -29,16 +35,19 @@
 
   async function handleDecrypt() {
     if (!bcupPath || !password) return;
-    
+
     loading = true;
     error = "";
-    
+
     try {
       // First, we'll decrypt the buttercup file to get the vault name
       // For now, we'll derive the name from the file path
-      const fileName = bcupPath.split(/[/\\]/).pop().replace(/\.bcup$/i, "");
+      const fileName = bcupPath
+        .split(/[/\\]/)
+        .pop()
+        .replace(/\.bcup$/i, "");
       vaultName = fileName || "Imported Buttercup Vault";
-      
+
       // Move to step 2
       step = 2;
     } catch (e) {
@@ -59,10 +68,10 @@
 
   async function handleImport() {
     if (!outputPath) return;
-    
+
     loading = true;
     error = "";
-    
+
     try {
       await convertButtercupVault(bcupPath, password, outputPath);
       dispatch("success");
@@ -119,8 +128,18 @@
         <div class="form-group">
           <label for="bcup-path">Buttercup file</label>
           <div class="path-row">
-            <input id="bcup-path" class="modal-input" bind:value={bcupPath} placeholder="Select .bcup file" readonly />
-            <button class="btn-secondary browse-btn" on:click={pickBcupFile} disabled={loading}>
+            <input
+              id="bcup-path"
+              class="modal-input"
+              bind:value={bcupPath}
+              placeholder="Select .bcup file"
+              readonly
+            />
+            <button
+              class="btn-secondary browse-btn"
+              on:click={pickBcupFile}
+              disabled={loading}
+            >
               Browse
             </button>
           </div>
@@ -144,8 +163,18 @@
         <div class="form-group">
           <label for="output-path">Save as</label>
           <div class="path-row">
-            <input id="output-path" class="modal-input" bind:value={outputPath} placeholder="Select save location" readonly />
-            <button class="btn-secondary browse-btn" on:click={pickOutputFile} disabled={loading}>
+            <input
+              id="output-path"
+              class="modal-input"
+              bind:value={outputPath}
+              placeholder="Select save location"
+              readonly
+            />
+            <button
+              class="btn-secondary browse-btn"
+              on:click={pickOutputFile}
+              disabled={loading}
+            >
               Browse
             </button>
           </div>
@@ -156,7 +185,11 @@
   <DialogFooter>
     <DialogActions>
       {#if step === 1}
-        <button class="modal-cancel-btn" on:click={handleCancel} disabled={loading}>
+        <button
+          class="modal-cancel-btn"
+          on:click={handleCancel}
+          disabled={loading}
+        >
           Cancel
         </button>
         <button
@@ -167,7 +200,11 @@
           {loading ? "Decrypting..." : "Next"}
         </button>
       {:else}
-        <button class="modal-cancel-btn" on:click={handleBack} disabled={loading}>
+        <button
+          class="modal-cancel-btn"
+          on:click={handleBack}
+          disabled={loading}
+        >
           Back
         </button>
         <button

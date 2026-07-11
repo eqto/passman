@@ -1,8 +1,8 @@
 <script>
   import { createEventDispatcher } from "svelte";
-  import Chip from "./form/Chip.svelte";
-  import TagContextMenu from "./TagContextMenu.svelte";
-  import Confirm from "./dialog/Confirm.svelte";
+  import Chip from "../../../components/form/Chip.svelte";
+  import TagContextMenu from "../../../components/TagContextMenu.svelte";
+  import Confirm from "../../../components/dialog/Confirm.svelte";
 
   export let tags = [];
   export let readOnly = false;
@@ -20,7 +20,10 @@
   $: if (showTagInput && tagInputEl) tagInputEl.focus();
 
   function addTag() {
-    const raw = tagInput.split(",").map((t) => t.trim()).filter((t) => t);
+    const raw = tagInput
+      .split(",")
+      .map((t) => t.trim())
+      .filter((t) => t);
     if (raw.length === 0) return;
     if (onAddTag) {
       onAddTag(raw);

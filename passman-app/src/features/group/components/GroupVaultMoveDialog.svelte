@@ -1,5 +1,11 @@
 <script>
-  import { Dialog, DialogHeader, DialogBody, DialogFooter, DialogActions } from "../dialog";
+  import {
+    Dialog,
+    DialogHeader,
+    DialogBody,
+    DialogFooter,
+    DialogActions,
+  } from "../../../components/dialog";
 
   export let groupId = "";
   export let groupName = "";
@@ -34,10 +40,18 @@
 
 <Dialog on:keydown={handleKeydown}>
   {#if showNameInput}
-    <DialogHeader on:close={backToWarning}>{action === "copy" ? "Copy" : "Move"} to {vaultName}</DialogHeader>
+    <DialogHeader on:close={backToWarning}
+      >{action === "copy" ? "Copy" : "Move"} to {vaultName}</DialogHeader
+    >
     <DialogBody>
-      <p>Enter a new group name for the {action === "copy" ? "copy" : "move"}.</p>
-      <input class="modal-input" bind:value={newName} placeholder="New group name" />
+      <p>
+        Enter a new group name for the {action === "copy" ? "copy" : "move"}.
+      </p>
+      <input
+        class="modal-input"
+        bind:value={newName}
+        placeholder="New group name"
+      />
     </DialogBody>
     <DialogFooter>
       <DialogActions>
@@ -46,7 +60,9 @@
       </DialogActions>
     </DialogFooter>
   {:else}
-    <DialogHeader on:close={onCancel}>{action === "copy" ? "Copy" : "Move"} to {vaultName}</DialogHeader>
+    <DialogHeader on:close={onCancel}
+      >{action === "copy" ? "Copy" : "Move"} to {vaultName}</DialogHeader
+    >
     <DialogBody>
       <p>Vault "{vaultName}" already has a group named "{groupName}".</p>
     </DialogBody>
@@ -54,7 +70,9 @@
       <DialogActions>
         <button class="modal-cancel-btn" on:click={onCancel}>Cancel</button>
         <button class="btn-primary" on:click={onMerge}>Merge</button>
-        <button class="btn-primary" on:click={startCopyAsNew}>Copy as new</button>
+        <button class="btn-primary" on:click={startCopyAsNew}
+          >Copy as new</button
+        >
       </DialogActions>
     </DialogFooter>
   {/if}

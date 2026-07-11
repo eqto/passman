@@ -12,18 +12,18 @@
     lockVaultByPath,
     deleteVault,
     reorderVaults,
-  } from "../stores/vaults";
-  import { closeAllContextMenus } from "../stores/contextMenu.js";
+  } from "../store.js";
+  import { closeAllContextMenus } from "../../../stores/contextMenu.js";
   import UnlockDialog from "./UnlockDialog.svelte";
   import CreateVaultDialog from "./CreateVaultDialog.svelte";
   import VaultSettingsDialog from "./VaultSettingsDialog.svelte";
   import VaultContextMenu from "./VaultContextMenu.svelte";
   import RemoveVaultDialog from "./RemoveVaultDialog.svelte";
   import ImportButtercupDialog from "./ImportButtercupDialog.svelte";
-  import ThemeToggle from "./ThemeToggle.svelte";
+  import ThemeToggle from "../../../components/ThemeToggle.svelte";
   import OpenVaultMenu from "./OpenVaultMenu.svelte";
   import { open } from "@tauri-apps/plugin-dialog";
-  import { createDragList } from "../lib/dragList.js";
+  import { createDragList } from "../../../lib/dragList.js";
 
   let showCreate = false;
   let unlockTarget = null;

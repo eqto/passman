@@ -1,6 +1,6 @@
 <script>
   import { onDestroy } from "svelte";
-  import { lockVault, isUnlocked } from "../stores/vaults";
+  import { lockVault, isUnlocked } from "../features/vault/store.js";
   import { AUTO_LOCK_TIMEOUT_MS } from "../lib/constants.js";
 
   const LOCK_TIMEOUT_MS = AUTO_LOCK_TIMEOUT_MS;
@@ -30,4 +30,8 @@
   });
 </script>
 
-<svelte:window on:mousemove={handleActivity} on:keydown={handleActivity} on:click={handleActivity} />
+<svelte:window
+  on:mousemove={handleActivity}
+  on:keydown={handleActivity}
+  on:click={handleActivity}
+/>

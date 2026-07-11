@@ -1,5 +1,11 @@
 <script>
-  import { Dialog, DialogHeader, DialogBody, DialogFooter, DialogActions } from "./dialog";
+  import {
+    Dialog,
+    DialogHeader,
+    DialogBody,
+    DialogFooter,
+    DialogActions,
+  } from "../../../components/dialog";
 
   export let vault;
   export let onRemove;
@@ -21,12 +27,8 @@
   </DialogBody>
   <DialogFooter>
     <DialogActions>
-      <button class="modal-cancel-btn" on:click={onCancel}>
-        Cancel
-      </button>
-      <button class="btn-danger" on:click={handleRemove}>
-        Remove
-      </button>
+      <button class="modal-cancel-btn" on:click={onCancel}> Cancel </button>
+      <button class="btn-danger" on:click={handleRemove}> Remove </button>
     </DialogActions>
   </DialogFooter>
 </Dialog>

@@ -1,12 +1,6 @@
 <script>
   import { onMount, onDestroy } from "svelte";
-  import {
-    currentVault,
-    vaultData,
-    groups,
-    entries,
-    trash,
-  } from "../stores/vaults";
+  import { currentVault, vaultData, groups, entries, trash } from "../store.js";
   import {
     deleteEntry,
     restoreEntry,
@@ -15,14 +9,14 @@
     moveEntryToVault,
     copyEntryToGroup,
     copyEntryToVault,
-  } from "../stores/entries";
-  import { selection } from "../stores/selection.js";
+  } from "../../entry/store.js";
+  import { selection } from "../../../stores/selection.js";
   import { writeText } from "@tauri-apps/plugin-clipboard-manager";
-  import { GroupList } from "./group";
-  import EntryList from "./EntryList.svelte";
-  import EntryDetails from "./EntryDetails.svelte";
-  import EntryEditor from "./EntryEditor.svelte";
-  import { createColumnResize } from "../lib/columnResize.js";
+  import { GroupList } from "../../group";
+  import EntryList from "../../entry/components/EntryList.svelte";
+  import EntryDetails from "../../entry/components/EntryDetails.svelte";
+  import EntryEditor from "../../entry/components/EntryEditor.svelte";
+  import { createColumnResize } from "../../../lib/columnResize.js";
 
   const { columnWidths, loadWidths, startResize, handleKeyResize } =
     createColumnResize();

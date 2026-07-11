@@ -6,9 +6,9 @@
     currentVault,
     vaultData,
     setVaultViewState,
-  } from "../../stores/vaults";
-  import { showToast } from "../../stores/toast.js";
-  import { closeAllContextMenus } from "../../stores/contextMenu.js";
+  } from "../../vault/store.js";
+  import { showToast } from "../../../stores/toast.js";
+  import { closeAllContextMenus } from "../../../stores/contextMenu.js";
   import { onMount } from "svelte";
   import {
     addGroup,
@@ -19,8 +19,8 @@
     moveGroupToVault,
     copyGroupToVault,
     moveGroupToParent,
-  } from "../../stores/groups";
-  import { moveEntriesWithTagToGroup } from "../../stores/entries";
+  } from "../store.js";
+  import { moveEntriesWithTagToGroup } from "../../entry/store.js";
   import {
     AddGroupDialog,
     DeleteGroupDialog,
@@ -29,9 +29,9 @@
     GroupTitle,
     TrashSidebar,
     TagSidebar,
-  } from "./index";
-  import Tree from "../Tree.svelte";
-  import { buildTree } from "../../lib/groupTree.js";
+  } from "../index";
+  import Tree from "../../../components/Tree.svelte";
+  import { buildTree } from "../groupTree.js";
 
   export let selectedGroup = "";
   export let selectedTags = [];

@@ -1,12 +1,16 @@
 <script>
   import { writeText } from "@tauri-apps/plugin-clipboard-manager";
-  import { currentVault, vaultData, setVaultViewState } from "../stores/vaults";
-  import { freeTags } from "../lib/tags.js";
-  import { debounce } from "../lib/debounce.js";
-  import { showToast } from "../stores/toast.js";
-  import { closeAllContextMenus } from "../stores/contextMenu.js";
+  import {
+    currentVault,
+    vaultData,
+    setVaultViewState,
+  } from "../../vault/store.js";
+  import { freeTags } from "../../../lib/tags.js";
+  import { debounce } from "../../../lib/debounce.js";
+  import { showToast } from "../../../stores/toast.js";
+  import { closeAllContextMenus } from "../../../stores/contextMenu.js";
   import EntryContextMenu from "./EntryContextMenu.svelte";
-  import Chip from "./form/Chip.svelte";
+  import Chip from "../../../components/form/Chip.svelte";
   import { onMount } from "svelte";
 
   const SEARCH_DEBOUNCE_MS = 150;
@@ -34,9 +38,9 @@
   }, SEARCH_DEBOUNCE_MS);
 
   onMount(() => {
-    window.addEventListener('close-all-context-menus', closeContextMenu);
+    window.addEventListener("close-all-context-menus", closeContextMenu);
     return () => {
-      window.removeEventListener('close-all-context-menus', closeContextMenu);
+      window.removeEventListener("close-all-context-menus", closeContextMenu);
     };
   });
 
@@ -135,7 +139,6 @@
   }
 </script>
 
-
 <svelte:window on:click={closeContextMenu} />
 
 <div class="entry-list">
@@ -196,7 +199,9 @@
                 </div>
               {/if}
             </div>
-            <div class="entry-subtitle">{entry.username || entry.url || "No details"}</div>
+            <div class="entry-subtitle">
+              {entry.username || entry.url || "No details"}
+            </div>
           </div>
           {#if entry.password}
             <button
@@ -205,7 +210,21 @@
               aria-label="Copy password"
               on:click={(e) => copyPassword(e, entry.password)}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                ><rect x="9" y="9" width="13" height="13" rx="2" ry="2"
+                ></rect><path
+                  d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                ></path></svg
+              >
             </button>
           {/if}
         </div>
@@ -376,6 +395,4 @@
     font-size: 0.75rem;
     cursor: pointer;
   }
-
-
 </style>

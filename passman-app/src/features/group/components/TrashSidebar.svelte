@@ -1,6 +1,6 @@
 <script>
-  import Tree from "../Tree.svelte";
-  import { buildTree } from "../../lib/groupTree.js";
+  import Tree from "../../../components/Tree.svelte";
+  import { buildTree } from "../groupTree.js";
 
   export let trashGroups = [];
   export let selectedTrashGroup = "";

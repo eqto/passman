@@ -1,6 +1,6 @@
 <script>
-  import Chip from "../form/Chip.svelte";
-  import { GroupTitle } from "./index";
+  import Chip from "../../../components/form/Chip.svelte";
+  import { GroupTitle } from "../index";
 
   export let tags = [];
   export let selectedTags = [];
@@ -9,11 +9,7 @@
   export let onContextMenu = (e, tag) => {};
 </script>
 
-<GroupTitle
-  title="Tags"
-  showButton={true}
-  onButtonClick={onAddTag}
-/>
+<GroupTitle title="Tags" showButton={true} onButtonClick={onAddTag} />
 
 {#if tags.length === 0}
   <p class="empty-state">No tags.</p>
