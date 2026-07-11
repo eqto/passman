@@ -1,6 +1,5 @@
 <script>
   import Tree from "../Tree.svelte";
-  import TrashTreeItem from "./TrashTreeItem.svelte";
   import { buildTree } from "../../lib/groupTree.js";
 
   export let trashGroups = [];
@@ -12,10 +11,6 @@
   export let onSelectGroup;
 
   $: trashGroupTree = buildTree(trashGroups);
-
-  $: itemProps = {
-    onSelectTrashGroup,
-  };
 </script>
 
 <div class="trash-header">
@@ -35,8 +30,7 @@
   <Tree
     nodes={trashGroupTree}
     selectedId={selectedTrashGroup}
-    itemComponent={TrashTreeItem}
-    {itemProps}
+    onSelect={onSelectTrashGroup}
   />
   {#if hasUngroupedTrashEntries}
     <div

@@ -1,26 +1,35 @@
 <script>
-  import { createEventDispatcher } from "svelte";
+  import { createEventDispatcher, getContext, setContext } from "svelte";
+  import { createDragList } from "../lib/dragList.js";
+  import TreeItem from "./TreeItem.svelte";
 
   export let nodes = [];
   export let selectedId = "";
   export let depth = 0;
   export let expanded = new Set();
-  export let itemComponent;
-  export let itemProps = {};
+  export let onSelect;
+  export let onContextMenu = null;
 
-  // Optional drag-and-drop handlers to pass down to tree items
-  export let dragItem = null;
-  export let dragOver = null;
-  export let insertBefore = null;
-  export let dropInto = null;
-  export let flatGroups = [];
-  export let dragStart = null;
-  export let dragEnd = null;
-  export let handleDragOver = null;
-  export let dragLeave = null;
-  export let drop = null;
+  // Optional flat list of items used for reordering
+  export let items = [];
+
+  // Drag-and-drop callbacks dispatched to the caller
+  export let onReorder = null;
+  export let onDropInto = null;
+
+  export let getKey = (x) => x.id;
+  export let axis = "vertical";
 
   const dispatch = createEventDispatcher();
+
+  // Share a single drag state across recursive Tree instances via context
+  const parentDrag = getContext("drag");
+  const drag =
+    parentDrag ||
+    (onReorder || onDropInto
+      ? createDragList({ axis, getKey, onReorder, onDropInto })
+      : null);
+  setContext("drag", drag);
 
   function getId(node) {
     return node.group?.id ?? node.id;
@@ -40,28 +49,42 @@
     dispatch("toggle", { id, expanded });
   }
 
-  $: treeItemProps = {
-    ...itemProps,
-    dragItem,
-    dragOver,
-    insertBefore,
-    dropInto,
-    flatGroups,
-    dragStart,
-    dragEnd,
-    handleDragOver,
-    dragLeave,
-    drop,
-  };
+  // Destructure stores from drag so we can use $ auto-subscribe in template
+  const dragItem = drag?.dragItem;
+  const dropTarget = drag?.dropTarget;
+
+  $: dragProps = drag
+    ? {
+        dragItem: drag.dragItem,
+        dropTarget: drag.dropTarget,
+        dragStart: drag.dragStart,
+        dragEnd: drag.dragEnd,
+        handleDragOver: drag.handleDragOver,
+        dragLeave: drag.dragLeave,
+        drop: drag.drop,
+        items,
+      }
+    : {};
 </script>
+
+{#if drag && nodes.length > 0}
+  <div
+    class="drop-zone-top"
+    role="none"
+    on:dragover={(e) => drag.handleDragOverFirst(e, nodes[0].group ?? nodes[0])}
+    on:drop={(e) => drag.dropFirst(e, items, nodes[0].group ?? nodes[0])}
+  ></div>
+{/if}
 
 {#each nodes as node (getId(node))}
   {@const id = getId(node)}
   {@const children = getChildren(node)}
   {@const hasChildren = children.length > 0}
   {@const isCollapsed = !expanded.has(id)}
-  <svelte:component
-    this={itemComponent}
+  {#if drag && $dropTarget?.type === "before" && $dropTarget.item.id === id}
+    <TreeItem dropPlaceholder={true} placeholderDepth={depth} />
+  {/if}
+  <TreeItem
     {node}
     {id}
     {depth}
@@ -69,7 +92,9 @@
     {isCollapsed}
     selected={selectedId === id}
     toggle={() => toggle(id)}
-    {...treeItemProps}
+    {onSelect}
+    {onContextMenu}
+    {...dragProps}
   />
   {#if hasChildren && !isCollapsed}
     <svelte:self
@@ -77,8 +102,23 @@
       {selectedId}
       depth={depth + 1}
       {expanded}
-      {itemComponent}
-      itemProps={treeItemProps}
+      {onSelect}
+      {onContextMenu}
+      {items}
+      {getKey}
+      {axis}
+      {onReorder}
+      {onDropInto}
     />
   {/if}
+  {#if drag && $dropTarget?.type === "after" && $dropTarget.item.id === id}
+    <TreeItem dropPlaceholder={true} placeholderDepth={depth} />
+  {/if}
 {/each}
+
+<style>
+  .drop-zone-top {
+    height: 8px;
+    margin-left: 0;
+  }
+</style>

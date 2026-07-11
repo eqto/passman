@@ -1,7 +1,8 @@
 import { get, writable, derived } from "svelte/store";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import { SAVE_LISTENER_TIMEOUT_MS, SAVE_STATUS_IDLE_TIMEOUT_MS } from "../lib/constants.js";
+import { SAVE_LISTENER_TIMEOUT_MS } from "../lib/constants.js";
+import { showToast } from "./toast.js";
 
 export const vaults = writable([]);
 export const currentVault = writable(null);
@@ -60,9 +61,10 @@ let saveUnlisten = null;
 export async function initSaveListener() {
   if (saveUnlisten) return saveUnlisten;
   const listenPromise = listen("save-status", (event) => {
-    saveStatus.set(event.payload);
-    if (event.payload === "saved" || event.payload === "error") {
-      setTimeout(() => saveStatus.set("idle"), SAVE_STATUS_IDLE_TIMEOUT_MS);
+    if (event.payload === "saved") {
+      showToast("Saved");
+    } else if (event.payload === "error") {
+      showToast("Save failed");
     }
   });
   const timeoutPromise = new Promise((_, reject) =>

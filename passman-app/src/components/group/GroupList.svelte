@@ -31,8 +31,6 @@
     TagSidebar,
   } from "./index";
   import Tree from "../Tree.svelte";
-  import GroupTreeItem from "./GroupTreeItem.svelte";
-  import { createDragList } from "../../lib/dragList.js";
   import { buildTree } from "../../lib/groupTree.js";
 
   export let selectedGroup = "";
@@ -73,17 +71,31 @@
 
   $: moveVaults = ($vaults || []).filter((v) => v.path !== $currentVault?.path);
 
-  const drag = createDragList({
-    axis: "vertical",
-    getKey: (item) => item.id,
-    onReorder: async (items) => {
-      reorderGroups(items);
-    },
-    onDropInto: async ({ source, target }) => {
-      await handleDropInto(source, target);
-    },
-  });
-  const { dragItem, dragOver, insertBefore, dropInto } = drag;
+  async function onReorder(items, { source, target } = {}) {
+    const normalizeParent = (id) => (id && id !== "0" ? id : null);
+    const sourceParent = normalizeParent(source?.parent_id);
+    const targetParent = normalizeParent(target?.parent_id);
+    if (source && target && sourceParent !== targetParent) {
+      if (isDescendant(target.id, source.id, items)) {
+        showToast("Cannot move a group into its own descendant");
+        return;
+      }
+      // Step 1: update parent_id in backend first
+      const updatedGroups = await moveGroupToParent(source.id, targetParent);
+      if (!updatedGroups) return;
+      // Step 2: reorder to match desired position (items is already in desired order)
+      const reordered = items.map(
+        (item) => updatedGroups.find((g) => g.id === item.id) ?? item,
+      );
+      await reorderGroups(reordered);
+      return;
+    }
+    reorderGroups(items);
+  }
+
+  function onDropInto({ source, target }) {
+    handleDropInto(source, target);
+  }
 
   async function handleAddGroup(name) {
     await addGroup({ id: crypto.randomUUID(), name, parent_id: null });
@@ -121,15 +133,6 @@
   }
 
   $: groupTree = buildTree($groups);
-
-  function hasAnyChildren(nodes) {
-    for (const node of nodes) {
-      if (node.children.length > 0 || hasAnyChildren(node.children)) {
-        return true;
-      }
-    }
-    return false;
-  }
 
   function closeContextMenu() {
     contextMenu = { show: false, x: 0, y: 0, type: "tag", item: "" };
@@ -291,22 +294,11 @@
         <Tree
           nodes={groupTree}
           selectedId={selectedGroup}
-          itemComponent={GroupTreeItem}
-          itemProps={{
-            onSelectGroup,
-            onContextMenu: (e, id) => openContextMenu(e, "group", id),
-            hasAnyChildren: hasAnyChildren(groupTree),
-          }}
-          {dragItem}
-          {dragOver}
-          {insertBefore}
-          {dropInto}
-          flatGroups={$groups}
-          dragStart={drag.dragStart}
-          dragEnd={drag.dragEnd}
-          handleDragOver={drag.handleDragOver}
-          dragLeave={drag.dragLeave}
-          drop={drag.drop}
+          onSelect={onSelectGroup}
+          onContextMenu={(e, id) => openContextMenu(e, "group", id)}
+          items={$groups}
+          {onReorder}
+          {onDropInto}
         />
       {/if}
 
@@ -446,14 +438,6 @@
   .group-row.dragging {
     cursor: grabbing;
     opacity: 0.6;
-  }
-
-  .group-row.drop-before {
-    border-top: 2px solid var(--accent-color);
-  }
-
-  .group-row.drop-after {
-    border-bottom: 2px solid var(--accent-color);
   }
 
   .group-row.selected {

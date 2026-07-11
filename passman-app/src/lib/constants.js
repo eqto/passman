@@ -1,6 +1,5 @@
 // Centralized frontend constants for Passman
 
-export const SAVE_STATUS_IDLE_TIMEOUT_MS = 2000;
 export const SAVE_LISTENER_TIMEOUT_MS = 3000;
 export const AUTO_LOCK_TIMEOUT_MS = 5 * 60 * 1000;
 

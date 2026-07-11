@@ -41,7 +41,7 @@
     getKey: (v) => v.id,
     onReorder: async (items) => reorderVaults(items.map((v) => v.id)),
   });
-  const { dragItem, dragOver, insertBefore } = drag;
+  const { dragItem, dropTarget } = drag;
 
   onMount(() => {
     window.addEventListener("close-all-context-menus", closeContextMenu);
@@ -171,8 +171,10 @@
         class="tab"
         class:selected={$currentVault && $currentVault.path === vault.path}
         class:dragging={$dragItem === vault}
-        class:drop-before={$dragOver === vault && $insertBefore === true}
-        class:drop-after={$dragOver === vault && $insertBefore === false}
+        class:drop-before={$dropTarget?.type === "before" &&
+          $dropTarget.item.id === vault.id}
+        class:drop-after={$dropTarget?.type === "after" &&
+          $dropTarget.item.id === vault.id}
         role="button"
         tabindex="0"
         draggable={true}
