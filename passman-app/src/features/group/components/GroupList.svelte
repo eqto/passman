@@ -221,6 +221,9 @@
         <Tree
           nodes={groupTree}
           selectedId={selectedGroup}
+          highlightedId={contextMenu.show && contextMenu.type === "group"
+            ? contextMenu.item
+            : ""}
           onSelect={onSelectGroup}
           onContextMenu={(e, id) => openContextMenu(e, "group", id)}
           items={$groups}

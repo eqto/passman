@@ -5,6 +5,7 @@
 
   export let nodes = [];
   export let selectedId = "";
+  export let highlightedId = "";
   export let depth = 0;
   export let expanded = new Set();
   export let onSelect;
@@ -91,6 +92,7 @@
     {hasChildren}
     {isCollapsed}
     selected={selectedId === id}
+    highlighted={highlightedId === id}
     toggle={() => toggle(id)}
     {onSelect}
     {onContextMenu}
@@ -100,6 +102,7 @@
     <svelte:self
       nodes={children}
       {selectedId}
+      {highlightedId}
       depth={depth + 1}
       {expanded}
       {onSelect}

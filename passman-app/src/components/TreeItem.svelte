@@ -7,6 +7,7 @@
   export let hasChildren;
   export let isCollapsed;
   export let selected;
+  export let highlighted = false;
   export let toggle;
   export let onSelect;
   export let onContextMenu = null;
@@ -45,6 +46,7 @@
   <div
     class="tree-row"
     class:selected
+    class:highlighted
     class:has-tree-line={depth > 0}
     class:dragging={isDragging}
     class:drop-into={isDropInto}
@@ -129,6 +131,10 @@
     background-color: var(--selected-bg);
   }
 
+  .tree-row.highlighted {
+    background-color: var(--selected-bg);
+  }
+
   .tree-row.selected .tree-item {
     color: var(--selected-text);
   }
@@ -200,6 +206,7 @@
   .folder-icon {
     display: flex;
     align-items: center;
+    flex-shrink: 0;
     color: var(--muted-color);
   }
 
@@ -211,5 +218,11 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    line-height: 1rem;
+    padding-top: 0.5px;
+  }
+
+  .tree-item :global(svg) {
+    display: block;
   }
 </style>
