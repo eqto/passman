@@ -13,6 +13,8 @@
   let newName = "";
   let newPath = "";
   let newPassword = "";
+  let error = "";
+  let isCreating = false;
 
   const dispatch = createEventDispatcher();
 
@@ -26,11 +28,20 @@
   }
 
   async function handleCreate() {
+    if (isCreating) return;
     if (!newName || !newPath || !newPassword) return;
-    const id = crypto.randomUUID();
-    await createVault(id, newName, newPath, newPassword);
-    reset();
-    dispatch("created");
+    error = "";
+    isCreating = true;
+    try {
+      const id = crypto.randomUUID();
+      await createVault(id, newName, newPath, newPassword);
+      reset();
+      dispatch("created");
+    } catch (e) {
+      error = e.toString();
+    } finally {
+      isCreating = false;
+    }
   }
 
   function reset() {
@@ -57,12 +68,14 @@
         class="modal-input"
         bind:value={newName}
         placeholder="Vault name"
+        disabled={isCreating}
       />
       <div class="path-row">
         <input
           class="modal-input"
           bind:value={newPath}
           placeholder="File path"
+          disabled={isCreating}
         />
         <button class="btn-secondary browse-btn" on:click={pickFile}>
           Browse
@@ -73,13 +86,25 @@
         bind:value={newPassword}
         type="password"
         placeholder="Vault password"
+        disabled={isCreating}
       />
+      {#if error}
+        <p class="modal-error">{error}</p>
+      {/if}
     </div>
   </DialogBody>
   <DialogFooter>
     <DialogActions>
-      <button class="modal-cancel-btn" on:click={handleCancel}> Cancel </button>
-      <button class="btn-primary" on:click={handleCreate}> Create </button>
+      <button
+        class="modal-cancel-btn"
+        on:click={handleCancel}
+        disabled={isCreating}
+      >
+        Cancel
+      </button>
+      <button class="btn-primary" on:click={handleCreate} disabled={isCreating}>
+        Create
+      </button>
     </DialogActions>
   </DialogFooter>
 </Dialog>
