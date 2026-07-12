@@ -74,7 +74,7 @@
     dispatch("moveToVault", {
       entry,
       vault: event.detail.vault,
-      group: event.detail.group,
+      groupId: event.detail.groupId,
     });
   }
 
@@ -86,7 +86,7 @@
     dispatch("copyToVault", {
       entry,
       vault: event.detail.vault,
-      group: event.detail.group,
+      groupId: event.detail.groupId,
     });
   }
 

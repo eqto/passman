@@ -91,7 +91,11 @@
   }
 
   function handleMenuAction(handler, event) {
-    handler(event.detail.entry, event.detail.group, event.detail.vault);
+    if (event.detail.vault !== undefined) {
+      handler(event.detail.entry, event.detail.vault, event.detail.groupId);
+    } else {
+      handler(event.detail.entry, event.detail.group);
+    }
     closeContextMenu();
   }
 </script>
