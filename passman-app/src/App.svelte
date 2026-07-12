@@ -5,6 +5,7 @@
   import UnlockDialog from "./features/vault/components/UnlockDialog.svelte";
   import AutoLock from "./components/AutoLock.svelte";
   import Toast from "./components/Toast.svelte";
+  import { Confirm } from "./components/dialog";
   import {
     loadVaults,
     currentVault,
@@ -15,6 +16,7 @@
   } from "./features/vault/store.js";
 
   let saveUnlisten = null;
+  let showLockConfirm = false;
 
   onMount(async () => {
     await loadVaults();
@@ -41,9 +43,14 @@
     if ((event.ctrlKey || event.metaKey) && event.key === "l") {
       event.preventDefault();
       if ($currentVault && $isUnlocked) {
-        lockVault();
+        showLockConfirm = true;
       }
     }
+  }
+
+  async function handleLockConfirmed() {
+    showLockConfirm = false;
+    await lockVault();
   }
 </script>
 
@@ -54,6 +61,16 @@
 
 <AutoLock />
 <Toast />
+
+{#if showLockConfirm}
+  <Confirm
+    title="Lock Vault"
+    message={`Lock "${$currentVault?.name}"? You will need to re-enter the password to access it again.`}
+    confirmLabel="Lock"
+    on:confirm={handleLockConfirmed}
+    on:cancel={() => (showLockConfirm = false)}
+  />
+{/if}
 
 <main>
   <VaultList />

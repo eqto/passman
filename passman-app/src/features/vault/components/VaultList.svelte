@@ -23,6 +23,7 @@
   import ThemeToggle from "../../../components/ThemeToggle.svelte";
   import OpenVaultMenu from "./OpenVaultMenu.svelte";
   import VaultTab from "./VaultTab.svelte";
+  import { Confirm } from "../../../components/dialog";
   import { open } from "@tauri-apps/plugin-dialog";
   import { createDragList } from "../../../lib/dragList.js";
 
@@ -36,6 +37,7 @@
   let showSettings = false;
   let settingsVault = null;
   let removeVault = null;
+  let lockTarget = null;
 
   const drag = createDragList({
     axis: "horizontal",
@@ -79,8 +81,14 @@
     unlockTarget = null;
   }
 
-  async function handleLock(vault) {
-    await lockVaultByPath(vault.path);
+  function handleLock(vault) {
+    lockTarget = vault;
+  }
+
+  async function handleLockConfirmed() {
+    if (!lockTarget) return;
+    await lockVaultByPath(lockTarget.path);
+    lockTarget = null;
   }
 
   function handleDelete(vault) {
@@ -223,6 +231,16 @@
     vault={settingsVault}
     on:renamed={closeSettings}
     on:cancel={closeSettings}
+  />
+{/if}
+
+{#if lockTarget}
+  <Confirm
+    title="Lock Vault"
+    message={`Lock "${lockTarget.name}"? You will need to re-enter the password to access it again.`}
+    confirmLabel="Lock"
+    on:confirm={handleLockConfirmed}
+    on:cancel={() => (lockTarget = null)}
   />
 {/if}
 
