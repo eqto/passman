@@ -165,7 +165,7 @@
         dropAfter={$dropTarget?.type === "after" &&
           $dropTarget.item.id === vault.id}
         unlocked={$vaultData[vault.path]?.unlocked}
-        {selectVault}
+        onSelect={selectVault}
         onLock={handleLock}
         onRemove={handleDelete}
         onContextMenu={handleContextMenu}

@@ -4,7 +4,7 @@ use std::sync::{mpsc, Arc, Mutex};
 use tauri::{AppHandle, Emitter};
 use zeroize::Zeroizing;
 
-use passman_core::VaultFile;
+use passman_core::{VaultFile, KEY_SIZE};
 
 /// Validate that a reordered list contains exactly the same items as the current list.
 pub fn validate_reorder<T: std::hash::Hash + Eq + Clone>(
@@ -102,6 +102,18 @@ impl AppState {
             .get_mut(path)
             .ok_or_else(|| "no vault is open".to_string())?;
         f(open_vault)
+    }
+
+    /// Insert a vault with its key into the open vaults map.
+    pub fn insert_vault(&self, path: &str, vault: VaultFile, key: [u8; KEY_SIZE]) {
+        let mut guard = self.inner.lock().unwrap();
+        guard.open_vaults.insert(
+            path.to_string(),
+            OpenVault {
+                vault,
+                key: Some(Zeroizing::new(key.to_vec())),
+            },
+        );
     }
 
     /// Like `with_open_vault`, but schedules a background save when the closure succeeds.

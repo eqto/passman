@@ -57,30 +57,29 @@ pub fn move_entries_to_trash(payload: &mut VaultPayload, entries: Vec<VaultEntry
         return;
     }
     let now = chrono::Utc::now();
-    let entries: Vec<VaultEntry> = entries
-        .into_iter()
-        .map(|mut e| {
-            e.group_id = None;
-            e.updated_at = now;
-            e
-        })
-        .collect();
-    payload.trash.entries.extend(entries);
+    payload.trash.entries.extend(prepare_trash_entries(entries, now, None));
 }
 
 pub fn move_group_to_trash(payload: &mut VaultPayload, group: Group, entries: Vec<VaultEntry>) {
     let now = chrono::Utc::now();
     let group_id = group.id.clone();
     payload.trash.groups.push(group);
-    let entries: Vec<VaultEntry> = entries
+    payload.trash.entries.extend(prepare_trash_entries(entries, now, Some(&group_id)));
+}
+
+fn prepare_trash_entries(
+    entries: Vec<VaultEntry>,
+    now: chrono::DateTime<chrono::Utc>,
+    group_id_override: Option<&str>,
+) -> Vec<VaultEntry> {
+    entries
         .into_iter()
         .map(|mut e| {
-            e.group_id = Some(group_id.clone());
+            e.group_id = group_id_override.map(|s| s.to_string());
             e.updated_at = now;
             e
         })
-        .collect();
-    payload.trash.entries.extend(entries);
+        .collect()
 }
 
 pub fn random_entry_id() -> String {
@@ -119,18 +118,19 @@ pub fn delete_group_with_children(
 
     payload.groups.retain(|g| !ids_to_remove.contains(&g.id));
 
-    let mut entries_to_trash: Vec<VaultEntry> = Vec::new();
-    payload.entries.retain(|e| {
-        if e.group_id
-            .as_deref()
-            .map_or(false, |gid| ids_to_remove.contains(gid))
-        {
-            entries_to_trash.push(e.clone());
-            false
-        } else {
-            true
-        }
-    });
+    let entries_to_trash: Vec<VaultEntry> = payload
+        .entries
+        .iter()
+        .filter(|e| {
+            e.group_id
+                .as_deref()
+                .is_some_and(|gid| ids_to_remove.contains(gid))
+        })
+        .cloned()
+        .collect();
+    payload
+        .entries
+        .retain(|e| !ids_to_remove.contains(e.group_id.as_deref().unwrap_or("")));
     move_group_to_trash(payload, group, entries_to_trash);
     payload.touch();
 
@@ -301,11 +301,7 @@ pub fn apply_copy_to_target(
         copy.group_id = Some(target_group_id.to_string());
         copy.created_at = now;
         copy.updated_at = now;
-        if let Some(existing) = target.entries.iter_mut().find(|e| e.id == copy.id) {
-            *existing = copy;
-        } else {
-            target.entries.push(copy);
-        }
+        target.entries.push(copy);
     }
     target.touch();
 

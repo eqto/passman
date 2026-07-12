@@ -87,11 +87,11 @@
   }
 
   .tab.drop-before {
-    border-left: 2px solid var(--selected-bg);
+    border-left: 2px solid var(--accent-color);
   }
 
   .tab.drop-after {
-    border-right: 2px solid var(--selected-bg);
+    border-right: 2px solid var(--accent-color);
   }
 
   .tab-name {

@@ -1,9 +1,8 @@
 use passman_core::{buttercup, config, vault, AppConfig, VaultConfig};
 use tauri::State;
-use zeroize::Zeroizing;
 
 use crate::commands::dto::{vault_to_dto, VaultFileDTO};
-use crate::commands::state::{validate_reorder, AppState, OpenVault};
+use crate::commands::state::{validate_reorder, AppState};
 
 #[tauri::command]
 pub fn list_vaults() -> Result<AppConfig, String> {
@@ -25,16 +24,28 @@ pub async fn create_vault(
         vault::create_vault_file_with_key(&path, &name, &password).map_err(|e| e.to_string())?;
     config::add_vault(&id, &name, &path).map_err(|e| e.to_string())?;
 
-    let mut guard = state.inner.lock().unwrap();
-    guard.open_vaults.insert(
-        path.clone(),
-        OpenVault {
-            vault,
-            key: Some(Zeroizing::new(vault_key.to_vec())),
-        },
-    );
+    state.insert_vault(&path, vault, vault_key);
 
     Ok(VaultConfig { id, name, path })
+}
+
+/// Shared logic for opening a vault file and inserting it into state.
+fn open_vault_inner(
+    path: &str,
+    password: &str,
+    state: &AppState,
+) -> Result<(VaultFileDTO, [u8; passman_core::KEY_SIZE]), String> {
+    let (vault, vault_key) =
+        vault::open_vault_file_with_key(path, password).map_err(|e| e.to_string())?;
+    let needs_save = vault.needs_save;
+    let dto = vault_to_dto(&vault);
+
+    state.insert_vault(path, vault, vault_key);
+    if needs_save {
+        state.schedule_save(path);
+    }
+
+    Ok((dto, vault_key))
 }
 
 #[tauri::command]
@@ -43,24 +54,7 @@ pub async fn open_vault(
     password: String,
     state: State<'_, AppState>,
 ) -> Result<VaultFileDTO, String> {
-    let (vault, vault_key) =
-        vault::open_vault_file_with_key(&path, &password).map_err(|e| e.to_string())?;
-    let needs_save = vault.needs_save;
-    let dto = vault_to_dto(&vault);
-
-    let mut guard = state.inner.lock().unwrap();
-    guard.open_vaults.insert(
-        path.clone(),
-        OpenVault {
-            vault,
-            key: Some(Zeroizing::new(vault_key.to_vec())),
-        },
-    );
-    drop(guard);
-    if needs_save {
-        state.schedule_save(&path);
-    }
-
+    let (dto, _) = open_vault_inner(&path, &password, &state)?;
     Ok(dto)
 }
 
@@ -71,26 +65,9 @@ pub async fn register_and_open_vault(
     password: String,
     state: State<'_, AppState>,
 ) -> Result<VaultFileDTO, String> {
-    let (vault, vault_key) =
-        vault::open_vault_file_with_key(&path, &password).map_err(|e| e.to_string())?;
-    let needs_save = vault.needs_save;
-    let name = vault.payload.name.clone();
+    let (dto, _) = open_vault_inner(&path, &password, &state)?;
+    let name = dto.name.clone();
     config::add_vault(&id, &name, &path).map_err(|e| e.to_string())?;
-    let dto = vault_to_dto(&vault);
-
-    let mut guard = state.inner.lock().unwrap();
-    guard.open_vaults.insert(
-        path.clone(),
-        OpenVault {
-            vault,
-            key: Some(Zeroizing::new(vault_key.to_vec())),
-        },
-    );
-    drop(guard);
-    if needs_save {
-        state.schedule_save(&path);
-    }
-
     Ok(dto)
 }
 
@@ -202,14 +179,7 @@ pub async fn convert_buttercup_vault(
 
     // Open the vault in state
     let dto = vault_to_dto(&vault);
-    let mut guard = state.inner.lock().unwrap();
-    guard.open_vaults.insert(
-        output_path.clone(),
-        OpenVault {
-            vault,
-            key: Some(Zeroizing::new(vault_key.to_vec())),
-        },
-    );
+    state.insert_vault(&output_path, vault, vault_key);
 
     Ok(dto)
 }

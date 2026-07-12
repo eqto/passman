@@ -82,8 +82,6 @@ pub fn update_entry(
 pub fn delete_entry(
     path: String,
     id: String,
-    _group_id: Option<String>,
-    _group_name: String,
     state: State<'_, AppState>,
 ) -> Result<EntryDeletionResult, String> {
     state.with_open_vault_save(&path, |open_vault| {
@@ -131,79 +129,62 @@ pub fn restore_trash_entry(
     state: State<'_, AppState>,
 ) -> Result<TrashMutationResult, String> {
     state.with_open_vault_save(&path, |open_vault| {
-        let now = chrono::Utc::now();
-        let mut restored: Option<(Option<String>, String, VaultEntry)> = None;
-        if let Some(pos) = open_vault
-            .vault
-            .payload
+        let payload = &mut open_vault.vault.payload;
+
+        let pos = payload
             .trash
             .entries
             .iter()
             .position(|e| e.id == id)
-        {
-            let mut entry = open_vault.vault.payload.trash.entries.remove(pos);
-            let group_id = entry.group_id.clone();
-            let group_name = group_id
-                .as_ref()
-                .and_then(|gid| {
-                    open_vault
-                        .vault
-                        .payload
-                        .trash
-                        .groups
-                        .iter()
-                        .find(|g| &g.id == gid)
-                        .map(|g| g.name.clone())
-                })
-                .unwrap_or_default();
-            entry.updated_at = now;
-            restored = Some((group_id, group_name, entry));
-        }
-        if let Some((group_id, group_name, mut entry)) = restored {
-            // Restore the group if it was deleted with the entry
-            if let Some(ref gid) = group_id {
-                if !open_vault.vault.payload.groups.iter().any(|g| g.id == *gid) {
-                    if let Some(trash_group) = open_vault
-                        .vault
-                        .payload
-                        .trash
-                        .groups
-                        .iter()
-                        .find(|g| g.id == *gid)
-                        .cloned()
-                    {
-                        open_vault.vault.payload.groups.push(trash_group);
-                    } else {
-                        open_vault.vault.payload.groups.push(Group {
-                            id: gid.clone(),
-                            name: group_name.clone(),
-                            parent_id: None,
-                        });
-                    }
-                }
-                entry.group_id = Some(gid.clone());
-            }
-            if !open_vault
-                .vault
-                .payload
-                .entries
-                .iter()
-                .any(|e| e.id == entry.id)
-            {
-                open_vault.vault.payload.entries.push(entry);
-            }
-            open_vault.vault.payload.touch();
-            Ok(TrashMutationResult {
-                group_id,
-                group_name,
-                groups: open_vault.vault.payload.groups.clone(),
-                entries: open_vault.vault.payload.entries.clone(),
-                trash: open_vault.vault.payload.trash.clone(),
+            .ok_or_else(|| "entry not found in trash".to_string())?;
+
+        let mut entry = payload.trash.entries.remove(pos);
+        let group_id = entry.group_id.clone();
+        let group_name = group_id
+            .as_ref()
+            .and_then(|gid| {
+                payload
+                    .trash
+                    .groups
+                    .iter()
+                    .find(|g| &g.id == gid)
+                    .map(|g| g.name.clone())
             })
-        } else {
-            Err("entry not found in trash".to_string())
+            .unwrap_or_default();
+        entry.updated_at = chrono::Utc::now();
+
+        if let Some(ref gid) = group_id {
+            restore_group_if_missing(payload, gid, &group_name);
         }
+
+        if !payload.entries.iter().any(|e| e.id == entry.id) {
+            payload.entries.push(entry);
+        }
+
+        payload.touch();
+        Ok(TrashMutationResult {
+            group_id,
+            group_name,
+            groups: payload.groups.clone(),
+            entries: payload.entries.clone(),
+            trash: payload.trash.clone(),
+        })
     })
+}
+
+fn restore_group_if_missing(payload: &mut passman_core::VaultPayload, gid: &str, group_name: &str) {
+    if payload.groups.iter().any(|g| g.id == gid) {
+        return;
+    }
+    if let Some(trash_group) = payload.trash.groups.iter().find(|g| g.id == gid).cloned() {
+        payload.groups.push(trash_group);
+    } else {
+        payload.groups.push(Group {
+            id: gid.to_string(),
+            name: group_name.to_string(),
+            parent_id: None,
+        });
+    }
 }
 
 #[tauri::command]

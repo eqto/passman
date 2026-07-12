@@ -57,26 +57,32 @@ pub fn save_config(config: &AppConfig) -> Result<(), ConfigError> {
 }
 
 pub fn add_vault(id: &str, name: &str, path: &str) -> Result<(), ConfigError> {
-    let mut config = load_config()?;
-    config.vaults.push(VaultConfig {
-        id: id.to_string(),
-        name: name.to_string(),
-        path: path.to_string(),
-    });
-    save_config(&config)
+    with_config(|config| {
+        config.vaults.push(VaultConfig {
+            id: id.to_string(),
+            name: name.to_string(),
+            path: path.to_string(),
+        });
+    })
 }
 
 pub fn remove_vault(id: &str) -> Result<(), ConfigError> {
-    let mut config = load_config()?;
-    config.vaults.retain(|v| v.id != id);
-    save_config(&config)
+    with_config(|config| {
+        config.vaults.retain(|v| v.id != id);
+    })
 }
 
 pub fn update_vault(id: &str, name: &str, path: &str) -> Result<(), ConfigError> {
+    with_config(|config| {
+        if let Some(vault) = config.vaults.iter_mut().find(|v| v.id == id) {
+            vault.name = name.to_string();
+            vault.path = path.to_string();
+        }
+    })
+}
+
+fn with_config<F: FnOnce(&mut AppConfig)>(f: F) -> Result<(), ConfigError> {
     let mut config = load_config()?;
-    if let Some(vault) = config.vaults.iter_mut().find(|v| v.id == id) {
-        vault.name = name.to_string();
-        vault.path = path.to_string();
-    }
+    f(&mut config);
     save_config(&config)
 }

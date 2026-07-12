@@ -1,4 +1,4 @@
-use crate::buttercup::ButtercupVault;
+use crate::buttercup::{ButtercupEntry, ButtercupGroup, ButtercupVault};
 use crate::vault::{CustomField, Group, HistoryItem, Trash, VaultEntry, VaultFile};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
@@ -162,86 +162,52 @@ pub fn build_payload(vault: &mut VaultFile, imported: ImportJson) {
     };
 }
 
+fn map_buttercup_group(g: ButtercupGroup) -> ImportGroup {
+    ImportGroup {
+        id: g.id,
+        name: g.name,
+        parent_id: g.parent_id,
+    }
+}
+
+fn map_buttercup_entry(e: ButtercupEntry) -> ImportEntry {
+    ImportEntry {
+        id: e.id,
+        group_id: e.group_id,
+        title: e.title,
+        username: e.username,
+        password: e.password,
+        url: e.url,
+        notes: e.notes,
+        tags: Vec::new(),
+        fields: e
+            .fields
+            .into_iter()
+            .map(|f| ImportCustomField {
+                id: f.id,
+                label: f.label,
+                field_type: f.field_type,
+                value: f.value,
+            })
+            .collect(),
+        deleted_at: e.deleted_at,
+        history: e.history,
+    }
+}
+
 impl From<ButtercupVault> for ImportJson {
     fn from(vault: ButtercupVault) -> Self {
+        let now = chrono::Utc::now();
         ImportJson {
             name: vault.name,
             uuid: vault.uuid,
-            created_at: chrono::Utc::now(),
-            updated_at: chrono::Utc::now(),
-            groups: vault
-                .groups
-                .into_iter()
-                .map(|g| ImportGroup {
-                    id: g.id,
-                    name: g.name,
-                    parent_id: g.parent_id,
-                })
-                .collect(),
-            entries: vault
-                .entries
-                .into_iter()
-                .map(|e| ImportEntry {
-                    id: e.id,
-                    group_id: e.group_id,
-                    title: e.title,
-                    username: e.username,
-                    password: e.password,
-                    url: e.url,
-                    notes: e.notes,
-                    tags: Vec::new(),
-                    fields: e
-                        .fields
-                        .into_iter()
-                        .map(|f| ImportCustomField {
-                            id: f.id,
-                            label: f.label,
-                            field_type: f.field_type,
-                            value: f.value,
-                        })
-                        .collect(),
-                    deleted_at: e.deleted_at,
-                    history: e.history,
-                })
-                .collect(),
+            created_at: now,
+            updated_at: now,
+            groups: vault.groups.into_iter().map(map_buttercup_group).collect(),
+            entries: vault.entries.into_iter().map(map_buttercup_entry).collect(),
             trash: ImportTrash {
-                groups: vault
-                    .trash
-                    .groups
-                    .into_iter()
-                    .map(|g| ImportGroup {
-                        id: g.id,
-                        name: g.name,
-                        parent_id: g.parent_id,
-                    })
-                    .collect(),
-                entries: vault
-                    .trash
-                    .entries
-                    .into_iter()
-                    .map(|e| ImportEntry {
-                        id: e.id,
-                        group_id: e.group_id,
-                        title: e.title,
-                        username: e.username,
-                        password: e.password,
-                        url: e.url,
-                        notes: e.notes,
-                        tags: Vec::new(),
-                        fields: e
-                            .fields
-                            .into_iter()
-                            .map(|f| ImportCustomField {
-                                id: f.id,
-                                label: f.label,
-                                field_type: f.field_type,
-                                value: f.value,
-                            })
-                            .collect(),
-                        deleted_at: e.deleted_at,
-                        history: e.history,
-                    })
-                    .collect(),
+                groups: vault.trash.groups.into_iter().map(map_buttercup_group).collect(),
+                entries: vault.trash.entries.into_iter().map(map_buttercup_entry).collect(),
             },
         }
     }

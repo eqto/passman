@@ -33,35 +33,24 @@ fn get_property(properties: &HashMap<String, RawValue>, name: &str) -> String {
 }
 
 pub(super) fn identify_trash_groups(raw: &RawVault) -> (Option<String>, HashSet<String>) {
-    let mut trash_group_id: Option<String> = None;
-    for group in &raw.g {
-        if is_trash_group(group) {
-            trash_group_id = Some(group.id.clone());
-            break;
-        }
-    }
+    let trash_group_id = raw.g.iter().find(|g| is_trash_group(g)).map(|g| g.id.clone());
 
     let mut trash_group_ids: HashSet<String> = HashSet::new();
     if let Some(tid) = &trash_group_id {
         trash_group_ids.insert(tid.clone());
-        loop {
-            let mut changed = false;
-            for group in &raw.g {
-                if !trash_group_ids.contains(&group.id)
-                    && !group.g.is_empty()
-                    && trash_group_ids.contains(&group.g)
-                {
-                    trash_group_ids.insert(group.id.clone());
-                    changed = true;
-                }
-            }
-            if !changed {
-                break;
-            }
-        }
+        collect_descendants(&raw.g, tid, &mut trash_group_ids);
     }
 
     (trash_group_id, trash_group_ids)
+}
+
+fn collect_descendants(groups: &[RawGroup], parent_id: &str, ids: &mut HashSet<String>) {
+    for group in groups {
+        if group.g == parent_id && !ids.contains(&group.id) {
+            ids.insert(group.id.clone());
+            collect_descendants(groups, &group.id, ids);
+        }
+    }
 }
 
 pub(super) fn build_groups(
@@ -108,6 +97,43 @@ pub(super) fn build_groups(
     (groups, trash_groups)
 }
 
+const STANDARD_PROPERTIES: &[&str] = &["title", "username", "password", "URL", "notes"];
+
+fn extract_custom_fields(entry: &RawEntry) -> Vec<ButtercupCustomField> {
+    let standard: HashSet<&str> = STANDARD_PROPERTIES.iter().copied().collect();
+    let mut fields = Vec::new();
+    for (property, raw_value) in &entry.p {
+        if standard.contains(property.as_str()) || raw_value.value.is_empty() {
+            continue;
+        }
+        if raw_value.deleted.is_some() {
+            continue;
+        }
+        let field_type = get_field_type(&entry.a, property);
+        fields.push(ButtercupCustomField {
+            id: format!("{}-cf-{}", entry.id, fields.len()),
+            label: property.clone(),
+            field_type,
+            value: raw_value.value.clone(),
+        });
+    }
+    fields
+}
+
+fn extract_history(entry: &RawEntry) -> Vec<HistoryItem> {
+    let mut history = Vec::new();
+    for (property, raw_value) in &entry.p {
+        for hist in &raw_value.history {
+            history.push(HistoryItem {
+                property: property.clone(),
+                value: hist.value.clone(),
+                updated_at: datetime_from_millis(hist.updated),
+            });
+        }
+    }
+    history
+}
+
 pub(super) fn build_entries(
     raw_entries: Vec<RawEntry>,
     trash_group_ids: &HashSet<String>,
@@ -117,58 +143,20 @@ pub(super) fn build_entries(
     let mut trash_entries = Vec::new();
 
     for entry in raw_entries {
-        let group_id = if entry.g.is_empty() {
-            None
-        } else {
-            Some(entry.g)
-        };
+        let group_id = if entry.g.is_empty() { None } else { Some(entry.g.clone()) };
+        let id = entry.id.clone();
 
-        let standard_properties: HashSet<String> =
-            ["title", "username", "password", "URL", "notes"]
-                .iter()
-                .map(|s| s.to_string())
-                .collect();
-        let mut fields = Vec::new();
-        let mut field_index = 0;
-        for (property, raw_value) in &entry.p {
-            if standard_properties.contains(property) || raw_value.value.is_empty() {
-                continue;
-            }
-            if raw_value.deleted.is_some() {
-                continue;
-            }
-            let field_type = get_field_type(&entry.a, property);
-            fields.push(ButtercupCustomField {
-                id: format!("{}-cf-{}", entry.id, field_index),
-                label: property.clone(),
-                field_type,
-                value: raw_value.value.clone(),
-            });
-            field_index += 1;
-        }
-
-        let mut history = Vec::new();
-        for (property, raw_value) in &entry.p {
-            for hist in &raw_value.history {
-                history.push(HistoryItem {
-                    property: property.clone(),
-                    value: hist.value.clone(),
-                    updated_at: datetime_from_millis(hist.updated),
-                });
-            }
-        }
-
-        let mut buttercup_entry = ButtercupEntry {
-            id: entry.id,
+        let buttercup_entry = ButtercupEntry {
+            id,
             group_id: group_id.clone(),
             title: get_property(&entry.p, "title"),
             username: get_property(&entry.p, "username"),
             password: get_property(&entry.p, "password"),
             url: get_property(&entry.p, "URL"),
             notes: get_property(&entry.p, "notes"),
-            fields,
+            fields: extract_custom_fields(&entry),
             deleted_at: entry.deleted.map(datetime_from_millis),
-            history,
+            history: extract_history(&entry),
         };
 
         let is_in_trash_group = group_id
@@ -177,10 +165,11 @@ pub(super) fn build_entries(
         let is_trash = entry.deleted.is_some() || is_in_trash_group;
 
         if is_trash {
+            let mut trash_entry = buttercup_entry;
             if group_id.as_ref() == trash_group_id.as_ref() {
-                buttercup_entry.group_id = None;
+                trash_entry.group_id = None;
             }
-            trash_entries.push(buttercup_entry);
+            trash_entries.push(trash_entry);
         } else {
             entries.push(buttercup_entry);
         }

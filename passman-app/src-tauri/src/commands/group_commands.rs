@@ -9,6 +9,14 @@ use tauri::State;
 
 use crate::commands::state::{validate_reorder, AppState};
 
+fn validate_different_vaults(source: &str, target: &str) -> Result<(), String> {
+    if source == target {
+        Err("source and target vault must be different".to_string())
+    } else {
+        Ok(())
+    }
+}
+
 #[derive(Serialize)]
 pub(crate) struct GroupDeletionResult {
     pub groups: Vec<Group>,
@@ -119,9 +127,7 @@ pub fn move_group_to_vault(
     target_group_id: String,
     state: State<'_, AppState>,
 ) -> Result<MoveGroupToVaultResult, String> {
-    if source_path == target_path {
-        return Err("source and target vault must be different".to_string());
-    }
+    validate_different_vaults(&source_path, &target_path)?;
     let mut guard = state.inner.lock().unwrap();
     let prepared = {
         let source = guard
@@ -166,9 +172,7 @@ pub fn copy_group_to_vault(
     target_group_id: String,
     state: State<'_, AppState>,
 ) -> Result<(Vec<Group>, Vec<VaultEntry>), String> {
-    if source_path == target_path {
-        return Err("source and target vault must be different".to_string());
-    }
+    validate_different_vaults(&source_path, &target_path)?;
     let mut guard = state.inner.lock().unwrap();
     let prepared = {
         let source = guard
