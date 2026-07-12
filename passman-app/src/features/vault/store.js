@@ -152,6 +152,8 @@ export async function closeVault(path) {
     currentVault.set(null);
   }
   clearVaultData(path);
+  const { selection } = await import("../../stores/selection.js");
+  selection.resetVault(path);
 }
 
 export const lockVaultByPath = closeVault;

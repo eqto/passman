@@ -1,5 +1,5 @@
-import { writable } from "svelte/store";
-import { setVaultViewState } from "../features/vault/store.js";
+import { writable, get } from "svelte/store";
+import { currentVault } from "../features/vault/store.js";
 
 const DEFAULT_STATE = {
   selectedGroup: "",
@@ -11,42 +11,31 @@ const DEFAULT_STATE = {
   selectedTags: [],
 };
 
-function createSelectionStore() {
-  const { subscribe, set, update } = writable({ ...DEFAULT_STATE });
+const vaultStores = new Map();
 
-  let currentVaultPath = null;
-
-  function saveViewState(state) {
-    if (!currentVaultPath) return;
-    setVaultViewState(currentVaultPath, {
-      selectedGroup: state.selectedGroup,
-      selectedEntry: state.selectedEntry,
-      editingEntry: state.editingEntry,
-      mode: state.mode,
-      trashMode: state.trashMode,
-      selectedTrashGroup: state.selectedTrashGroup,
-      selectedTags: state.selectedTags,
-    });
+function getVaultStore(path) {
+  if (!vaultStores.has(path)) {
+    vaultStores.set(path, writable({ ...DEFAULT_STATE }));
   }
+  return vaultStores.get(path);
+}
 
-  function updateAndSave(updater) {
-    update((s) => {
-      const next = updater(s);
-      saveViewState(next);
-      return next;
-    });
-  }
+function deleteVaultStore(path) {
+  vaultStores.delete(path);
+}
+
+function createVaultSelection(vaultPath) {
+  const store = getVaultStore(vaultPath);
+  const { subscribe, update, set } = store;
 
   return {
     subscribe,
-    setVaultPath(path) {
-      currentVaultPath = path;
-    },
+    vaultPath,
     reset() {
       set({ ...DEFAULT_STATE });
     },
     selectGroup(group) {
-      updateAndSave((s) => ({
+      update((s) => ({
         ...s,
         selectedGroup: group,
         trashMode: false,
@@ -56,7 +45,7 @@ function createSelectionStore() {
       }));
     },
     selectTag(tag) {
-      updateAndSave((s) => {
+      update((s) => {
         const selectedTags = s.selectedTags.includes(tag)
           ? s.selectedTags.filter((t) => t !== tag)
           : [...s.selectedTags, tag];
@@ -71,10 +60,10 @@ function createSelectionStore() {
       });
     },
     clearTags() {
-      updateAndSave((s) => ({ ...s, selectedTags: [] }));
+      update((s) => ({ ...s, selectedTags: [] }));
     },
     selectTrashGroup(groupId) {
-      updateAndSave((s) => ({
+      update((s) => ({
         ...s,
         selectedTrashGroup: groupId,
         trashMode: true,
@@ -84,7 +73,7 @@ function createSelectionStore() {
       }));
     },
     trashClick(trashGroupIds) {
-      updateAndSave((s) => {
+      update((s) => {
         let selectedTrashGroup = s.selectedTrashGroup;
         if (!trashGroupIds.includes(selectedTrashGroup)) {
           selectedTrashGroup = trashGroupIds.length > 0 ? trashGroupIds[0] : "__ungrouped__";
@@ -100,7 +89,7 @@ function createSelectionStore() {
       });
     },
     selectEntry(entry) {
-      updateAndSave((s) => ({
+      update((s) => ({
         ...s,
         selectedEntry: entry,
         editingEntry: null,
@@ -108,14 +97,14 @@ function createSelectionStore() {
       }));
     },
     editEntry(entry) {
-      updateAndSave((s) => ({
+      update((s) => ({
         ...s,
         editingEntry: { ...entry },
         mode: "edit",
       }));
     },
     newEntry(entry) {
-      updateAndSave((s) => ({
+      update((s) => ({
         ...s,
         editingEntry: entry,
         selectedEntry: null,
@@ -123,7 +112,7 @@ function createSelectionStore() {
       }));
     },
     resetSelection() {
-      updateAndSave((s) => ({
+      update((s) => ({
         ...s,
         selectedEntry: null,
         editingEntry: null,
@@ -131,30 +120,128 @@ function createSelectionStore() {
       }));
     },
     closeEditor() {
-      updateAndSave((s) => ({
+      update((s) => ({
         ...s,
         mode: "view",
         editingEntry: null,
       }));
     },
     setTrashMode(trashMode) {
-      updateAndSave((s) => ({ ...s, trashMode }));
+      update((s) => ({ ...s, trashMode }));
     },
     setSelectedGroup(group) {
-      updateAndSave((s) => ({ ...s, selectedGroup: group }));
+      update((s) => ({ ...s, selectedGroup: group }));
     },
     setSelectedTrashGroup(groupId) {
-      updateAndSave((s) => ({ ...s, selectedTrashGroup: groupId }));
+      update((s) => ({ ...s, selectedTrashGroup: groupId }));
     },
-    save() {
-      let state;
-      update((s) => {
-        state = s;
-        return s;
-      });
-      if (state) saveViewState(state);
-    },
+    save() { },
   };
 }
 
-export const selection = createSelectionStore();
+export { createVaultSelection, deleteVaultStore };
+
+export const selection = {
+  subscribe(fn) {
+    let unsub = null;
+    let pathUnsub = null;
+
+    function setup(path) {
+      if (unsub) unsub();
+      if (!path) {
+        fn({ ...DEFAULT_STATE });
+        unsub = null;
+        return;
+      }
+      const store = getVaultStore(path);
+      unsub = store.subscribe(fn);
+    }
+
+    pathUnsub = currentVault.subscribe((vault) => {
+      setup(vault?.path || null);
+    });
+
+    return () => {
+      if (unsub) unsub();
+      if (pathUnsub) pathUnsub();
+    };
+  },
+
+  setVaultPath(path) { },
+
+  resetVault(path) {
+    deleteVaultStore(path);
+  },
+
+  reset() {
+    const path = get(currentVault)?.path;
+    if (path) getVaultStore(path).set({ ...DEFAULT_STATE });
+  },
+
+  selectGroup(group) {
+    const path = get(currentVault)?.path;
+    if (path) createVaultSelection(path).selectGroup(group);
+  },
+
+  selectTag(tag) {
+    const path = get(currentVault)?.path;
+    if (path) createVaultSelection(path).selectTag(tag);
+  },
+
+  clearTags() {
+    const path = get(currentVault)?.path;
+    if (path) createVaultSelection(path).clearTags();
+  },
+
+  selectTrashGroup(groupId) {
+    const path = get(currentVault)?.path;
+    if (path) createVaultSelection(path).selectTrashGroup(groupId);
+  },
+
+  trashClick(trashGroupIds) {
+    const path = get(currentVault)?.path;
+    if (path) createVaultSelection(path).trashClick(trashGroupIds);
+  },
+
+  selectEntry(entry) {
+    const path = get(currentVault)?.path;
+    if (path) createVaultSelection(path).selectEntry(entry);
+  },
+
+  editEntry(entry) {
+    const path = get(currentVault)?.path;
+    if (path) createVaultSelection(path).editEntry(entry);
+  },
+
+  newEntry(entry) {
+    const path = get(currentVault)?.path;
+    if (path) createVaultSelection(path).newEntry(entry);
+  },
+
+  resetSelection() {
+    const path = get(currentVault)?.path;
+    if (path) createVaultSelection(path).resetSelection();
+  },
+
+  closeEditor() {
+    const path = get(currentVault)?.path;
+    if (path) createVaultSelection(path).closeEditor();
+  },
+
+  setTrashMode(trashMode) {
+    const path = get(currentVault)?.path;
+    if (path) createVaultSelection(path).setTrashMode(trashMode);
+  },
+
+  setSelectedGroup(group) {
+    const path = get(currentVault)?.path;
+    if (path) createVaultSelection(path).setSelectedGroup(group);
+  },
+
+  setSelectedTrashGroup(groupId) {
+    const path = get(currentVault)?.path;
+    if (path) createVaultSelection(path).setSelectedTrashGroup(groupId);
+  },
+
+  save() { },
+};

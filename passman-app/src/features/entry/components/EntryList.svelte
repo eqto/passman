@@ -38,12 +38,6 @@
 
   useContextMenu(closeContextMenu);
 
-  $: if ($currentVault) {
-    const viewState = $vaultData[$currentVault.path]?.viewState || {};
-    search = viewState.search || "";
-    filterSearch = search;
-  }
-
   function saveState() {
     if ($currentVault) {
       setVaultViewState($currentVault.path, { search });

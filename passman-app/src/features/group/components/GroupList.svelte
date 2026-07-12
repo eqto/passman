@@ -1,7 +1,5 @@
 <script>
   import {
-    groups,
-    tags,
     vaults,
     currentVault,
     vaultData,
@@ -33,6 +31,7 @@
   import { buildTree } from "../groupTree.js";
   import { onReorderGroups, handleDropInto } from "../groupActions.js";
 
+  export let vault;
   export let selectedGroup = "";
   export let selectedTags = [];
   export let selectedTrashGroup = "";
@@ -43,6 +42,21 @@
   export let onSelectTag = (tag) => {};
   export let onSelectTrashGroup;
   export let onTrashClick;
+
+  const vaultPath = vault.path;
+
+  $: vaultGroups = $vaultData[vaultPath]?.groups || [];
+  $: vaultTags = (() => {
+    const allEntries = $vaultData[vaultPath]?.entries || [];
+    const storedTags = $vaultData[vaultPath]?.tags || [];
+    const set = new Set(storedTags);
+    for (const entry of allEntries) {
+      for (const tag of entry.tags || []) {
+        set.add(tag);
+      }
+    }
+    return Array.from(set);
+  })();
 
   let showAdd = false;
   let showAddTag = false;
@@ -64,7 +78,7 @@
     currentVault.set(vault);
   }
 
-  $: moveVaults = ($vaults || []).filter((v) => v.path !== $currentVault?.path);
+  $: moveVaults = ($vaults || []).filter((v) => v.path !== vaultPath);
 
   async function handleAddGroup(name) {
     await addGroup({ id: crypto.randomUUID(), name, parent_id: null });
@@ -97,7 +111,7 @@
   }
 
   function getGroupName(groupId) {
-    const group = $groups.find((g) => g.id === groupId);
+    const group = vaultGroups.find((g) => g.id === groupId);
     return group ? group.name : groupId;
   }
 
@@ -107,7 +121,7 @@
     moveToVaultAction = "move";
   }
 
-  $: groupTree = buildTree($groups);
+  $: groupTree = buildTree(vaultGroups);
 
   function closeContextMenu() {
     contextMenu = { show: false, x: 0, y: 0, type: "tag", item: "" };
@@ -129,7 +143,7 @@
   }
 
   function handleMoveToTrash(event) {
-    const group = $groups.find((g) => g.id === event.detail.groupId);
+    const group = vaultGroups.find((g) => g.id === event.detail.groupId);
     if (group) {
       deleteTarget = group;
     }
@@ -203,7 +217,7 @@
       {selectedTrashGroup}
       {hasUngroupedTrashEntries}
       {selectedGroup}
-      groups={$groups}
+      groups={vaultGroups}
       {onSelectTrashGroup}
       {onSelectGroup}
     />
@@ -215,7 +229,7 @@
         onButtonClick={() => (showAdd = true)}
       />
 
-      {#if $groups.length === 0}
+      {#if vaultGroups.length === 0}
         <p class="empty-state">No groups.</p>
       {:else}
         <Tree
@@ -226,15 +240,15 @@
             : ""}
           onSelect={onSelectGroup}
           onContextMenu={(e, id) => openContextMenu(e, "group", id)}
-          items={$groups}
+          items={vaultGroups}
           onReorder={onReorderGroups}
           onDropInto={({ source, target }) =>
-            handleDropInto(source, target, $groups)}
+            handleDropInto(source, target, vaultGroups)}
         />
       {/if}
 
       <TagSidebar
-        tags={$tags}
+        tags={vaultTags}
         {selectedTags}
         {onSelectTag}
         onAddTag={() => (showAddTag = true)}
@@ -274,7 +288,7 @@
     y={contextMenu.y}
     type={contextMenu.type}
     item={contextMenu.item}
-    groups={$groups}
+    groups={vaultGroups}
     vaults={moveVaults}
     on:moveToGroup={handleMoveToGroup}
     on:mergeGroup={handleMergeGroup}

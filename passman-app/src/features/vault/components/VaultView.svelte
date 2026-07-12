@@ -1,6 +1,6 @@
 <script>
   import { onMount, onDestroy } from "svelte";
-  import { currentVault, vaultData, groups, entries, trash } from "../store.js";
+  import { vaultData } from "../store.js";
   import {
     deleteEntry,
     restoreEntry,
@@ -10,13 +10,18 @@
     copyEntryToGroup,
     copyEntryToVault,
   } from "../../entry/store.js";
-  import { selection } from "../../../stores/selection.js";
+  import { createVaultSelection } from "../../../stores/selection.js";
   import { writeText } from "@tauri-apps/plugin-clipboard-manager";
   import { GroupList } from "../../group";
   import EntryList from "../../entry/components/EntryList.svelte";
   import EntryDetails from "../../entry/components/EntryDetails.svelte";
   import EntryEditor from "../../entry/components/EntryEditor.svelte";
   import { createColumnResize } from "../../../lib/columnResize.js";
+
+  export let vault;
+
+  const vaultPath = vault.path;
+  const selection = createVaultSelection(vaultPath);
 
   const { columnWidths, loadWidths, startResize, handleKeyResize } =
     createColumnResize();
@@ -26,18 +31,18 @@
   });
 
   onMount(() => {
-    selection.reset();
     loadWidths();
   });
 
-  $: if (!$currentVault) {
-    selection.reset();
-  }
-  $: selection.setVaultPath($currentVault?.path || null);
+  $: vaultEntries = $vaultData[vaultPath]?.entries || [];
+  $: vaultGroups = $vaultData[vaultPath]?.groups || [];
+  $: vaultTrash = $vaultData[vaultPath]?.trash || { groups: [], entries: [] };
 
-  $: trashGroups = $trash.groups || [];
+  $: trashGroups = vaultTrash.groups || [];
   $: trashGroupIds = trashGroups.map((g) => g.id);
-  $: hasUngroupedTrashEntries = ($trash.entries || []).some((e) => !e.group_id);
+  $: hasUngroupedTrashEntries = (vaultTrash.entries || []).some(
+    (e) => !e.group_id,
+  );
 
   $: if (
     $selection.trashMode &&
@@ -49,19 +54,19 @@
 
   $: selectedEntryData = $selection.selectedEntry
     ? ($selection.trashMode
-        ? $trash.entries.find((e) => e.id === $selection.selectedEntry.id)
-        : $entries.find((e) => e.id === $selection.selectedEntry.id)) ||
+        ? vaultTrash.entries.find((e) => e.id === $selection.selectedEntry.id)
+        : vaultEntries.find((e) => e.id === $selection.selectedEntry.id)) ||
       $selection.selectedEntry
     : null;
 
   $: filteredEntries = $selection.trashMode
-    ? $trash.entries.filter((e) => {
+    ? vaultTrash.entries.filter((e) => {
         if (!$selection.selectedTrashGroup) return true;
         if ($selection.selectedTrashGroup === "__ungrouped__")
           return !e.group_id;
         return e.group_id === $selection.selectedTrashGroup;
       })
-    : $entries.filter((e) => {
+    : vaultEntries.filter((e) => {
         if (
           $selection.selectedGroup &&
           e.group_id !== $selection.selectedGroup
@@ -72,7 +77,7 @@
       });
 
   function getGroupName(groupId) {
-    const group = $groups.find((g) => g.id === groupId);
+    const group = vaultGroups.find((g) => g.id === groupId);
     return group ? group.name : groupId;
   }
 
@@ -108,7 +113,7 @@
     const groupName = await restoreEntry(entry.id);
     if (groupName) {
       selection.setTrashMode(false);
-      const restored = $entries.find((e) => e.id === entry.id);
+      const restored = vaultEntries.find((e) => e.id === entry.id);
       if (restored?.group_id) {
         selection.setSelectedGroup(restored.group_id);
       } else if (!$selection.selectedGroup) {
@@ -177,6 +182,7 @@
   <div class="vault-panels">
     <div class="panel groups" style="width: {columnWidths.groups}px">
       <GroupList
+        {vault}
         selectedGroup={$selection.selectedGroup}
         selectedTags={$selection.selectedTags}
         trashMode={$selection.trashMode}

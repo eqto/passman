@@ -8,7 +8,9 @@
   import { Confirm } from "./components/dialog";
   import {
     loadVaults,
+    vaults,
     currentVault,
+    vaultData,
     isUnlocked,
     lockVault,
     unlockVault,
@@ -48,6 +50,11 @@
     }
   }
 
+  $: unlockedVaults = ($vaults || []).filter(
+    (v) => $vaultData[v.path]?.unlocked,
+  );
+  $: currentVaultUnlocked = $currentVault && $isUnlocked;
+
   async function handleLockConfirmed() {
     showLockConfirm = false;
     await lockVault();
@@ -75,11 +82,15 @@
 <main>
   <VaultList />
   <div class="content">
-    {#if $currentVault && $isUnlocked}
-      {#key $currentVault.path}
-        <VaultView />
-      {/key}
-    {:else if $currentVault && !$isUnlocked}
+    {#each unlockedVaults as vault (vault.path)}
+      <div
+        class="vault-view-wrapper"
+        class:hidden={!($currentVault && $currentVault.path === vault.path)}
+      >
+        <VaultView {vault} />
+      </div>
+    {/each}
+    {#if $currentVault && !currentVaultUnlocked}
       <div class="locked-state">
         <UnlockDialog
           path={$currentVault.path}
@@ -88,7 +99,8 @@
           onCancel={handleCancelUnlock}
         />
       </div>
-    {:else}
+    {/if}
+    {#if !$currentVault}
       <div class="empty-state">Select or create a vault to get started.</div>
     {/if}
   </div>
@@ -109,6 +121,16 @@
     overflow: hidden;
     display: flex;
     border-top: 1px solid var(--border-color);
+  }
+
+  .vault-view-wrapper {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+  }
+
+  .vault-view-wrapper.hidden {
+    display: none;
   }
 
   .empty-state,
