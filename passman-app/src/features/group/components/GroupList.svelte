@@ -1,10 +1,5 @@
 <script>
-  import {
-    vaults,
-    currentVault,
-    vaultData,
-    setVaultViewState,
-  } from "../../vault/store.js";
+  import { vaults, currentVault, vaultData } from "../../vault/store.js";
   import { showToast } from "../../../stores/toast.js";
   import { closeAllContextMenus } from "../../../stores/contextMenu.js";
   import { useContextMenu } from "../../../lib/createContextMenu.js";
@@ -69,12 +64,6 @@
   useContextMenu(closeContextMenu);
 
   function switchToVaultAndGroup(vault, groupName) {
-    setVaultViewState(vault.path, {
-      selectedGroup: groupName,
-      selectedEntry: null,
-      editingEntry: null,
-      mode: "view",
-    });
     currentVault.set(vault);
   }
 

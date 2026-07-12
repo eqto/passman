@@ -135,7 +135,6 @@ function createVaultSelection(vaultPath) {
     setSelectedTrashGroup(groupId) {
       update((s) => ({ ...s, selectedTrashGroup: groupId }));
     },
-    save() { },
   };
 }
 
@@ -166,8 +165,6 @@ export const selection = {
       if (pathUnsub) pathUnsub();
     };
   },
-
-  setVaultPath(path) { },
 
   resetVault(path) {
     deleteVaultStore(path);
@@ -243,5 +240,4 @@ export const selection = {
     if (path) createVaultSelection(path).setSelectedTrashGroup(groupId);
   },
 
-  save() { },
 };

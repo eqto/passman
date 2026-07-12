@@ -1,5 +1,5 @@
 <script>
-  import { onMount, onDestroy } from "svelte";
+  import { onMount } from "svelte";
   import { vaultData } from "../store.js";
   import {
     deleteEntry,
@@ -25,10 +25,6 @@
 
   const { columnWidths, loadWidths, startResize, handleKeyResize } =
     createColumnResize();
-
-  onDestroy(() => {
-    selection.save();
-  });
 
   onMount(() => {
     loadWidths();

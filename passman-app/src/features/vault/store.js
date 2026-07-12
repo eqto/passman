@@ -88,12 +88,6 @@ function clearVaultData(path) {
   });
 }
 
-export function setVaultViewState(path, viewState) {
-  updateVaultData(path, {
-    viewState: { ...get(vaultData)[path]?.viewState, ...viewState },
-  });
-}
-
 function setVaultData(path, vault) {
   updateVaultData(path, {
     unlocked: true,

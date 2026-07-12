@@ -1,10 +1,5 @@
 <script>
   import { writeText } from "@tauri-apps/plugin-clipboard-manager";
-  import {
-    currentVault,
-    vaultData,
-    setVaultViewState,
-  } from "../../vault/store.js";
   import { debounce } from "../../../lib/debounce.js";
   import { showToast } from "../../../stores/toast.js";
   import { closeAllContextMenus } from "../../../stores/contextMenu.js";
@@ -38,16 +33,9 @@
 
   useContextMenu(closeContextMenu);
 
-  function saveState() {
-    if ($currentVault) {
-      setVaultViewState($currentVault.path, { search });
-    }
-  }
-
   function onSearchInput(event) {
     search = event.target.value;
     setFilterSearch(search);
-    saveState();
   }
 
   $: filtered = entries.filter((e) => {
