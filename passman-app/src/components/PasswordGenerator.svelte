@@ -1,27 +1,27 @@
 <script>
-  import { createEventDispatcher, onMount } from "svelte";
+  import { onMount } from "svelte";
   import { generatePassword } from "../features/entry/store.js";
   import { DEFAULT_PASSWORD_LENGTH } from "../lib/constants.js";
   import { KeyIcon } from "./icons";
 
-  const dispatch = createEventDispatcher();
+  let { onuse = null } = $props();
 
-  let open = false;
-  let length = DEFAULT_PASSWORD_LENGTH;
-  let options = {
+  let open = $state(false);
+  let length = $state(DEFAULT_PASSWORD_LENGTH);
+  let options = $state({
     uppercase: true,
     lowercase: true,
     digits: true,
     space: false,
     underscoreDash: true,
     symbols: false,
-  };
-  let generated = "";
-  let error = "";
+  });
+  let generated = $state("");
+  let error = $state("");
   let panelElement;
   let generateBtn;
-  let panelTop = 0;
-  let panelLeft = 0;
+  let panelTop = $state(0);
+  let panelLeft = $state(0);
   const PANEL_WIDTH = 288;
 
   const optionLabels = {
@@ -75,7 +75,7 @@
 
   function usePassword() {
     if (generated) {
-      dispatch("use", generated);
+      onuse?.(generated);
       open = false;
     }
   }
@@ -104,7 +104,7 @@
   });
 </script>
 
-<svelte:window on:click={handleWindowClick} on:keydown={handleKeydown} />
+<svelte:window onclick={handleWindowClick} onkeydown={handleKeydown} />
 
 <div class="password-generator">
   <button
@@ -112,7 +112,7 @@
     class="btn-icon generate-btn"
     type="button"
     aria-label="Generate password"
-    on:click={toggle}
+    onclick={toggle}
   >
     <KeyIcon size={18} />
   </button>
@@ -138,7 +138,7 @@
           min="6"
           max="64"
           bind:value={length}
-          on:input={generate}
+          oninput={generate}
         />
 
         <div class="option-list">
@@ -147,7 +147,7 @@
               <input
                 type="checkbox"
                 bind:checked={options[key]}
-                on:change={generate}
+                onchange={generate}
               />
               <span>{label}</span>
             </label>
@@ -160,10 +160,10 @@
       {/if}
 
       <div class="generator-actions">
-        <button class="btn-secondary" type="button" on:click={generate}>
+        <button class="btn-secondary" type="button" onclick={generate}>
           Generate
         </button>
-        <button class="btn-primary" type="button" on:click={usePassword}>
+        <button class="btn-primary" type="button" onclick={usePassword}>
           Use This
         </button>
       </div>

@@ -13,7 +13,7 @@
 </script>
 
 <Dialog>
-  <DialogHeader on:close={onCancel}>Delete Group</DialogHeader>
+  <DialogHeader onclick={onCancel}>Delete Group</DialogHeader>
   <DialogBody>
     <p>
       Delete group "{group?.name ?? group}"? Entries in this group will be moved
@@ -22,8 +22,8 @@
   </DialogBody>
   <DialogFooter>
     <DialogActions>
-      <button class="modal-cancel-btn" on:click={onCancel}> Cancel </button>
-      <button class="btn-primary" on:click={() => onDelete(group)}>
+      <button class="modal-cancel-btn" onclick={onCancel}> Cancel </button>
+      <button class="btn-primary" onclick={() => onDelete(group)}>
         Delete
       </button>
     </DialogActions>

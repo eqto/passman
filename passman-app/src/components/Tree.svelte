@@ -1,6 +1,6 @@
 <script>
   import { createEventDispatcher, getContext, setContext } from "svelte";
-  import { createDragList } from "../lib/dragList.js";
+  import { createDragList } from "./drag";
   import TreeItem from "./TreeItem.svelte";
 
   export let nodes = [];

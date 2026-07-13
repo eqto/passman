@@ -1,34 +1,51 @@
 <script>
-  import { createEventDispatcher } from "svelte";
-
-  export let x = 0;
-  export let y = 0;
-  export let canRename = false;
-
-  const dispatch = createEventDispatcher();
+  let {
+    x = 0,
+    y = 0,
+    canRename = false,
+    onsettings = null,
+    onremove = null,
+  } = $props();
 
   function handleSettings() {
     if (canRename) {
-      dispatch("settings");
+      onsettings?.();
     }
   }
 
   function handleRemove() {
-    dispatch("remove");
+    onremove?.();
   }
 </script>
 
-<div class="menu" style="left: {x}px; top: {y}px">
+<div class="menu" style="left: {x}px; top: {y}px" role="menu">
   {#if canRename}
-    <div class="menu-item" on:click={handleSettings}>
+    <div
+      class="menu-item"
+      role="menuitem"
+      tabindex="0"
+      onclick={handleSettings}
+      onkeydown={(e) =>
+        (e.key === "Enter" || e.key === " ") && handleSettings()}
+    >
       Settings
     </div>
   {:else}
-    <div class="menu-item" style="opacity: 0.6; cursor: not-allowed">
+    <div
+      class="menu-item"
+      style="opacity: 0.6; cursor: not-allowed"
+      role="menuitem"
+    >
       Settings (vault locked)
     </div>
   {/if}
-  <div class="menu-item danger" on:click={handleRemove}>
+  <div
+    class="menu-item danger"
+    role="menuitem"
+    tabindex="0"
+    onclick={handleRemove}
+    onkeydown={(e) => (e.key === "Enter" || e.key === " ") && handleRemove()}
+  >
     Remove Vault
   </div>
 </div>

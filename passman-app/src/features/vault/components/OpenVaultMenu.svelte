@@ -1,14 +1,15 @@
 <script>
-  import { createEventDispatcher } from "svelte";
   import { ChevronIcon } from "../../../components/icons";
 
-  const dispatch = createEventDispatcher();
-
-  export let showDropdown = false;
-  export let dropdownPosition = { x: 0, y: 0 };
+  let {
+    showDropdown = false,
+    dropdownPosition = { x: 0, y: 0 },
+    onpickexisting = null,
+    onbuttercupimport = null,
+  } = $props();
 
   function pickExistingVault() {
-    dispatch("pickExisting");
+    onpickexisting?.();
   }
 
   function toggleOpenDropdown(event) {
@@ -31,18 +32,18 @@
 
   function handleButtercupImport() {
     showDropdown = false;
-    dispatch("buttercupImport");
+    onbuttercupimport?.();
   }
 </script>
 
 <div class="btn-secondary dropdown-button">
-  <button class="dropdown-main-btn" on:click={pickExistingVault}
+  <button class="dropdown-main-btn" onclick={pickExistingVault}
     >Open Vault</button
   >
   <div class="dropdown-separator"></div>
   <button
     class="btn-icon dropdown-toggle"
-    on:click={toggleOpenDropdown}
+    onclick={toggleOpenDropdown}
     title="Open options"
   >
     <ChevronIcon size={16} />
@@ -53,7 +54,7 @@
     class="dropdown-menu"
     style="left: {dropdownPosition.x}px; top: {dropdownPosition.y}px;"
   >
-    <button class="dropdown-item" on:click={handleButtercupImport}>
+    <button class="dropdown-item" onclick={handleButtercupImport}>
       Open Buttercup format
     </button>
   </div>

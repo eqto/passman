@@ -1,30 +1,31 @@
 <script>
-  import { createEventDispatcher } from "svelte";
   import Dialog from "./Dialog.svelte";
   import DialogHeader from "./DialogHeader.svelte";
   import DialogBody from "./DialogBody.svelte";
   import DialogFooter from "./DialogFooter.svelte";
   import DialogActions from "./DialogActions.svelte";
 
-  export let title = "Confirm";
-  export let message = "";
-  export let confirmLabel = "Confirm";
-  export let cancelLabel = "Cancel";
-
-  const dispatch = createEventDispatcher();
+  let {
+    title = "Confirm",
+    message = "",
+    confirmLabel = "Confirm",
+    cancelLabel = "Cancel",
+    onconfirm = null,
+    oncancel = null,
+  } = $props();
 </script>
 
 <Dialog>
-  <DialogHeader on:close={() => dispatch("cancel")}>{title}</DialogHeader>
+  <DialogHeader onclick={oncancel}>{title}</DialogHeader>
   <DialogBody>
     <p>{message}</p>
   </DialogBody>
   <DialogFooter>
     <DialogActions>
-      <button class="modal-cancel-btn" on:click={() => dispatch("cancel")}>
+      <button class="modal-cancel-btn" onclick={oncancel}>
         {cancelLabel}
       </button>
-      <button class="btn-primary" on:click={() => dispatch("confirm")}>
+      <button class="btn-primary" onclick={onconfirm}>
         {confirmLabel}
       </button>
     </DialogActions>

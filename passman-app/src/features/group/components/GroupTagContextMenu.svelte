@@ -1,30 +1,39 @@
 <script>
-  import { createEventDispatcher } from "svelte";
   import { vaultData } from "../../vault/store.js";
   import { computeSubmenuLeft } from "../../../lib/menuPosition.js";
 
-  export let x = 0;
-  export let y = 0;
-  export let type = "tag";
-  export let item = "";
-  export let groups = [];
-  export let vaults = [];
+  let {
+    x = 0,
+    y = 0,
+    type = "tag",
+    item = "",
+    groups = [],
+    vaults = [],
+    onmovetogroup = null,
+    onmergegroup = null,
+    onmovetovault = null,
+    oncopytovault = null,
+    onmovetotrash = null,
+  } = $props();
 
-  const dispatch = createEventDispatcher();
-  let activeMenu = null;
-  let mainWidth = 0;
+  let activeMenu = $state(null);
+  let mainWidth = $state(0);
   let mergeItemEl;
   let moveToVaultItemEl;
   let copyToVaultItemEl;
   let moveToGroupItemEl;
-  let submenuTop = y;
+  let submenuTop = $state(y);
 
   const MENU_WIDTH = 160;
 
-  $: mergeTargets = type === "group" ? groups.filter((g) => g.id !== item) : [];
-  $: moveToGroupTargets = type === "tag" ? groups : [];
-  $: unlockedVaults = vaults.filter((v) => $vaultData[v.path]?.unlocked);
-  $: submenuLeft = computeSubmenuLeft(x, mainWidth);
+  const mergeTargets = $derived(
+    type === "group" ? groups.filter((g) => g.id !== item) : [],
+  );
+  const moveToGroupTargets = $derived(type === "tag" ? groups : []);
+  const unlockedVaults = $derived(
+    vaults.filter((v) => $vaultData[v.path]?.unlocked),
+  );
+  const submenuLeft = $derived(computeSubmenuLeft(x, mainWidth));
 
   function getGroupName(groupId) {
     const group = groups.find((g) => g.id === groupId);
@@ -45,23 +54,23 @@
   }
 
   function handleMerge(target) {
-    dispatch("mergeGroup", { sourceId: item, targetId: target.id });
+    onmergegroup?.({ sourceId: item, targetId: target.id });
   }
 
   function handleMoveToGroup(target) {
-    dispatch("moveToGroup", { item, target: target.id });
+    onmovetogroup?.({ item, target: target.id });
   }
 
   function handleMoveToVault(vault) {
-    dispatch("moveToVault", { sourceId: item, targetPath: vault.path });
+    onmovetovault?.({ sourceId: item, targetPath: vault.path });
   }
 
   function handleCopyToVault(vault) {
-    dispatch("copyToVault", { sourceId: item, targetPath: vault.path });
+    oncopytovault?.({ sourceId: item, targetPath: vault.path });
   }
 
   function handleMoveToTrash() {
-    dispatch("moveToTrash", { groupId: item });
+    onmovetotrash?.({ groupId: item });
   }
 </script>
 
@@ -70,46 +79,37 @@
   bind:clientWidth={mainWidth}
   class="menu"
   style="left: {x}px; top: {y}px;"
-  on:click|stopPropagation
+  onclick={(e) => e.stopPropagation()}
 >
   {#if type === "group"}
-    <div class="menu-item-wrapper" on:mouseenter={() => openMenu("merge")}>
+    <div class="menu-item-wrapper" onmouseenter={() => openMenu("merge")}>
       <div bind:this={mergeItemEl} class="menu-item has-submenu">
         <span>Merge to group</span>
         <span class="context-menu-arrow">▶</span>
       </div>
     </div>
-    <div
-      class="menu-item-wrapper"
-      on:mouseenter={() => openMenu("moveToVault")}
-    >
+    <div class="menu-item-wrapper" onmouseenter={() => openMenu("moveToVault")}>
       <div bind:this={moveToVaultItemEl} class="menu-item has-submenu">
         <span>Move to</span>
         <span class="context-menu-arrow">▶</span>
       </div>
     </div>
-    <div
-      class="menu-item-wrapper"
-      on:mouseenter={() => openMenu("copyToVault")}
-    >
+    <div class="menu-item-wrapper" onmouseenter={() => openMenu("copyToVault")}>
       <div bind:this={copyToVaultItemEl} class="menu-item has-submenu">
         <span>Copy to</span>
         <span class="context-menu-arrow">▶</span>
       </div>
     </div>
     <div class="context-menu-divider"></div>
-    <div class="menu-item-wrapper" on:mouseenter={() => openMenu(null)}>
-      <div class="menu-item danger" on:click={handleMoveToTrash}>
+    <div class="menu-item-wrapper" onmouseenter={() => openMenu(null)}>
+      <div class="menu-item danger" onclick={handleMoveToTrash}>
         <span>Move to trash</span>
       </div>
     </div>
   {/if}
 
   {#if type === "tag"}
-    <div
-      class="menu-item-wrapper"
-      on:mouseenter={() => openMenu("moveToGroup")}
-    >
+    <div class="menu-item-wrapper" onmouseenter={() => openMenu("moveToGroup")}>
       <div bind:this={moveToGroupItemEl} class="menu-item has-submenu">
         <span>Move to group</span>
         <span class="context-menu-arrow">▶</span>
@@ -123,12 +123,12 @@
   <div
     class="menu"
     style="left: {submenuLeft}px; top: {submenuTop}px"
-    on:click|stopPropagation
+    onclick={(e) => e.stopPropagation()}
   >
     {#if activeMenu === "merge"}
       {#if mergeTargets.length > 0}
         {#each mergeTargets as target}
-          <div class="menu-item" on:click={() => handleMerge(target)}>
+          <div class="menu-item" onclick={() => handleMerge(target)}>
             {target.name}
           </div>
         {/each}
@@ -139,7 +139,7 @@
       {#if moveToGroupTargets.length > 0}
         {#each moveToGroupTargets as target}
           {#if target.id !== item}
-            <div class="menu-item" on:click={() => handleMoveToGroup(target)}>
+            <div class="menu-item" onclick={() => handleMoveToGroup(target)}>
               {target.name}
             </div>
           {/if}
@@ -152,7 +152,7 @@
         {#each unlockedVaults as vault}
           <div
             class="menu-item"
-            on:click={() =>
+            onclick={() =>
               activeMenu === "moveToVault"
                 ? handleMoveToVault(vault)
                 : handleCopyToVault(vault)}

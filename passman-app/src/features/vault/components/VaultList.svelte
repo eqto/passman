@@ -22,10 +22,10 @@
   import ImportButtercupDialog from "./ImportButtercupDialog.svelte";
   import ThemeToggle from "../../../components/ThemeToggle.svelte";
   import OpenVaultMenu from "./OpenVaultMenu.svelte";
-  import VaultTab from "./VaultTab.svelte";
+  import Tabs from "../../../components/Tabs.svelte";
+  import { LockIcon } from "../../../components/icons";
   import { Confirm } from "../../../components/dialog";
   import { open } from "@tauri-apps/plugin-dialog";
-  import { createDragList } from "../../../lib/dragList.js";
 
   let showCreate = false;
   let unlockTarget = null;
@@ -38,13 +38,6 @@
   let settingsVault = null;
   let removeVault = null;
   let lockTarget = null;
-
-  const drag = createDragList({
-    axis: "horizontal",
-    getKey: (v) => v.id,
-    onReorder: async (items) => reorderVaults(items.map((v) => v.id)),
-  });
-  const { dragItem, dropTarget } = drag;
 
   function handleCloseAllContextMenus() {
     closeContextMenu();
@@ -159,44 +152,55 @@
   }
 </script>
 
-<svelte:window on:click={handleWindowClick} />
+<svelte:window onclick={handleWindowClick} />
 
 <div class="vault-tabs">
   <div class="tabs">
-    {#each $vaults as vault (vault.id)}
-      <VaultTab
-        {vault}
-        selected={$currentVault && $currentVault.path === vault.path}
-        dragging={$dragItem === vault}
-        dropBefore={$dropTarget?.type === "before" &&
-          $dropTarget.item.id === vault.id}
-        dropAfter={$dropTarget?.type === "after" &&
-          $dropTarget.item.id === vault.id}
-        unlocked={$vaultData[vault.path]?.unlocked}
-        onSelect={selectVault}
-        onLock={handleLock}
-        onRemove={handleDelete}
-        onContextMenu={handleContextMenu}
-        onDragStart={(e) => drag.dragStart(e, vault)}
-        onDragEnd={drag.dragEnd}
-        onDragOver={(e) => drag.handleDragOver(e, vault)}
-        onDragLeave={drag.dragLeave}
-        onDrop={(e) => drag.drop(e, $vaults, vault)}
-        onKeydown={handleTabKeydown}
-      />
-    {/each}
+    <Tabs
+      items={$vaults}
+      getKey={(v) => v.id}
+      getTitle={(v) => v.path}
+      selectedKey={$currentVault ? $currentVault.id : null}
+      onReorder={async (items) => reorderVaults(items.map((v) => v.id))}
+      onSelect={selectVault}
+      onKeydown={handleTabKeydown}
+      onContextMenu={handleContextMenu}
+    >
+      {#snippet itemTab(vault)}
+        {vault.name}
+      {/snippet}
+      {#snippet itemActions(vault)}
+        {#if $vaultData[vault.path]?.unlocked}
+          <button
+            class="btn-icon tab-action-btn lock-tab-btn"
+            onclick={() => handleLock(vault)}
+            title="Lock vault"
+          >
+            <LockIcon size={18} />
+          </button>
+        {:else}
+          <button
+            class="btn-icon tab-action-btn delete-tab-btn"
+            onclick={() => handleDelete(vault)}
+            title="Remove vault"
+          >
+            ×
+          </button>
+        {/if}
+      {/snippet}
+    </Tabs>
   </div>
 
   <div class="tab-actions">
-    <button class="btn-secondary" on:click={() => (showCreate = true)}>
+    <button class="btn-secondary" onclick={() => (showCreate = true)}>
       <span class="action-icon">+</span>
       <span>New Vault</span>
     </button>
     <OpenVaultMenu
       bind:dropdownPosition
       bind:showDropdown={showOpenDropdown}
-      on:pickExisting={pickExistingVault}
-      on:buttercupImport={handleButtercupImport}
+      onpickexisting={pickExistingVault}
+      onbuttercupimport={handleButtercupImport}
     />
     <ThemeToggle />
   </div>
@@ -216,8 +220,8 @@
       $currentVault &&
       $currentVault.id === contextMenu.vault.id &&
       $isUnlocked}
-    on:settings={openSettings}
-    on:remove={() => {
+    onsettings={openSettings}
+    onremove={() => {
       if (contextMenu.vault) {
         removeVault = contextMenu.vault;
       }
@@ -229,8 +233,8 @@
 {#if showSettings}
   <VaultSettingsDialog
     vault={settingsVault}
-    on:renamed={closeSettings}
-    on:cancel={closeSettings}
+    onrenamed={closeSettings}
+    oncancel={closeSettings}
   />
 {/if}
 
@@ -239,8 +243,8 @@
     title="Lock Vault"
     message={`Lock "${lockTarget.name}"? You will need to re-enter the password to access it again.`}
     confirmLabel="Lock"
-    on:confirm={handleLockConfirmed}
-    on:cancel={() => (lockTarget = null)}
+    onconfirm={handleLockConfirmed}
+    oncancel={() => (lockTarget = null)}
   />
 {/if}
 
@@ -254,8 +258,8 @@
 
 {#if showCreate}
   <CreateVaultDialog
-    on:created={() => (showCreate = false)}
-    on:cancel={() => (showCreate = false)}
+    oncreated={() => (showCreate = false)}
+    oncancel={() => (showCreate = false)}
   />
 {/if}
 
@@ -270,8 +274,8 @@
 
 {#if showButtercupImport}
   <ImportButtercupDialog
-    on:success={() => (showButtercupImport = false)}
-    on:cancel={() => (showButtercupImport = false)}
+    onsuccess={() => (showButtercupImport = false)}
+    oncancel={() => (showButtercupImport = false)}
   />
 {/if}
 
@@ -291,6 +295,32 @@
     gap: 0.25rem;
     overflow-x: auto;
     min-width: 0;
+  }
+
+  .tabs :global(.tab-action-btn) {
+    width: 1.75rem;
+    height: 1.75rem;
+    padding: 0;
+    border-radius: 50%;
+  }
+
+  .tabs :global(.lock-tab-btn) {
+    padding: 0.25rem;
+  }
+
+  .tabs :global(.tab.selected .lock-tab-btn) {
+    color: var(--selected-text);
+    background-color: transparent;
+  }
+
+  .tabs :global(.tab.selected .lock-tab-btn:hover) {
+    color: var(--selected-text);
+    background-color: rgba(128, 128, 128, 0.2);
+  }
+
+  .tabs :global(.delete-tab-btn:hover) {
+    color: var(--danger-color);
+    background-color: rgba(239, 68, 68, 0.1);
   }
 
   .tab-actions {

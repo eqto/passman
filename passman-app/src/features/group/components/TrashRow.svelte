@@ -10,8 +10,8 @@
     class="group-item"
     role="button"
     tabindex="0"
-    on:click={onTrashClick}
-    on:keydown={(e) => {
+    onclick={onTrashClick}
+    onkeydown={(e) => {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
         onTrashClick();

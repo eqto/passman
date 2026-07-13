@@ -1,12 +1,8 @@
 <script>
-  import { createEventDispatcher } from "svelte";
-
-  const dispatch = createEventDispatcher();
+  let { onclick = null, children } = $props();
 </script>
 
 <div class="modal-header">
-  <h2><slot /></h2>
-  <button class="btn-icon" aria-label="Close" on:click={() => dispatch("close")}>
-    ×
-  </button>
+  <h2>{@render children?.()}</h2>
+  <button class="btn-icon" aria-label="Close" {onclick}> × </button>
 </div>

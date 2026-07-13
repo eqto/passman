@@ -38,9 +38,9 @@
   }
 </script>
 
-<Dialog on:keydown={handleKeydown}>
+<Dialog onkeydown={handleKeydown}>
   {#if showNameInput}
-    <DialogHeader on:close={backToWarning}
+    <DialogHeader onclick={backToWarning}
       >{action === "copy" ? "Copy" : "Move"} to {vaultName}</DialogHeader
     >
     <DialogBody>
@@ -55,12 +55,12 @@
     </DialogBody>
     <DialogFooter>
       <DialogActions>
-        <button class="modal-cancel-btn" on:click={backToWarning}>Back</button>
-        <button class="btn-primary" on:click={handleCopy}>Copy as new</button>
+        <button class="modal-cancel-btn" onclick={backToWarning}>Back</button>
+        <button class="btn-primary" onclick={handleCopy}>Copy as new</button>
       </DialogActions>
     </DialogFooter>
   {:else}
-    <DialogHeader on:close={onCancel}
+    <DialogHeader onclick={onCancel}
       >{action === "copy" ? "Copy" : "Move"} to {vaultName}</DialogHeader
     >
     <DialogBody>
@@ -68,10 +68,9 @@
     </DialogBody>
     <DialogFooter>
       <DialogActions>
-        <button class="modal-cancel-btn" on:click={onCancel}>Cancel</button>
-        <button class="btn-primary" on:click={onMerge}>Merge</button>
-        <button class="btn-primary" on:click={startCopyAsNew}
-          >Copy as new</button
+        <button class="modal-cancel-btn" onclick={onCancel}>Cancel</button>
+        <button class="btn-primary" onclick={onMerge}>Merge</button>
+        <button class="btn-primary" onclick={startCopyAsNew}>Copy as new</button
         >
       </DialogActions>
     </DialogFooter>

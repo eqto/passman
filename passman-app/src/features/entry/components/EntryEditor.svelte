@@ -114,7 +114,7 @@
   }
 </script>
 
-<svelte:window on:click={handleClickOutside} />
+<svelte:window onclick={handleClickOutside} />
 
 <div class="entry-editor">
   <h2>{entry.title ? "Edit Entry" : "New Entry"}</h2>
@@ -139,7 +139,7 @@
         type="button"
         aria-label={passwordVisible ? "Hide" : "Reveal"}
         disabled={!form.password}
-        on:click={() => (passwordVisible = !passwordVisible)}
+        onclick={() => (passwordVisible = !passwordVisible)}
       >
         {#if passwordVisible}
           <EyeOffIcon size={16} />
@@ -147,7 +147,7 @@
           <EyeIcon size={16} />
         {/if}
       </button>
-      <PasswordGenerator on:use={(e) => (form.password = e.detail)} />
+      <PasswordGenerator onuse={(pw) => (form.password = pw)} />
     </div>
     <TagManager tags={displayTags} onAddTag={addTags} onRemoveTag={removeTag} />
     {#each form.fields as field (field.id)}
@@ -165,15 +165,18 @@
           revealable={field.type === "password" || field.type === "otp"}
           multiline={field.type === "note"}
           onFocus={() => clearPendingLabel(field.id)}
-          on:labelchange={(e) => updateField(field.id, { label: e.detail })}
-          on:input={(e) => updateField(field.id, { value: e.detail })}
+          onlabelchange={(v) => updateField(field.id, { label: v })}
+          oninput={(v) => updateField(field.id, { value: v })}
         />
         <div class="custom-field-menu">
           <button
             class="btn-icon gear-btn"
             type="button"
             aria-label="Field options"
-            on:click|stopPropagation={() => toggleMenu(field.id)}
+            onclick={(e) => {
+              e.stopPropagation();
+              toggleMenu(field.id);
+            }}
           >
             <SettingsIcon size={16} />
           </button>
@@ -184,8 +187,10 @@
                   type="button"
                   class="menu-item"
                   class:active={field.type === type.value}
-                  on:click|stopPropagation={() =>
-                    setFieldType(field.id, type.value)}
+                  onclick={(e) => {
+                    e.stopPropagation();
+                    setFieldType(field.id, type.value);
+                  }}
                 >
                   {type.label}
                 </button>
@@ -194,7 +199,10 @@
               <button
                 type="button"
                 class="menu-item danger"
-                on:click|stopPropagation={() => removeField(field.id)}
+                onclick={(e) => {
+                  e.stopPropagation();
+                  removeField(field.id);
+                }}
               >
                 Remove
               </button>
@@ -203,7 +211,7 @@
         </div>
       </div>
     {/each}
-    <button class="add-field-btn" type="button" on:click={addField}>
+    <button class="add-field-btn" type="button" onclick={addField}>
       + Add custom field
     </button>
   </div>
@@ -214,13 +222,13 @@
     {#if entry.title && onDelete}
       <button
         class="btn-danger delete-action"
-        on:click={() => (confirmDeleteEntry = true)}
+        onclick={() => (confirmDeleteEntry = true)}
       >
         Delete
       </button>
     {/if}
-    <button class="modal-cancel-btn" on:click={onClose}> Cancel </button>
-    <button class="btn-primary" on:click={handleSave}> Save </button>
+    <button class="modal-cancel-btn" onclick={onClose}> Cancel </button>
+    <button class="btn-primary" onclick={handleSave}> Save </button>
   </div>
 </div>
 
@@ -229,8 +237,8 @@
     title="Delete Entry"
     message={`Delete entry "${form.title}"?`}
     confirmLabel="Delete"
-    on:confirm={handleConfirmDelete}
-    on:cancel={() => (confirmDeleteEntry = false)}
+    onconfirm={handleConfirmDelete}
+    oncancel={() => (confirmDeleteEntry = false)}
   />
 {/if}
 

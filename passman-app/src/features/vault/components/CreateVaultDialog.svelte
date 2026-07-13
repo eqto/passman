@@ -1,5 +1,4 @@
 <script>
-  import { createEventDispatcher } from "svelte";
   import { save } from "@tauri-apps/plugin-dialog";
   import { createVault } from "../store.js";
   import {
@@ -10,13 +9,13 @@
     DialogActions,
   } from "../../../components/dialog";
 
-  let newName = "";
-  let newPath = "";
-  let newPassword = "";
-  let error = "";
-  let isCreating = false;
+  let { oncreated = null, oncancel = null } = $props();
 
-  const dispatch = createEventDispatcher();
+  let newName = $state("");
+  let newPath = $state("");
+  let newPassword = $state("");
+  let error = $state("");
+  let isCreating = $state(false);
 
   async function pickFile() {
     const selected = await save({
@@ -36,7 +35,7 @@
       const id = crypto.randomUUID();
       await createVault(id, newName, newPath, newPassword);
       reset();
-      dispatch("created");
+      oncreated?.();
     } catch (e) {
       error = e.toString();
     } finally {
@@ -52,7 +51,7 @@
 
   function handleCancel() {
     reset();
-    dispatch("cancel");
+    oncancel?.();
   }
 
   function handleKeydown(event) {
@@ -60,8 +59,8 @@
   }
 </script>
 
-<Dialog on:keydown={handleKeydown}>
-  <DialogHeader on:close={handleCancel}>Create Vault</DialogHeader>
+<Dialog onkeydown={handleKeydown}>
+  <DialogHeader onclick={handleCancel}>Create Vault</DialogHeader>
   <DialogBody>
     <div class="modal-form">
       <input
@@ -77,7 +76,7 @@
           placeholder="File path"
           disabled={isCreating}
         />
-        <button class="btn-secondary browse-btn" on:click={pickFile}>
+        <button class="btn-secondary browse-btn" onclick={pickFile}>
           Browse
         </button>
       </div>
@@ -87,6 +86,7 @@
         type="password"
         placeholder="Vault password"
         disabled={isCreating}
+        onkeydown={(e) => e.key === "Enter" && handleCreate()}
       />
       {#if error}
         <p class="modal-error">{error}</p>
@@ -97,20 +97,60 @@
     <DialogActions>
       <button
         class="modal-cancel-btn"
-        on:click={handleCancel}
+        onclick={handleCancel}
         disabled={isCreating}
       >
         Cancel
       </button>
-      <button class="btn-primary" on:click={handleCreate} disabled={isCreating}>
+      <button class="btn-primary" onclick={handleCreate} disabled={isCreating}>
         Create
       </button>
     </DialogActions>
   </DialogFooter>
+  {#if isCreating}
+    <div class="progress-wrapper">
+      <div class="progress-bar">
+        <div class="progress-indeterminate"></div>
+      </div>
+    </div>
+  {/if}
 </Dialog>
 
 <style>
   .path-row .modal-input {
     flex: 1;
+  }
+
+  .progress-wrapper {
+    padding-top: 1rem;
+  }
+
+  .progress-bar {
+    width: 100%;
+    height: 0.625rem;
+    background-color: var(--input-border);
+    border-radius: 0.5rem;
+    overflow: hidden;
+  }
+
+  .progress-indeterminate {
+    width: 40%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      var(--accent-color),
+      var(--accent-hover)
+    );
+    border-radius: 0.5rem;
+    animation: indeterminate 1.5s ease-in-out infinite;
+  }
+
+  @keyframes indeterminate {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(250%);
+    }
   }
 </style>

@@ -62,8 +62,8 @@
 </script>
 
 <svelte:window
-  on:keydown={handleKeydown}
-  on:contextmenu|preventDefault={() => {}}
+  onkeydown={handleKeydown}
+  oncontextmenu={(e) => e.preventDefault()}
 />
 
 <AutoLock />
@@ -74,8 +74,8 @@
     title="Lock Vault"
     message={`Lock "${$currentVault?.name}"? You will need to re-enter the password to access it again.`}
     confirmLabel="Lock"
-    on:confirm={handleLockConfirmed}
-    on:cancel={() => (showLockConfirm = false)}
+    onconfirm={handleLockConfirmed}
+    oncancel={() => (showLockConfirm = false)}
   />
 {/if}
 

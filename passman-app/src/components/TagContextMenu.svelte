@@ -1,27 +1,24 @@
 <script>
-  import { createEventDispatcher } from "svelte";
-
-  export let x = 0;
-  export let y = 0;
-
-  const dispatch = createEventDispatcher();
+  let { x = 0, y = 0, ondelete = null, onclose = null } = $props();
 
   function handleDelete() {
-    dispatch("delete");
+    ondelete?.();
   }
 
   function handleClickOutside() {
-    dispatch("close");
+    onclose?.();
   }
 </script>
 
-<svelte:window on:click={handleClickOutside} />
+<svelte:window onclick={handleClickOutside} />
 
 <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
-<div class="menu" style="left: {x}px; top: {y}px;" on:click|stopPropagation>
-  <div class="menu-item danger" on:click={handleDelete}>
-    Delete
-  </div>
+<div
+  class="menu"
+  style="left: {x}px; top: {y}px;"
+  onclick={(e) => e.stopPropagation()}
+>
+  <div class="menu-item danger" onclick={handleDelete}>Delete</div>
 </div>
 
 <style>

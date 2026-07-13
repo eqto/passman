@@ -35,8 +35,8 @@
   }
 </script>
 
-<Dialog on:keydown={handleKeydown}>
-  <DialogHeader on:close={onCancel}>{title}</DialogHeader>
+<Dialog onkeydown={handleKeydown}>
+  <DialogHeader onclick={onCancel}>{title}</DialogHeader>
   <DialogBody>
     <input
       class="modal-input"
@@ -50,8 +50,8 @@
   </DialogBody>
   <DialogFooter>
     <DialogActions>
-      <button class="modal-cancel-btn" on:click={onCancel}> Cancel </button>
-      <button class="btn-primary" on:click={handleAdd}> Add </button>
+      <button class="modal-cancel-btn" onclick={onCancel}> Cancel </button>
+      <button class="btn-primary" onclick={handleAdd}> Add </button>
     </DialogActions>
   </DialogFooter>
 </Dialog>

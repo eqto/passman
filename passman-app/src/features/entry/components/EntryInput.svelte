@@ -1,24 +1,26 @@
 <script>
-  import { createEventDispatcher } from "svelte";
   import { writeText } from "@tauri-apps/plugin-clipboard-manager";
   import { showToast } from "../../../stores/toast.js";
   import { Input, Label } from "../../../components/form";
   import { CopyIcon, EyeIcon, EyeOffIcon } from "../../../components/icons";
   import PasswordGenerator from "../../../components/PasswordGenerator.svelte";
 
-  export let label = "";
-  export let value = "";
-  export let type = "text";
-  export let editing = false;
-  export let labelPlaceholder = "";
-  export let valuePlaceholder = "";
-  export let copyable = true;
-  export let revealable = false;
-  export let multiline = false;
-  export let onFocus = null;
+  let {
+    label = "",
+    value = "",
+    type = "text",
+    editing = false,
+    labelPlaceholder = "",
+    valuePlaceholder = "",
+    copyable = true,
+    revealable = false,
+    multiline = false,
+    onFocus = null,
+    onlabelchange = null,
+    oninput = null,
+  } = $props();
 
-  const dispatch = createEventDispatcher();
-  let revealed = false;
+  let revealed = $state(false);
 
   async function copy() {
     if (!value) return;
@@ -33,7 +35,7 @@
       value={label}
       placeholder={labelPlaceholder}
       onfocus={onFocus}
-      oninput={(v) => dispatch("labelchange", v)}
+      oninput={(v) => onlabelchange?.(v)}
       class_="label-input"
     />
     <div class="value-wrapper">
@@ -42,10 +44,10 @@
         {value}
         placeholder={valuePlaceholder}
         {multiline}
-        oninput={(v) => dispatch("input", v)}
+        oninput={(v) => oninput?.(v)}
       />
       {#if revealable}
-        <PasswordGenerator on:use={(e) => dispatch("input", e.detail)} />
+        <PasswordGenerator onuse={(pw) => oninput?.(pw)} />
       {/if}
     </div>
   {:else}
@@ -64,7 +66,7 @@
         type="button"
         aria-label="Copy"
         disabled={!value}
-        on:click={copy}
+        onclick={copy}
       >
         <CopyIcon size={16} />
       </button>
@@ -75,7 +77,7 @@
         type="button"
         aria-label={revealed ? "Hide" : "Reveal"}
         disabled={!value}
-        on:click={() => (revealed = !revealed)}
+        onclick={() => (revealed = !revealed)}
       >
         {#if revealed}
           <EyeOffIcon size={16} />

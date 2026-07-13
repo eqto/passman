@@ -7,14 +7,11 @@
     DialogActions,
   } from "../../../components/dialog";
 
-  export let path;
-  export let name;
-  export let onUnlock;
-  export let onCancel;
+  let { path, name, onUnlock, onCancel } = $props();
 
-  let password = "";
-  let error = "";
-  let isUnlocking = false;
+  let password = $state("");
+  let error = $state("");
+  let isUnlocking = $state(false);
 
   async function handleUnlock() {
     if (isUnlocking) return;
@@ -39,8 +36,8 @@
   }
 </script>
 
-<Dialog on:keydown={handleKeydown}>
-  <DialogHeader on:close={onCancel}>Unlock {name}</DialogHeader>
+<Dialog onkeydown={handleKeydown}>
+  <DialogHeader onclick={onCancel}>Unlock {name}</DialogHeader>
   <DialogBody>
     <p class="vault-path">File: {path}</p>
     <input
@@ -50,7 +47,7 @@
       placeholder="Vault password"
       disabled={isUnlocking}
       use:focus
-      on:keydown={(e) => e.key === "Enter" && handleUnlock()}
+      onkeydown={(e) => e.key === "Enter" && handleUnlock()}
     />
     {#if error}
       <p class="modal-error">{error}</p>
@@ -60,16 +57,12 @@
     <DialogActions>
       <button
         class="modal-cancel-btn"
-        on:click={onCancel}
+        onclick={onCancel}
         disabled={isUnlocking}
       >
         Cancel
       </button>
-      <button
-        class="btn-primary"
-        on:click={handleUnlock}
-        disabled={isUnlocking}
-      >
+      <button class="btn-primary" onclick={handleUnlock} disabled={isUnlocking}>
         Unlock
       </button>
     </DialogActions>

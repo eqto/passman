@@ -1,5 +1,4 @@
 <script>
-  import { createEventDispatcher } from "svelte";
   import { renameVault } from "../store.js";
   import {
     Dialog,
@@ -9,19 +8,18 @@
     DialogActions,
   } from "../../../components/dialog";
 
-  export let vault = null;
+  let { vault = null, onrenamed = null, oncancel = null } = $props();
 
-  let settingsName = vault ? vault.name : "";
-  const dispatch = createEventDispatcher();
+  let settingsName = $state(vault ? vault.name : "");
 
   async function handleRename() {
     if (!vault || !settingsName.trim()) return;
     await renameVault(vault.id, settingsName.trim());
-    dispatch("renamed");
+    onrenamed?.();
   }
 
   function handleCancel() {
-    dispatch("cancel");
+    oncancel?.();
   }
 
   function handleKeydown(event) {
@@ -29,8 +27,8 @@
   }
 </script>
 
-<Dialog on:keydown={handleKeydown}>
-  <DialogHeader on:close={handleCancel}>Vault Settings</DialogHeader>
+<Dialog onkeydown={handleKeydown}>
+  <DialogHeader onclick={handleCancel}>Vault Settings</DialogHeader>
   <DialogBody>
     <div class="modal-form">
       <input
@@ -52,8 +50,8 @@
   </DialogBody>
   <DialogFooter>
     <DialogActions>
-      <button class="modal-cancel-btn" on:click={handleCancel}> Cancel </button>
-      <button class="btn-primary" on:click={handleRename}> Save </button>
+      <button class="modal-cancel-btn" onclick={handleCancel}> Cancel </button>
+      <button class="btn-primary" onclick={handleRename}> Save </button>
     </DialogActions>
   </DialogFooter>
 </Dialog>

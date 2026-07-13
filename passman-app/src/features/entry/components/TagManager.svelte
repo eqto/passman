@@ -1,23 +1,24 @@
 <script>
-  import { createEventDispatcher } from "svelte";
   import Chip from "../../../components/form/Chip.svelte";
   import TagContextMenu from "../../../components/TagContextMenu.svelte";
   import Confirm from "../../../components/dialog/Confirm.svelte";
 
-  export let tags = [];
-  export let readOnly = false;
-  export let onAddTag = null;
-  export let onRemoveTag = null;
+  let {
+    tags = [],
+    readOnly = false,
+    onAddTag = null,
+    onRemoveTag = null,
+  } = $props();
 
-  const dispatch = createEventDispatcher();
-
-  let tagInput = "";
-  let showTagInput = false;
+  let tagInput = $state("");
+  let showTagInput = $state(false);
   let tagInputEl;
-  let tagContextMenu = { show: false, x: 0, y: 0, tag: null };
-  let confirmDeleteTag = null;
+  let tagContextMenu = $state({ show: false, x: 0, y: 0, tag: null });
+  let confirmDeleteTag = $state(null);
 
-  $: if (showTagInput && tagInputEl) tagInputEl.focus();
+  $effect(() => {
+    if (showTagInput && tagInputEl) tagInputEl.focus();
+  });
 
   function addTag() {
     const raw = tagInput
@@ -27,8 +28,6 @@
     if (raw.length === 0) return;
     if (onAddTag) {
       onAddTag(raw);
-    } else {
-      dispatch("add", raw);
     }
     tagInput = "";
     showTagInput = false;
@@ -49,8 +48,6 @@
     if (!confirmDeleteTag) return;
     if (onRemoveTag) {
       onRemoveTag(confirmDeleteTag);
-    } else {
-      dispatch("remove", confirmDeleteTag);
     }
     confirmDeleteTag = null;
   }
@@ -83,7 +80,7 @@
       <button
         class="add-tag-chip"
         type="button"
-        on:click={() => (showTagInput = true)}
+        onclick={() => (showTagInput = true)}
       >
         + add tag
       </button>
@@ -98,16 +95,16 @@
         maxlength="20"
         bind:this={tagInputEl}
         bind:value={tagInput}
-        on:keydown={handleTagKeydown}
+        onkeydown={handleTagKeydown}
       />
-      <button class="btn-secondary" type="button" on:click={addTag}>
+      <button class="btn-secondary" type="button" onclick={addTag}>
         Save
       </button>
       <button
         class="btn-icon"
         type="button"
         aria-label="Cancel"
-        on:click={() => {
+        onclick={() => {
           tagInput = "";
           showTagInput = false;
         }}
@@ -122,8 +119,8 @@
   <TagContextMenu
     x={tagContextMenu.x}
     y={tagContextMenu.y}
-    on:delete={() => handleTagDelete(tagContextMenu.tag)}
-    on:close={() => (tagContextMenu = { ...tagContextMenu, show: false })}
+    ondelete={() => handleTagDelete(tagContextMenu.tag)}
+    onclose={() => (tagContextMenu = { ...tagContextMenu, show: false })}
   />
 {/if}
 
@@ -132,8 +129,8 @@
     title="Delete Tag"
     message={`Delete tag "${confirmDeleteTag}"?`}
     confirmLabel="Delete"
-    on:confirm={confirmTagDelete}
-    on:cancel={() => (confirmDeleteTag = null)}
+    onconfirm={confirmTagDelete}
+    oncancel={() => (confirmDeleteTag = null)}
   />
 {/if}
 

@@ -1,6 +1,6 @@
 <script>
   let {
-    value = "",
+    value = $bindable(""),
     type = "text",
     placeholder = "",
     class_ = "",
@@ -19,7 +19,10 @@
     {placeholder}
     {readonly}
     {onfocus}
-    oninput={(e) => oninput?.(e.target.value)}
+    oninput={(e) => {
+      value = e.target.value;
+      oninput?.(e.target.value);
+    }}
   ></textarea>
 {:else}
   <input
@@ -29,7 +32,10 @@
     {placeholder}
     {readonly}
     {onfocus}
-    oninput={(e) => oninput?.(e.target.value)}
+    oninput={(e) => {
+      value = e.target.value;
+      oninput?.(e.target.value);
+    }}
   />
 {/if}
 

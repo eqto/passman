@@ -1,3 +1,7 @@
+<script>
+  let { children } = $props();
+</script>
+
 <div class="modal-body">
-  <slot />
+  {@render children?.()}
 </div>

@@ -1,5 +1,4 @@
 <script>
-  import { createEventDispatcher } from "svelte";
   import { open, save } from "@tauri-apps/plugin-dialog";
   import { convertButtercupVault } from "../store.js";
   import {
@@ -10,16 +9,16 @@
     DialogActions,
   } from "../../../components/dialog";
 
-  let step = 1;
-  let bcupPath = "";
-  let password = "";
-  let outputPath = "";
-  let vaultName = "";
-  let error = "";
-  let loading = false;
-  let passwordInput;
+  let { onsuccess = null, oncancel = null } = $props();
 
-  const dispatch = createEventDispatcher();
+  let step = $state(1);
+  let bcupPath = $state("");
+  let password = $state("");
+  let outputPath = $state("");
+  let vaultName = $state("");
+  let error = $state("");
+  let loading = $state(false);
+  let passwordInput;
 
   async function pickBcupFile() {
     const selected = await open({
@@ -40,15 +39,12 @@
     error = "";
 
     try {
-      // First, we'll decrypt the buttercup file to get the vault name
-      // For now, we'll derive the name from the file path
       const fileName = bcupPath
         .split(/[/\\]/)
         .pop()
         .replace(/\.bcup$/i, "");
       vaultName = fileName || "Imported Buttercup Vault";
 
-      // Move to step 2
       step = 2;
     } catch (e) {
       error = e.message || "Failed to decrypt buttercup file";
@@ -74,7 +70,7 @@
 
     try {
       await convertButtercupVault(bcupPath, password, outputPath);
-      dispatch("success");
+      onsuccess?.();
       reset();
     } catch (e) {
       error = e.message || "Failed to import buttercup vault";
@@ -85,7 +81,7 @@
 
   function handleCancel() {
     reset();
-    dispatch("cancel");
+    oncancel?.();
   }
 
   function reset() {
@@ -111,8 +107,8 @@
   }
 </script>
 
-<Dialog on:keydown={handleKeydown}>
-  <DialogHeader on:close={handleCancel}>
+<Dialog onkeydown={handleKeydown}>
+  <DialogHeader onclick={handleCancel}>
     {#if step === 1}
       Import Buttercup Vault
     {:else}
@@ -137,7 +133,7 @@
             />
             <button
               class="btn-secondary browse-btn"
-              on:click={pickBcupFile}
+              onclick={pickBcupFile}
               disabled={loading}
             >
               Browse
@@ -172,7 +168,7 @@
             />
             <button
               class="btn-secondary browse-btn"
-              on:click={pickOutputFile}
+              onclick={pickOutputFile}
               disabled={loading}
             >
               Browse
@@ -187,14 +183,14 @@
       {#if step === 1}
         <button
           class="modal-cancel-btn"
-          on:click={handleCancel}
+          onclick={handleCancel}
           disabled={loading}
         >
           Cancel
         </button>
         <button
           class="btn-primary"
-          on:click={handleDecrypt}
+          onclick={handleDecrypt}
           disabled={!bcupPath || !password || loading}
         >
           {loading ? "Decrypting..." : "Next"}
@@ -202,14 +198,14 @@
       {:else}
         <button
           class="modal-cancel-btn"
-          on:click={handleBack}
+          onclick={handleBack}
           disabled={loading}
         >
           Back
         </button>
         <button
           class="btn-primary"
-          on:click={handleImport}
+          onclick={handleImport}
           disabled={!outputPath || loading}
         >
           {loading ? "Saving..." : "Save"}

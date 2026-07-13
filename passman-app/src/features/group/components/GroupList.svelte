@@ -111,14 +111,14 @@
     contextMenu = { show: false, x: 0, y: 0, type: "tag", item: "" };
   }
 
-  async function handleMoveToGroup(event) {
-    const { item, target } = event.detail;
+  async function handleMoveToGroup(detail) {
+    const { item, target } = detail;
     await moveEntriesWithTagToGroup(item, target);
     closeContextMenu();
   }
 
-  async function handleMergeGroup(event) {
-    const { sourceId, targetId } = event.detail;
+  async function handleMergeGroup(detail) {
+    const { sourceId, targetId } = detail;
     await mergeGroups(sourceId, targetId);
     if (selectedGroup === sourceId) {
       onSelectGroup(targetId);
@@ -126,16 +126,16 @@
     closeContextMenu();
   }
 
-  function handleMoveToTrash(event) {
-    const group = vaultGroups.find((g) => g.id === event.detail.groupId);
+  function handleMoveToTrash(detail) {
+    const group = vaultGroups.find((g) => g.id === detail.groupId);
     if (group) {
       deleteTarget = group;
     }
     closeContextMenu();
   }
 
-  async function handleVaultAction(event, action) {
-    const { sourceId, targetPath } = event.detail;
+  async function handleVaultAction(detail, action) {
+    const { sourceId, targetPath } = detail;
     const target = $vaults.find((v) => v.path === targetPath);
     const targetGroups = ($vaultData[targetPath]?.groups || []).map(
       (g) => g.id,
@@ -192,7 +192,7 @@
   }
 </script>
 
-<svelte:window on:click={closeContextMenu} />
+<svelte:window onclick={closeContextMenu} />
 
 <div class="group-list">
   {#if trashMode}
@@ -265,11 +265,11 @@
     item={contextMenu.item}
     groups={vaultGroups}
     vaults={moveVaults}
-    on:moveToGroup={handleMoveToGroup}
-    on:mergeGroup={handleMergeGroup}
-    on:moveToVault={(e) => handleVaultAction(e, "move")}
-    on:copyToVault={(e) => handleVaultAction(e, "copy")}
-    on:moveToTrash={handleMoveToTrash}
+    onmovetogroup={handleMoveToGroup}
+    onmergegroup={handleMergeGroup}
+    onmovetovault={(e) => handleVaultAction(e, "move")}
+    oncopytovault={(e) => handleVaultAction(e, "copy")}
+    onmovetotrash={handleMoveToTrash}
   />
 {/if}
 
@@ -280,7 +280,7 @@
     vaultName={moveToVaultTarget.name}
     action={moveToVaultAction}
     onMerge={() => handleVaultResolve(moveToVaultGroup)}
-    onCopy={(e) => handleVaultResolve(e.detail)}
+    onCopy={(targetId) => handleVaultResolve(targetId)}
     onCancel={cancelMoveToVault}
   />
 {/if}

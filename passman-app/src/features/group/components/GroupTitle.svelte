@@ -8,9 +8,7 @@
 <div class="section-header" class:trash-header={isTrash}>
   <span>{title}</span>
   {#if showButton && onButtonClick}
-    <button class="btn-icon" title="New" on:click={onButtonClick}>
-      +
-    </button>
+    <button class="btn-icon" title="New" onclick={onButtonClick}> + </button>
   {/if}
 </div>
 

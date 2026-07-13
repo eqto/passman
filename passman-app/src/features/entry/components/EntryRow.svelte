@@ -25,15 +25,15 @@
   class:selected
   role="button"
   tabindex="0"
-  on:click={() => onSelect(entry)}
-  on:dblclick={(e) => copyPassword(e, entry.password)}
-  on:keydown={(e) => {
+  onclick={() => onSelect(entry)}
+  ondblclick={(e) => copyPassword(e, entry.password)}
+  onkeydown={(e) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       onSelect(entry);
     }
   }}
-  on:contextmenu={(e) => onContextMenu(e, entry)}
+  oncontextmenu={(e) => onContextMenu(e, entry)}
 >
   <div class="entry-info">
     <div class="entry-title-row">
@@ -65,7 +65,7 @@
       class="btn-copy"
       title="Copy password"
       aria-label="Copy password"
-      on:click={(e) => copyPassword(e, entry.password)}
+      onclick={(e) => copyPassword(e, entry.password)}
     >
       <CopyIcon size={16} />
     </button>

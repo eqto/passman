@@ -17,7 +17,7 @@
   <button
     class="btn-icon"
     title="Back to groups"
-    on:click={() => onSelectGroup(selectedGroup || (groups[0]?.id ?? ""))}
+    onclick={() => onSelectGroup(selectedGroup || (groups[0]?.id ?? ""))}
   >
     ←
   </button>
@@ -42,8 +42,8 @@
         class="group-item"
         role="button"
         tabindex="0"
-        on:click={() => onSelectTrashGroup("__ungrouped__")}
-        on:keydown={(e) => {
+        onclick={() => onSelectTrashGroup("__ungrouped__")}
+        onkeydown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
             onSelectTrashGroup("__ungrouped__");
