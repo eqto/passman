@@ -119,11 +119,15 @@
 <div class="entry-editor">
   <h2>{entry.title ? "Edit Entry" : "New Entry"}</h2>
   <div class="form">
-    <Label text="Title" />
-    <Input bind:value={form.title} placeholder="Title" />
-    <Label text="Username" />
-    <Input bind:value={form.username} placeholder="Username" />
-    <div class="password-row">
+    <div class="field">
+      <Label text="Title" />
+      <Input bind:value={form.title} placeholder="Title" />
+    </div>
+    <div class="field">
+      <Label text="Username" />
+      <Input bind:value={form.username} placeholder="Username" />
+    </div>
+    <div class="field password-row">
       <Label text="Password" />
       <Input
         bind:value={form.password}
@@ -255,37 +259,30 @@
     padding: 0.25rem;
   }
 
-  .form > label input,
-  .form > .password-row input,
-  .form > input,
-  .form > textarea {
-    width: 100%;
-    padding: 0.5rem 0.75rem;
-    line-height: 1.5;
-    border: 1px solid var(--input-border);
-    border-radius: 0.5rem;
-    background-color: var(--input-bg);
-    color: var(--text-color);
-    resize: vertical;
+  .field {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 0.5rem;
+    min-width: 0;
   }
 
-  .form > label input:focus,
-  .form > .password-row input:focus,
-  .form > input:focus,
-  .form > textarea:focus {
-    outline: 2px solid var(--accent-color);
-    outline-offset: 1px;
+  .field > :global(.form-input) {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .field > :global(.label) {
+    flex-shrink: 0;
+  }
+
+  .password-row {
+    align-items: center;
   }
 
   .password-row > :global(.form-input) {
     flex: 1;
     min-width: 0;
-  }
-
-  .password-row {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
   }
 
   .error {
