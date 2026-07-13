@@ -63,6 +63,7 @@
       transparent={true}
       {revealable}
       {copyable}
+      {multiline}
       copyLabel="Copy"
       class_:empty={!value}
       on:copy={() => copy()}

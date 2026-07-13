@@ -29,8 +29,10 @@ fn test_decrypt_buttercup_cbc() {
     let entry = vault.entries.iter().find(|e| e.title == "Example").unwrap();
     assert_eq!(entry.username, "user");
     assert_eq!(entry.password, "pass");
-    assert_eq!(entry.url, "https://example.com");
-    assert_eq!(entry.notes, "note");
+    let url_field = entry.fields.iter().find(|f| f.label == "URL").unwrap();
+    assert_eq!(url_field.value, "https://example.com");
+    let notes_field = entry.fields.iter().find(|f| f.label == "Notes").unwrap();
+    assert_eq!(notes_field.value, "note");
 }
 
 #[test]

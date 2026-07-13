@@ -113,8 +113,6 @@ pub struct VaultEntry {
     pub title: String,
     pub username: String,
     pub password: String,
-    pub url: String,
-    pub notes: String,
     #[serde(default)]
     pub tags: Vec<String>,
     #[serde(default)]

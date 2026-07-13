@@ -13,6 +13,7 @@
   export let transparent = false;
   export let copyable = false;
   export let copyLabel = "Copy";
+  export let multiline = false;
 
   const dispatch = createEventDispatcher();
   let revealed = false;
@@ -26,15 +27,27 @@
   {#if label}
     <span class="form-label">{label}</span>
   {/if}
-  <input
-    class="form-input {class_}"
-    type={!value ? "text" : revealable && revealed ? "text" : type}
-    {value}
-    {placeholder}
-    {readonly}
-    on:focus={onFocus}
-    on:input={(e) => dispatch("input", e.target.value)}
-  />
+  {#if multiline}
+    <textarea
+      class="form-input {class_}"
+      rows="3"
+      {value}
+      {placeholder}
+      {readonly}
+      on:focus={onFocus}
+      on:input={(e) => dispatch("input", e.target.value)}
+    ></textarea>
+  {:else}
+    <input
+      class="form-input {class_}"
+      type={!value ? "text" : revealable && revealed ? "text" : type}
+      {value}
+      {placeholder}
+      {readonly}
+      on:focus={onFocus}
+      on:input={(e) => dispatch("input", e.target.value)}
+    />
+  {/if}
   {#if copyable}
     <button
       class="btn-copy-solid"
@@ -88,6 +101,7 @@
     border-radius: 0.5rem;
     background-color: var(--input-bg);
     color: var(--text-color);
+    resize: vertical;
   }
 
   .form-input:focus {

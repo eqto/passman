@@ -143,12 +143,6 @@
         Generate
       </button>
     </div>
-    {#if entry.title && form.url}
-      <input bind:value={form.url} placeholder="URL" />
-    {/if}
-    {#if entry.title && form.notes}
-      <textarea bind:value={form.notes} placeholder="Notes" rows="6"></textarea>
-    {/if}
     <TagManager tags={displayTags} onAddTag={addTags} onRemoveTag={removeTag} />
     {#each form.fields as field (field.id)}
       <div class="custom-field">

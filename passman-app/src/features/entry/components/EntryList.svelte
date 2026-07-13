@@ -43,8 +43,7 @@
     const matchesSearch =
       e.title.toLowerCase().includes(q) ||
       e.username.toLowerCase().includes(q) ||
-      e.url.toLowerCase().includes(q) ||
-      e.notes.toLowerCase().includes(q) ||
+      (e.fields || []).some((f) => f.value.toLowerCase().includes(q)) ||
       (e.tags || []).some((tag) => tag.toLowerCase().includes(q));
     if (!matchesSearch) return false;
     if (selectedTags.length > 0) {

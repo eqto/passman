@@ -56,7 +56,9 @@
       {/if}
     </div>
     <div class="entry-subtitle">
-      {entry.username || entry.url || "No details"}
+      {entry.username ||
+        (entry.fields || []).find((f) => f.label === "URL")?.value ||
+        "No details"}
     </div>
   </div>
   {#if entry.password}

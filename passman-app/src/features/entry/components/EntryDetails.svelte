@@ -54,7 +54,6 @@
         >
           {entry.title}
         </h2>
-        <p class="entry-url">{entry.url || ""}</p>
       </div>
     </div>
 
@@ -88,22 +87,6 @@
           on:copy={(e) => copy(e.detail, "Password")}
         />
       </div>
-
-      {#if entry.url}
-        <div class="field">
-          <span class="label">URL</span>
-          <a class="url-link" href={entry.url} target="_blank" rel="noopener">
-            {entry.url}
-          </a>
-        </div>
-      {/if}
-
-      {#if entry.notes}
-        <div class="field">
-          <span class="label">Notes</span>
-          <div class="notes">{entry.notes}</div>
-        </div>
-      {/if}
 
       {#if visibleTags.length > 0 || !trashMode}
         <div class="field">
@@ -182,15 +165,6 @@
     cursor: pointer;
   }
 
-  .entry-url {
-    margin: 0.25rem 0 0;
-    font-size: 0.875rem;
-    color: var(--muted-color);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
   .details-body {
     flex: 1;
     overflow-y: auto;
@@ -214,27 +188,6 @@
   .empty {
     color: var(--muted-color);
     font-style: italic;
-  }
-
-  .url-link {
-    color: var(--accent-color);
-    text-decoration: none;
-    font-size: 0.875rem;
-    word-break: break-all;
-  }
-
-  .url-link:hover {
-    text-decoration: underline;
-  }
-
-  .notes {
-    padding: 0.75rem;
-    background-color: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 0.5rem;
-    color: var(--text-color);
-    font-size: 0.875rem;
-    white-space: pre-wrap;
   }
 
   .details-footer {

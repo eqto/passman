@@ -91,25 +91,42 @@ pub fn derive_vault_name(source_name: &str, input_path: &str) -> String {
 }
 
 fn map_import_entry_to_vault_entry(e: ImportEntry, now: DateTime<Utc>) -> VaultEntry {
+    let mut fields: Vec<CustomField> = e
+        .fields
+        .into_iter()
+        .map(|f| CustomField {
+            id: f.id,
+            label: f.label,
+            field_type: f.field_type,
+            value: f.value,
+        })
+        .collect();
+
+    if !e.url.is_empty() {
+        fields.push(CustomField {
+            id: format!("{}-cf-url", e.id),
+            label: "URL".to_string(),
+            field_type: "text".to_string(),
+            value: e.url,
+        });
+    }
+    if !e.notes.is_empty() {
+        fields.push(CustomField {
+            id: format!("{}-cf-notes", e.id),
+            label: "Notes".to_string(),
+            field_type: "note".to_string(),
+            value: e.notes,
+        });
+    }
+
     VaultEntry {
         id: e.id,
         title: e.title,
         username: e.username,
         password: e.password,
-        url: e.url,
-        notes: e.notes,
         tags: e.tags,
         group_id: e.group_id,
-        fields: e
-            .fields
-            .into_iter()
-            .map(|f| CustomField {
-                id: f.id,
-                label: f.label,
-                field_type: f.field_type,
-                value: f.value,
-            })
-            .collect(),
+        fields,
         created_at: now,
         updated_at: now,
         deleted_at: e.deleted_at,
@@ -177,8 +194,8 @@ fn map_buttercup_entry(e: ButtercupEntry) -> ImportEntry {
         title: e.title,
         username: e.username,
         password: e.password,
-        url: e.url,
-        notes: e.notes,
+        url: String::new(),
+        notes: String::new(),
         tags: Vec::new(),
         fields: e
             .fields

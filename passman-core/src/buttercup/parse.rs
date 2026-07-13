@@ -146,15 +146,34 @@ pub(super) fn build_entries(
         let group_id = if entry.g.is_empty() { None } else { Some(entry.g.clone()) };
         let id = entry.id.clone();
 
+        let mut fields = extract_custom_fields(&entry);
+
+        let url = get_property(&entry.p, "URL");
+        if !url.is_empty() {
+            fields.push(ButtercupCustomField {
+                id: format!("{}-cf-url", entry.id),
+                label: "URL".to_string(),
+                field_type: "text".to_string(),
+                value: url,
+            });
+        }
+        let notes = get_property(&entry.p, "notes");
+        if !notes.is_empty() {
+            fields.push(ButtercupCustomField {
+                id: format!("{}-cf-notes", entry.id),
+                label: "Notes".to_string(),
+                field_type: "note".to_string(),
+                value: notes,
+            });
+        }
+
         let buttercup_entry = ButtercupEntry {
             id,
             group_id: group_id.clone(),
             title: get_property(&entry.p, "title"),
             username: get_property(&entry.p, "username"),
             password: get_property(&entry.p, "password"),
-            url: get_property(&entry.p, "URL"),
-            notes: get_property(&entry.p, "notes"),
-            fields: extract_custom_fields(&entry),
+            fields,
             deleted_at: entry.deleted.map(datetime_from_millis),
             history: extract_history(&entry),
         };

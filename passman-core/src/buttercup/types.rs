@@ -74,8 +74,6 @@ pub struct ButtercupEntry {
     pub title: String,
     pub username: String,
     pub password: String,
-    pub url: String,
-    pub notes: String,
     pub fields: Vec<ButtercupCustomField>,
     pub deleted_at: Option<DateTime<Utc>>,
     pub history: Vec<HistoryItem>,
