@@ -1,11 +1,17 @@
 <script>
-  export let size = "medium";
-  export let active = false;
-  export let as = "button";
-  export let type = "button";
-  export let title = "";
-  export let role = undefined;
-  export let tabindex = undefined;
+  let {
+    text = "",
+    size = "medium",
+    active = false,
+    as = "button",
+    type = "button",
+    title = "",
+    role = undefined,
+    tabindex = undefined,
+    onclick = null,
+    oncontextmenu = null,
+    onkeydown = null,
+  } = $props();
 
   const sizeClasses = {
     small: "chip-small",
@@ -22,11 +28,11 @@
   {title}
   {role}
   {tabindex}
-  on:click
-  on:contextmenu
-  on:keydown
+  {onclick}
+  {oncontextmenu}
+  {onkeydown}
 >
-  <slot />
+  {text}
 </svelte:element>
 
 <style>

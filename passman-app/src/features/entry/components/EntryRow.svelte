@@ -44,13 +44,12 @@
             <Chip
               size="small"
               active={selectedTags.includes(tag)}
-              on:click={(event) => {
+              onclick={(event) => {
                 event.stopPropagation();
                 onToggleTag(tag);
               }}
-            >
-              {tag}
-            </Chip>
+              text={tag}
+            />
           {/each}
         </div>
       {/if}

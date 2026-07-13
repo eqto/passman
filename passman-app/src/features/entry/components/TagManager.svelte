@@ -75,10 +75,9 @@
         title={readOnly ? "" : "Right-click to delete"}
         role="button"
         tabindex="0"
-        on:contextmenu={(event) => openTagContextMenu(event, tag)}
-      >
-        {tag}
-      </Chip>
+        oncontextmenu={(event) => openTagContextMenu(event, tag)}
+        text={tag}
+      />
     {/each}
     {#if !readOnly && !showTagInput}
       <button

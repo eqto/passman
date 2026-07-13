@@ -18,17 +18,16 @@
       <Chip
         size="medium"
         active={selectedTags.includes(tag)}
-        on:click={() => onSelectTag(tag)}
-        on:contextmenu={(e) => onContextMenu(e, tag)}
-        on:keydown={(e) => {
+        onclick={() => onSelectTag(tag)}
+        oncontextmenu={(e) => onContextMenu(e, tag)}
+        onkeydown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
             onSelectTag(tag);
           }
         }}
-      >
-        {tag}
-      </Chip>
+        text={tag}
+      />
     {/each}
   </div>
 {/if}
