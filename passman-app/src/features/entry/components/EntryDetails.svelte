@@ -48,8 +48,8 @@
         <h2
           class="entry-title"
           class:editable={!trashMode}
-          title={trashMode ? entry.title : "Double-click to edit"}
-          on:dblclick={() => !trashMode && onEdit(entry)}
+          title={trashMode ? entry.title : "Click to edit"}
+          on:click={() => !trashMode && onEdit(entry)}
         >
           {entry.title}
         </h2>
