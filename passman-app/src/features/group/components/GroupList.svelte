@@ -5,7 +5,6 @@
   import { useContextMenu } from "../../../lib/createContextMenu.js";
   import {
     addGroup,
-    addTag,
     deleteGroup,
     mergeGroups,
     moveGroupToVault,
@@ -43,9 +42,11 @@
   $: vaultGroups = $vaultData[vaultPath]?.groups || [];
   $: vaultTags = (() => {
     const allEntries = $vaultData[vaultPath]?.entries || [];
-    const storedTags = $vaultData[vaultPath]?.tags || [];
-    const set = new Set(storedTags);
-    for (const entry of allEntries) {
+    const filtered = selectedGroup
+      ? allEntries.filter((e) => e.group_id === selectedGroup)
+      : allEntries;
+    const set = new Set();
+    for (const entry of filtered) {
       for (const tag of entry.tags || []) {
         set.add(tag);
       }
@@ -54,7 +55,6 @@
   })();
 
   let showAdd = false;
-  let showAddTag = false;
   let deleteTarget = null;
   let contextMenu = { show: false, x: 0, y: 0, type: "tag", item: "" };
   let moveToVaultTarget = null;
@@ -72,11 +72,6 @@
   async function handleAddGroup(name) {
     await addGroup({ id: crypto.randomUUID(), name, parent_id: null });
     showAdd = false;
-  }
-
-  async function handleAddTag(name) {
-    await addTag(name);
-    showAddTag = false;
   }
 
   async function handleDeleteGroup(group) {
@@ -240,7 +235,6 @@
         tags={vaultTags}
         {selectedTags}
         {onSelectTag}
-        onAddTag={() => (showAddTag = true)}
         onContextMenu={(e, tag) => openContextMenu(e, "tag", tag)}
       />
     </div>
@@ -253,14 +247,6 @@
 
 {#if showAdd}
   <AddGroupDialog onAdd={handleAddGroup} onCancel={() => (showAdd = false)} />
-{/if}
-
-{#if showAddTag}
-  <AddGroupDialog
-    title="Add Tag"
-    onAdd={handleAddTag}
-    onCancel={() => (showAddTag = false)}
-  />
 {/if}
 
 {#if deleteTarget}

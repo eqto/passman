@@ -5,11 +5,10 @@
   export let tags = [];
   export let selectedTags = [];
   export let onSelectTag = (tag) => {};
-  export let onAddTag = () => {};
   export let onContextMenu = (e, tag) => {};
 </script>
 
-<GroupTitle title="Tags" showButton={true} onButtonClick={onAddTag} />
+<GroupTitle title="Tags" showButton={false} />
 
 {#if tags.length === 0}
   <p class="empty-state">No tags.</p>
