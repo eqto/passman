@@ -121,7 +121,11 @@
   <div class="form">
     <div class="field">
       <Label text="Title" />
-      <Input bind:value={form.title} placeholder="Title" />
+      <Input
+        bind:value={form.title}
+        placeholder="Title"
+        autofocus={!entry.title}
+      />
     </div>
     <div class="field">
       <Label text="Username" />

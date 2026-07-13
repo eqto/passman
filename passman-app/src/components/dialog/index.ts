@@ -4,3 +4,4 @@ export { default as DialogBody } from "./DialogBody.svelte";
 export { default as DialogFooter } from "./DialogFooter.svelte";
 export { default as DialogActions } from "./DialogActions.svelte";
 export { default as Confirm } from "./Confirm.svelte";
+export { default as Toast } from "./Toast.svelte";

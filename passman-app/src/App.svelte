@@ -4,8 +4,7 @@
   import VaultView from "./features/vault/components/VaultView.svelte";
   import UnlockDialog from "./features/vault/components/UnlockDialog.svelte";
   import AutoLock from "./components/AutoLock.svelte";
-  import Toast from "./components/Toast.svelte";
-  import { Confirm } from "./components/dialog";
+  import { Confirm, Toast } from "./components/dialog";
   import {
     loadVaults,
     vaults,

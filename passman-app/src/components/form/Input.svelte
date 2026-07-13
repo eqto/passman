@@ -6,13 +6,18 @@
     class_ = "",
     readonly = false,
     multiline = false,
+    autofocus = false,
     onfocus = null,
     oninput = null,
   } = $props();
+
+  let el;
+  $: if (el && autofocus) el.focus();
 </script>
 
 {#if multiline}
   <textarea
+    bind:this={el}
     class="form-input {class_}"
     rows="3"
     {value}
@@ -26,6 +31,7 @@
   ></textarea>
 {:else}
   <input
+    bind:this={el}
     class="form-input {class_}"
     {type}
     {value}
