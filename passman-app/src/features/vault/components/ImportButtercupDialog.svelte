@@ -217,18 +217,18 @@
 
 <style>
   .success-message {
-    padding: 0.75rem;
-    background-color: rgba(34, 197, 94, 0.1);
-    color: #22c55e;
-    border-radius: 0.5rem;
-    font-size: 0.875rem;
+    padding: var(--space-3);
+    background-color: var(--hover-bg);
+    color: var(--text-color);
+    border-radius: var(--shape-sm);
+    font-size: var(--font-size-sm);
   }
 
   .error-message {
-    padding: 0.75rem;
-    background-color: rgba(239, 68, 68, 0.1);
-    color: var(--danger-color);
-    border-radius: 0.5rem;
-    font-size: 0.875rem;
+    padding: var(--space-3);
+    background-color: var(--danger-container);
+    color: var(--on-danger-container);
+    border-radius: var(--shape-sm);
+    font-size: var(--font-size-sm);
   }
 </style>

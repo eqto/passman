@@ -68,14 +68,14 @@
     padding: 0.5rem 0.75rem 0.25rem;
     background-color: var(--hover-bg);
     color: var(--text-color);
-    border-radius: 0.5rem;
+    border-radius: var(--shape-sm);
     gap: 0.375rem;
     height: 2.25rem;
     line-height: 1.5rem;
   }
 
   .dropdown-button:hover {
-    outline: 1px solid var(--accent-color);
+    filter: brightness(0.95);
   }
 
   .dropdown-main-btn {
@@ -98,9 +98,12 @@
   .dropdown-menu {
     position: fixed;
     background-color: var(--sidebar-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 0.5rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: none;
+    border-radius: var(--shape-sm);
+    box-shadow:
+      0 0 1px 0 rgba(0, 0, 0, 0.3),
+      0 1px 2px 0 rgba(0, 0, 0, 0.3),
+      0 2px 6px 2px rgba(0, 0, 0, 0.15);
     z-index: 9999;
     min-width: 180px;
   }

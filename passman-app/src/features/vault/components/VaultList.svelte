@@ -301,7 +301,7 @@
     width: 1.75rem;
     height: 1.75rem;
     padding: 0;
-    border-radius: 50%;
+    border-radius: var(--shape-full);
   }
 
   .tabs :global(.lock-tab-btn) {
@@ -315,12 +315,12 @@
 
   .tabs :global(.tab.selected .lock-tab-btn:hover) {
     color: var(--selected-text);
-    background-color: rgba(128, 128, 128, 0.2);
+    background-color: var(--hover-bg);
   }
 
   .tabs :global(.delete-tab-btn:hover) {
-    color: var(--danger-color);
-    background-color: rgba(239, 68, 68, 0.1);
+    color: var(--on-danger-container);
+    background-color: var(--danger-container);
   }
 
   .tab-actions {
@@ -339,8 +339,8 @@
   .vault-load-error {
     padding: 0.5rem 1rem;
     font-size: 0.875rem;
-    color: var(--danger-color);
-    background-color: rgba(239, 68, 68, 0.1);
+    color: var(--on-danger-container);
+    background-color: var(--danger-container);
     border-bottom: 1px solid var(--border-color);
     white-space: nowrap;
     overflow: hidden;

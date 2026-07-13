@@ -65,7 +65,7 @@
     gap: 0.5rem;
     padding: 0.5rem 0.5rem 0.5rem 0.75rem;
     border: none;
-    border-radius: 0.5rem;
+    border-radius: var(--shape-sm);
     background: transparent;
     color: var(--text-color);
     cursor: pointer;
@@ -105,7 +105,7 @@
     width: 1.75rem;
     height: 1.75rem;
     padding: 0;
-    border-radius: 50%;
+    border-radius: var(--shape-full);
   }
 
   .lock-tab-btn {
@@ -119,11 +119,11 @@
 
   .tab.selected .lock-tab-btn:hover {
     color: var(--selected-text);
-    background-color: rgba(128, 128, 128, 0.2);
+    background-color: var(--hover-bg);
   }
 
   .delete-tab-btn:hover {
-    color: var(--danger-color);
-    background-color: rgba(239, 68, 68, 0.1);
+    color: var(--on-danger-container);
+    background-color: var(--danger-container);
   }
 </style>

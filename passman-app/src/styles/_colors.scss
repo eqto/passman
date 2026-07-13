@@ -5,16 +5,27 @@
 $primary: #415f91;
 $on-primary: #ffffff;
 $primary-hover: #284777;
+$primary-container: #d6e3ff;
+$on-primary-container: #284777;
 
 $secondary: #3a608f;
 $on-secondary: #ffffff;
+$secondary-container: #d3e3ff;
+$on-secondary-container: #204876;
 
 $tertiary: #455e91;
 $on-tertiary: #ffffff;
+$tertiary-container: #d9e2ff;
+$on-tertiary-container: #2d4678;
 
 $error: #ba1a1a;
 $on-error: #ffffff;
 $error-hover: #93000a;
+$error-container: #ffdad6;
+$on-error-container: #93000a;
+
+$scrim: #000000;
+$shadow: #000000;
 
 // --- Light theme ---
 $light-background: #f9f9ff;
@@ -29,6 +40,9 @@ $light-surface-container-lowest: #ffffff;
 $light-surface-container-low: #f3f3fa;
 $light-surface-container: #ededf4;
 $light-surface-container-high: #e7e8ee;
+$light-surface-container-highest: #e2e2e9;
+$light-inverse-surface: #2e3036;
+$light-inverse-on-surface: #f0f0f7;
 
 // --- Dark theme ---
 $dark-background: #111318;
@@ -43,5 +57,20 @@ $dark-surface-container-lowest: #0c0e13;
 $dark-surface-container-low: #191c20;
 $dark-surface-container: #1e2024;
 $dark-surface-container-high: #282a2f;
+$dark-surface-container-highest: #33353a;
+$dark-inverse-surface: #e2e2e9;
+$dark-inverse-on-surface: #2e3036;
 $dark-primary: #aac7ff;
+$dark-on-primary: #0b305f;
 $dark-primary-hover: #284777;
+$dark-primary-container: #284777;
+$dark-on-primary-container: #d6e3ff;
+$dark-secondary-container: #204876;
+$dark-on-secondary-container: #d3e3ff;
+$dark-secondary: #a5c8ee;
+$dark-on-secondary: #0a2748;
+$dark-error: #ffb4ab;
+$dark-on-error: #690005;
+$dark-error-hover: #f3a39a;
+$dark-error-container: #93000a;
+$dark-on-error-container: #ffdad6;

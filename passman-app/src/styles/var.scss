@@ -18,13 +18,21 @@
   --space-6: 1.5rem;
   --space-8: 2rem;
 
-  // Border radius
-  --radius-sm: 0.25rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
+  // M3 Shape tokens
+  --shape-xs: 4px;
+  --shape-sm: 8px;
+  --shape-md: 12px;
+  --shape-lg: 16px;
+  --shape-xl: 28px;
+  --shape-full: 9999px;
+
+  // M3 State layer opacity
+  --state-hover: 0.08;
+  --state-focus: 0.12;
+  --state-pressed: 0.12;
 
   // Component sizes
-  --btn-height: 2.25rem;
+  --btn-height: 2.5rem;
   --modal-width: 24rem;
   --entry-min-width: 400px;
   --entry-max-width: 640px;

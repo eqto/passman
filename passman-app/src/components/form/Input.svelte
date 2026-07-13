@@ -52,10 +52,10 @@
     flex: 1;
     font-size: 1rem;
     min-width: 0;
-    padding: 0.5rem 0.75rem;
+    padding: 0.625rem 0.75rem;
     line-height: 1.5;
     border: 1px solid var(--input-border);
-    border-radius: 0.5rem;
+    border-radius: var(--shape-xs);
     background-color: var(--input-bg);
     color: var(--text-color);
     resize: vertical;
@@ -63,6 +63,7 @@
 
   .form-input:focus {
     outline: 2px solid var(--accent-color);
-    outline-offset: 1px;
+    outline-offset: -1px;
+    border-color: transparent;
   }
 </style>

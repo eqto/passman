@@ -42,10 +42,11 @@
     align-items: center;
     background-color: var(--chip-bg);
     border: 1px solid var(--chip-border);
-    border-radius: 9999px;
+    border-radius: var(--shape-sm);
     color: var(--chip-text);
     cursor: pointer;
     line-height: 1;
+    font-weight: 500;
   }
 
   .chip:hover:not(.disabled) {
@@ -57,16 +58,17 @@
     background-color: var(--chip-bg);
     border-color: var(--chip-border);
     color: var(--chip-text);
+    opacity: 0.38;
     cursor: default;
   }
 
   .chip-small {
-    padding: 0.125rem 0.375rem;
+    padding: 0.125rem 0.5rem;
     font-size: 0.7rem;
   }
 
   .chip-medium {
-    padding: 0.3rem 0.75rem 0.2rem;
+    padding: 0.375rem 0.75rem;
     font-size: 0.875rem;
   }
 

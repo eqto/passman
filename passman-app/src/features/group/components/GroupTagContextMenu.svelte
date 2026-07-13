@@ -193,6 +193,7 @@
   }
 
   .menu-item.danger:hover {
-    background-color: rgba(239, 68, 68, 0.1);
+    background-color: var(--danger-container);
+    color: var(--on-danger-container);
   }
 </style>

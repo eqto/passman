@@ -27,10 +27,13 @@
     z-index: 100;
     min-width: 8rem;
     background-color: var(--bg-color);
-    border: 1px solid var(--border-color);
-    border-radius: 0.5rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    padding: 0.25rem 0;
+    border: none;
+    border-radius: var(--shape-sm);
+    box-shadow:
+      0 0 1px 0 rgba(0, 0, 0, 0.3),
+      0 1px 2px 0 rgba(0, 0, 0, 0.3),
+      0 2px 6px 2px rgba(0, 0, 0, 0.15);
+    padding: var(--space-1) 0;
   }
 
   .menu-item {

@@ -100,7 +100,7 @@
     gap: 0.5rem;
     padding: 0.5rem 0.5rem 0.5rem 0.75rem;
     border: none;
-    border-radius: 0.5rem;
+    border-radius: var(--shape-sm);
     background: transparent;
     color: var(--text-color);
     cursor: pointer;

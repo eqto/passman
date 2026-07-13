@@ -73,7 +73,7 @@
     padding: 0.5rem;
     background: transparent;
     border: none;
-    border-radius: 0.5rem;
+    border-radius: var(--shape-sm);
     color: var(--text-color);
     cursor: pointer;
     text-align: left;
@@ -113,7 +113,7 @@
   }
 
   .entry-row.selected .btn-copy:hover {
-    background-color: rgba(255, 255, 255, 0.15);
+    background-color: var(--hover-bg);
     color: var(--selected-text);
   }
 

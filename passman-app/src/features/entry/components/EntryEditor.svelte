@@ -344,10 +344,13 @@
     right: 0;
     margin-top: 0.25rem;
     background-color: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 0.5rem;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    padding: 0.25rem;
+    border: none;
+    border-radius: var(--shape-sm);
+    box-shadow:
+      0 0 1px 0 rgba(0, 0, 0, 0.3),
+      0 1px 2px 0 rgba(0, 0, 0, 0.3),
+      0 2px 6px 2px rgba(0, 0, 0, 0.15);
+    padding: var(--space-1);
     z-index: 10;
     min-width: 8rem;
   }
@@ -358,7 +361,7 @@
     text-align: left;
     background: transparent;
     border: none;
-    border-radius: 0.25rem;
+    border-radius: var(--shape-xs);
     color: var(--text-color);
     font-size: 0.875rem;
     cursor: pointer;
@@ -384,7 +387,7 @@
     padding: 0.5rem 0.75rem;
     background-color: transparent;
     border: 1px dashed var(--input-border);
-    border-radius: 0.5rem;
+    border-radius: var(--shape-sm);
     color: var(--muted-color);
     font-size: 0.875rem;
     cursor: pointer;

@@ -151,7 +151,7 @@
     padding: 0.25rem 0.75rem;
     background-color: transparent;
     border: 1px dashed var(--border-color);
-    border-radius: 0.5rem;
+    border-radius: var(--shape-sm);
     color: var(--muted-color);
     font-size: 0.875rem;
     cursor: pointer;
@@ -174,7 +174,7 @@
     padding: 0.25rem 0.5rem;
     background-color: var(--input-bg);
     border: 1px solid var(--input-border);
-    border-radius: 0.5rem;
+    border-radius: var(--shape-sm);
     color: var(--text-color);
     font-size: 0.875rem;
   }

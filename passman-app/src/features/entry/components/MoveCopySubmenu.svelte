@@ -140,6 +140,6 @@
     padding: 0.125rem 0.375rem;
     background-color: var(--hover-bg);
     border: 1px solid var(--border-color);
-    border-radius: 9999px;
+    border-radius: var(--shape-full);
   }
 </style>

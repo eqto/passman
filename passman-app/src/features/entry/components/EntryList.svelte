@@ -185,7 +185,7 @@
     background-color: var(--selected-bg);
     color: var(--selected-text);
     border: 1px solid var(--selected-bg);
-    border-radius: 9999px;
+    border-radius: var(--shape-full);
     font-size: 0.75rem;
     cursor: pointer;
   }

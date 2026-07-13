@@ -129,7 +129,7 @@
     width: 100%;
     height: 0.625rem;
     background-color: var(--input-border);
-    border-radius: 0.5rem;
+    border-radius: var(--shape-sm);
     overflow: hidden;
   }
 
@@ -141,7 +141,7 @@
       var(--accent-color),
       var(--accent-hover)
     );
-    border-radius: 0.5rem;
+    border-radius: var(--shape-sm);
     animation: indeterminate 1.5s ease-in-out infinite;
   }
 

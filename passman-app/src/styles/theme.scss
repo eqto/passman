@@ -1,0 +1,79 @@
+@use "colors" as *;
+
+:root {
+  --bg-color: #{$light-background};
+  --text-color: #{$light-on-background};
+  --muted-color: #{$light-on-surface-variant};
+  --border-color: #{$light-outline-variant};
+  --input-bg: #{$light-surface-container-low};
+  --input-border: #{$light-outline};
+  --accent-color: #{$primary};
+  --on-primary: #{$on-primary};
+  --accent-hover: #{$primary-hover};
+  --accent-container: #{$primary-container};
+  --on-accent-container: #{$on-primary-container};
+  --danger-color: #{$error};
+  --on-error: #{$on-error};
+  --danger-hover: #{$error-hover};
+  --danger-container: #{$error-container};
+  --on-danger-container: #{$on-error-container};
+  --card-bg: #{$light-surface-container-low};
+  --sidebar-bg: #{$light-surface-container};
+  --hover-bg: #{$light-surface-container-high};
+  --selected-bg: #{$secondary};
+  --selected-text: #{$on-secondary};
+  --scrim: #{$scrim};
+  --shadow-color: #{$shadow};
+  --inverse-surface: #{$light-inverse-surface};
+  --inverse-on-surface: #{$light-inverse-on-surface};
+  --toast-bg: #{$dark-surface-container-high};
+  --toast-text: #{$dark-on-surface};
+
+  --chip-bg: #{$light-surface-container};
+  --chip-border: #{$light-outline-variant};
+  --chip-text: #{$light-on-surface-variant};
+  --chip-hover-bg: #{$light-surface-container-high};
+  --chip-hover-border: #{$light-outline};
+  --chip-active-bg: #{$secondary};
+  --chip-active-text: #{$on-secondary};
+  --chip-active-border: #{$secondary};
+}
+
+:root.dark {
+  --bg-color: #{$dark-background};
+  --text-color: #{$dark-on-background};
+  --muted-color: #{$dark-on-surface-variant};
+  --border-color: #{$dark-outline-variant};
+  --input-bg: #{$dark-surface-container-low};
+  --input-border: #{$dark-outline};
+  --accent-color: #{$dark-primary};
+  --on-primary: #{$dark-on-primary};
+  --accent-hover: #{$dark-primary-hover};
+  --accent-container: #{$dark-primary-container};
+  --on-accent-container: #{$dark-on-primary-container};
+  --danger-color: #{$dark-error};
+  --on-error: #{$dark-on-error};
+  --danger-hover: #{$dark-error-hover};
+  --danger-container: #{$dark-error-container};
+  --on-danger-container: #{$dark-on-error-container};
+  --card-bg: #{$dark-surface-container-low};
+  --sidebar-bg: #{$dark-surface-container};
+  --hover-bg: #{$dark-surface-container-high};
+  --selected-bg: #{$dark-secondary};
+  --selected-text: #{$dark-on-secondary};
+  --scrim: #{$scrim};
+  --shadow-color: #{$shadow};
+  --inverse-surface: #{$dark-inverse-surface};
+  --inverse-on-surface: #{$dark-inverse-on-surface};
+  --toast-bg: #{$dark-surface-container-high};
+  --toast-text: #{$dark-on-surface};
+
+  --chip-bg: #{$dark-surface-container};
+  --chip-border: #{$dark-outline-variant};
+  --chip-text: #{$dark-on-surface-variant};
+  --chip-hover-bg: #{$dark-surface-container-high};
+  --chip-hover-border: #{$dark-outline};
+  --chip-active-bg: #{$dark-primary};
+  --chip-active-text: #{$dark-on-primary};
+  --chip-active-border: #{$dark-primary};
+}

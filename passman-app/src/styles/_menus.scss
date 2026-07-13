@@ -1,29 +1,29 @@
 @use "mixins" as *;
 
-/* Context Menu Base Styles */
+// M3 Menu
 .context-menu {
   position: fixed;
   background-color: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  @include shadow-md;
+  border: none;
+  border-radius: var(--shape-sm);
+  @include elevation-2;
   z-index: 100;
   padding: var(--space-1);
   overflow: visible;
 }
 
-/* Global Menu Classes */
 .menu {
   position: fixed;
   background-color: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  @include shadow-md;
+  border: none;
+  border-radius: var(--shape-sm);
+  @include elevation-2;
   z-index: 100;
   padding: var(--space-1);
   overflow-y: auto;
 }
 
+// M3 Menu Item
 .menu-item {
   width: 100%;
   padding: var(--space-2) var(--space-3);
@@ -33,7 +33,7 @@
   cursor: pointer;
   font-size: var(--font-size-sm);
   font-weight: 400;
-  border-radius: var(--radius-sm);
+  border-radius: var(--shape-xs);
 
   &:hover {
     background-color: var(--hover-bg);
@@ -49,6 +49,7 @@
   justify-content: space-between;
   gap: var(--space-2);
   font-weight: 400;
+  border-radius: var(--shape-xs);
 
   &:hover {
     background-color: var(--hover-bg);
@@ -56,6 +57,7 @@
 
   &:disabled {
     color: var(--muted-color);
+    opacity: 0.38;
     cursor: not-allowed;
 
     &:hover {
@@ -75,7 +77,6 @@
   opacity: 0.7;
 }
 
-/* Dropdown Menu Item */
 .dropdown-item {
   width: 100%;
   padding: var(--space-2) var(--space-3);
@@ -84,6 +85,7 @@
   color: var(--text-color);
   justify-content: flex-start;
   font-weight: 400;
+  border-radius: var(--shape-xs);
 
   &:hover {
     background-color: var(--hover-bg);

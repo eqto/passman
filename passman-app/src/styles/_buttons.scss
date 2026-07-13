@@ -1,12 +1,15 @@
 @use "mixins" as *;
 
-/* Button Variants */
+// M3 Filled Button — primary action
 .btn-primary {
-  padding: var(--space-2) var(--space-4) var(--space-1);
+  padding: var(--space-2) var(--space-6);
   background-color: var(--accent-color);
-  color: white;
+  color: var(--on-primary);
   height: var(--btn-height);
-  line-height: 1.5rem;
+  border-radius: var(--shape-full);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  line-height: 1.25rem;
 
   &:hover {
     background-color: var(--accent-hover);
@@ -17,29 +20,16 @@
   }
 }
 
+// M3 Filled Tonal Button — secondary prominence
 .btn-secondary {
-  padding: var(--space-2) var(--space-3) var(--space-1);
-  background-color: var(--hover-bg);
-  color: var(--text-color);
-  gap: 0.375rem;
+  padding: var(--space-2) var(--space-6);
+  background-color: var(--accent-container);
+  color: var(--on-accent-container);
   height: var(--btn-height);
-  line-height: 1.5rem;
-
-  &:hover {
-    outline: 1px solid var(--accent-color);
-  }
-
-  &:disabled {
-    @include disabled;
-  }
-}
-
-.btn-danger {
-  padding: var(--space-2) var(--space-4) var(--space-1);
-  background-color: var(--danger-color);
-  color: white;
-  height: var(--btn-height);
-  line-height: 1.5rem;
+  border-radius: var(--shape-full);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  line-height: 1.25rem;
 
   &:hover {
     filter: brightness(0.95);
@@ -50,11 +40,34 @@
   }
 }
 
-/* Icon Button */
+// M3 Filled Error Button
+.btn-danger {
+  padding: var(--space-2) var(--space-6);
+  background-color: var(--danger-color);
+  color: var(--on-error);
+  height: var(--btn-height);
+  border-radius: var(--shape-full);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  line-height: 1.25rem;
+
+  &:hover {
+    background-color: var(--danger-hover);
+  }
+
+  &:disabled {
+    @include disabled;
+  }
+}
+
+// M3 Standard Icon Button
 .btn-icon {
-  padding: var(--space-1);
+  width: var(--btn-height);
+  height: var(--btn-height);
+  padding: 0;
   background: transparent;
   color: var(--muted-color);
+  border-radius: var(--shape-full);
   font-size: var(--font-size-base);
 
   &:hover {
@@ -63,23 +76,24 @@
   }
 }
 
-/* Danger Icon Button */
+// M3 Danger Icon Button
 .btn-icon-danger {
-  width: 1.5rem;
-  height: 1.5rem;
+  width: 2rem;
+  height: 2rem;
   padding: 0;
   margin-right: var(--space-3);
   background: transparent;
   color: var(--muted-color);
+  border-radius: var(--shape-full);
   font-size: var(--font-size-base);
 
   &:hover {
-    outline: 1px solid var(--accent-color);
-    color: var(--danger-color);
+    background-color: var(--danger-container);
+    color: var(--on-danger-container);
   }
 }
 
-/* Copy Button (transparent) */
+// Copy Button (transparent) — appears on hover
 .btn-copy {
   width: 2rem;
   height: 2rem;
@@ -88,6 +102,7 @@
   color: var(--muted-color);
   flex-shrink: 0;
   opacity: 0;
+  border-radius: var(--shape-full);
   transition: opacity 0.15s ease;
 
   &:hover {
@@ -100,7 +115,7 @@
   }
 }
 
-/* Copy Button (solid background) */
+// Copy Button (solid background)
 .btn-copy-solid {
   width: var(--btn-height);
   height: var(--btn-height);
@@ -108,9 +123,10 @@
   flex-shrink: 0;
   background-color: var(--hover-bg);
   color: var(--text-color);
+  border-radius: var(--shape-full);
 
   &:hover {
-    outline: 1px solid var(--accent-color);
+    filter: brightness(0.95);
   }
 
   svg {
@@ -118,25 +134,26 @@
   }
 
   &:disabled {
-    opacity: 0.4;
-    cursor: default;
+    @include disabled;
 
     &:hover {
-      outline: none;
+      filter: none;
     }
   }
 }
 
-/* Ghost Text Button */
+// M3 Outlined Button — low prominence
 .btn-ghost {
-  padding: var(--space-1) var(--space-2);
+  padding: var(--space-1) var(--space-4);
   background: transparent;
   border: 1px solid var(--border-color);
   color: var(--muted-color);
+  border-radius: var(--shape-full);
   font-size: var(--font-size-xs);
+  font-weight: 500;
 
   &:hover {
     border-color: var(--accent-color);
-    color: var(--text-color);
+    color: var(--accent-color);
   }
 }

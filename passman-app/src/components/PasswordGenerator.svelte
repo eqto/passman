@@ -185,14 +185,14 @@
     flex-shrink: 0;
     background-color: var(--hover-bg);
     color: var(--text-color);
-    border-radius: 0.5rem;
+    border-radius: var(--shape-sm);
     display: inline-flex;
     align-items: center;
     justify-content: center;
   }
 
   .generate-btn:hover {
-    outline: 1px solid var(--accent-color);
+    filter: brightness(0.95);
   }
 
   .password-generator-panel {
@@ -200,12 +200,13 @@
     width: 18rem;
     max-width: calc(100vw - 2rem);
     background-color: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 0.5rem;
+    border: none;
+    border-radius: var(--shape-md);
     box-shadow:
-      0 10px 15px -3px rgba(0, 0, 0, 0.1),
-      0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    padding: 0.75rem;
+      0 0 1px 0 rgba(0, 0, 0, 0.3),
+      0 1px 3px 0 rgba(0, 0, 0, 0.3),
+      0 4px 8px 3px rgba(0, 0, 0, 0.15);
+    padding: var(--space-3);
     z-index: 100;
     display: flex;
     flex-direction: column;
@@ -217,7 +218,7 @@
     padding: 0.375rem 0.5rem;
     background-color: var(--input-bg);
     border: 1px solid var(--input-border);
-    border-radius: 0.375rem;
+    border-radius: var(--shape-xs);
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
       monospace;
     font-size: 0.8125rem;
@@ -272,7 +273,7 @@
     align-items: center;
     gap: 0.375rem;
     padding: 0.125rem 0.25rem;
-    border-radius: 0.25rem;
+    border-radius: var(--shape-xs);
     cursor: pointer;
     font-size: 0.8125rem;
     color: var(--text-color);
