@@ -50,6 +50,7 @@
 <style>
   .form-input {
     flex: 1;
+    font-size: 1rem;
     min-width: 0;
     padding: 0.5rem 0.75rem;
     line-height: 1.5;

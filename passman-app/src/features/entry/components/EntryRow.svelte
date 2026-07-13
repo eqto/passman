@@ -41,15 +41,7 @@
       {#if freeTags(entry.tags).length > 0}
         <div class="entry-tags">
           {#each freeTags(entry.tags) as tag}
-            <Chip
-              size="small"
-              active={selectedTags.includes(tag)}
-              onclick={(event) => {
-                event.stopPropagation();
-                onToggleTag(tag);
-              }}
-              text={tag}
-            />
+            <Chip size="small" active={selectedTags.includes(tag)} text={tag} />
           {/each}
         </div>
       {/if}
@@ -156,17 +148,5 @@
     gap: 0.25rem;
     flex-shrink: 0;
     max-width: 50%;
-  }
-
-  :global(.entry-row.selected .chip) {
-    color: var(--selected-text);
-    border-color: rgba(255, 255, 255, 0.3);
-    background-color: rgba(255, 255, 255, 0.15);
-  }
-
-  :global(.entry-row.selected .chip.active) {
-    background-color: var(--selected-text);
-    color: var(--selected-bg);
-    border-color: var(--selected-text);
   }
 </style>

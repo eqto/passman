@@ -39,10 +39,4 @@
     gap: 0.5rem;
     padding: 0 0.5rem;
   }
-
-  :global(.chip:hover) {
-    background-color: var(--accent-color);
-    color: #ffffff;
-    border-color: var(--accent-color);
-  }
 </style>

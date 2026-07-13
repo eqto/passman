@@ -24,6 +24,7 @@
   this={as}
   class="chip {sizeClasses[size]}"
   class:active
+  class:disabled={!onclick}
   {type}
   {title}
   {role}
@@ -39,16 +40,24 @@
   .chip {
     display: inline-flex;
     align-items: center;
-    background-color: var(--hover-bg);
-    border: 1px solid var(--border-color);
+    background-color: var(--chip-bg);
+    border: 1px solid var(--chip-border);
     border-radius: 9999px;
-    color: var(--text-color);
+    color: var(--chip-text);
     cursor: pointer;
     line-height: 1;
   }
 
-  .chip:hover {
-    border-color: var(--accent-color);
+  .chip:hover:not(.disabled) {
+    background-color: var(--chip-hover-bg);
+    border-color: var(--chip-hover-border);
+  }
+
+  .chip.disabled {
+    background-color: var(--chip-bg);
+    border-color: var(--chip-border);
+    color: var(--chip-text);
+    cursor: default;
   }
 
   .chip-small {
@@ -67,8 +76,8 @@
   }
 
   .chip.active {
-    background-color: var(--selected-bg);
-    color: var(--selected-text);
-    border-color: var(--selected-bg);
+    background-color: var(--chip-active-bg);
+    color: var(--chip-active-text);
+    border-color: var(--chip-active-border);
   }
 </style>
