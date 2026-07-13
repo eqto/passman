@@ -1,9 +1,10 @@
 <script>
   import { createEventDispatcher } from "svelte";
-  import { CopyIcon, EyeIcon, EyeOffIcon } from "../../../components/icons";
   import { writeText } from "@tauri-apps/plugin-clipboard-manager";
   import { showToast } from "../../../stores/toast.js";
-  import Input from "../../../components/form/Input.svelte";
+  import { Input, Label } from "../../../components/form";
+  import { CopyIcon, EyeIcon, EyeOffIcon } from "../../../components/icons";
+  import PasswordGenerator from "../../../components/PasswordGenerator.svelte";
 
   export let label = "";
   export let value = "";
@@ -28,46 +29,61 @@
 
 <div class="entry-input">
   {#if editing}
-    <input
-      class="field-input label-input"
-      type="text"
+    <Input
       value={label}
       placeholder={labelPlaceholder}
-      on:focus={onFocus}
-      on:input={(e) => dispatch("labelchange", e.target.value)}
+      {onFocus}
+      on:input={(e) => dispatch("labelchange", e.detail)}
+      class_="label-input"
     />
-    {#if multiline}
-      <textarea
-        class="field-input value-input"
-        rows="3"
-        {value}
-        placeholder={valuePlaceholder}
-        on:input={(e) => dispatch("input", e.target.value)}
-      ></textarea>
-    {:else}
-      <input
-        class="field-input value-input"
+    <div class="value-wrapper">
+      <Input
         {type}
         {value}
         placeholder={valuePlaceholder}
-        on:input={(e) => dispatch("input", e.target.value)}
+        {multiline}
+        on:input={(e) => dispatch("input", e.detail)}
       />
-    {/if}
+      {#if revealable}
+        <PasswordGenerator on:use={(e) => dispatch("input", e.detail)} />
+      {/if}
+    </div>
   {:else}
+    <Label text={label || "<empty>"} />
     <Input
       {value}
-      {type}
-      label={label || "<empty>"}
+      type={revealable && revealed ? "text" : type}
       placeholder="<empty>"
       readonly={true}
-      transparent={true}
-      {revealable}
-      {copyable}
+      class_="transparent {!value ? 'empty' : ''}"
       {multiline}
-      copyLabel="Copy"
-      class_:empty={!value}
-      on:copy={() => copy()}
     />
+    {#if copyable}
+      <button
+        class="btn-copy-solid"
+        type="button"
+        aria-label="Copy"
+        disabled={!value}
+        on:click={copy}
+      >
+        <CopyIcon size={16} />
+      </button>
+    {/if}
+    {#if revealable}
+      <button
+        class="btn-copy-solid"
+        type="button"
+        aria-label={revealed ? "Hide" : "Reveal"}
+        disabled={!value}
+        on:click={() => (revealed = !revealed)}
+      >
+        {#if revealed}
+          <EyeOffIcon size={16} />
+        {:else}
+          <EyeIcon size={16} />
+        {/if}
+      </button>
+    {/if}
   {/if}
 </div>
 
@@ -75,43 +91,46 @@
   .entry-input {
     display: flex;
     flex-direction: row;
-    align-items: center;
+    align-items: flex-start;
     gap: 0.5rem;
     min-width: 0;
   }
 
-  .entry-input > :global(.form-field) {
+  .entry-input > :global(.form-input) {
     flex: 1;
     min-width: 0;
   }
 
-  .field-input {
-    min-width: 0;
-    padding: 0.5rem 0.75rem;
-    line-height: 1.5;
-    border: 1px solid var(--input-border);
-    border-radius: 0.5rem;
-    background-color: var(--input-bg);
-    color: var(--text-color);
-    resize: vertical;
-  }
-
-  .field-input:focus {
-    outline: 2px solid var(--accent-color);
-    outline-offset: 1px;
-  }
-
-  .label-input {
-    width: 8rem;
+  .entry-input > :global(.label-input) {
+    width: 5rem;
     flex-shrink: 0;
   }
 
-  .value-input {
+  .value-wrapper {
+    position: relative;
     flex: 1;
-    width: auto;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    min-width: 0;
   }
 
-  .empty {
+  .entry-input > :global(.transparent) {
+    background-color: transparent;
+    border-color: transparent;
+    cursor: text;
+  }
+
+  .entry-input > :global(.transparent:hover) {
+    border-color: var(--input-border);
+    border-style: dashed;
+  }
+
+  .entry-input > :global(.transparent:focus) {
+    outline: none;
+  }
+
+  .entry-input > :global(.empty) {
     color: var(--muted-color);
     font-style: italic;
   }

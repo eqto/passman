@@ -7,6 +7,8 @@ pub struct PasswordOptions {
     pub uppercase: bool,
     pub lowercase: bool,
     pub digits: bool,
+    pub space: bool,
+    pub underscore_dash: bool,
     pub symbols: bool,
 }
 
@@ -22,8 +24,14 @@ pub fn generate_password(options: PasswordOptions) -> Result<String, String> {
     if options.digits {
         charset.extend_from_slice(b"0123456789");
     }
+    if options.space {
+        charset.extend_from_slice(b" ");
+    }
+    if options.underscore_dash {
+        charset.extend_from_slice(b"_-");
+    }
     if options.symbols {
-        charset.extend_from_slice(b"!@#$%^&*-_=+?");
+        charset.extend_from_slice(b"!@#$%^&*=+?");
     }
     if charset.is_empty() {
         return Err("at least one character set must be selected".to_string());
@@ -51,6 +59,8 @@ mod tests {
             uppercase: true,
             lowercase: true,
             digits: true,
+            space: false,
+            underscore_dash: true,
             symbols: true,
         })
         .unwrap();
@@ -64,10 +74,57 @@ mod tests {
             uppercase: false,
             lowercase: true,
             digits: false,
+            space: false,
+            underscore_dash: false,
             symbols: false,
         })
         .unwrap();
         assert!(password.chars().all(|c| c.is_ascii_lowercase()));
+    }
+
+    #[test]
+    fn test_generate_password_underscore_dash_only() {
+        let password = generate_password(PasswordOptions {
+            length: 12,
+            uppercase: false,
+            lowercase: false,
+            digits: false,
+            space: false,
+            underscore_dash: true,
+            symbols: false,
+        })
+        .unwrap();
+        assert!(password.chars().all(|c| c == '_' || c == '-'));
+    }
+
+    #[test]
+    fn test_generate_password_space_option() {
+        let password = generate_password(PasswordOptions {
+            length: 100,
+            uppercase: false,
+            lowercase: false,
+            digits: false,
+            space: true,
+            underscore_dash: false,
+            symbols: false,
+        })
+        .unwrap();
+        assert!(password.chars().all(|c| c == ' '));
+    }
+
+    #[test]
+    fn test_generate_password_symbols_excludes_underscore_dash() {
+        let password = generate_password(PasswordOptions {
+            length: 100,
+            uppercase: false,
+            lowercase: false,
+            digits: false,
+            space: false,
+            underscore_dash: false,
+            symbols: true,
+        })
+        .unwrap();
+        assert!(password.chars().all(|c| !c.is_alphanumeric() && c != '_' && c != '-' && c != ' '));
     }
 
     #[test]
@@ -77,6 +134,8 @@ mod tests {
             uppercase: false,
             lowercase: false,
             digits: false,
+            space: false,
+            underscore_dash: false,
             symbols: false,
         });
         assert!(result.is_err());

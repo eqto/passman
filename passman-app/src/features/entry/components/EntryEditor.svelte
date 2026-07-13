@@ -1,9 +1,9 @@
 <script>
-  import { addEntry, updateEntry, generatePassword } from "../store.js";
-  import { DEFAULT_PASSWORD_LENGTH } from "../../../lib/constants.js";
-  import Input from "../../../components/form/Input.svelte";
+  import { addEntry, updateEntry } from "../store.js";
+  import { Input, Label } from "../../../components/form";
   import EntryInput from "./EntryInput.svelte";
-  import { SettingsIcon } from "../../../components/icons";
+  import PasswordGenerator from "../../../components/PasswordGenerator.svelte";
+  import { SettingsIcon, EyeIcon, EyeOffIcon } from "../../../components/icons";
   import TagManager from "./TagManager.svelte";
   import Confirm from "../../../components/dialog/Confirm.svelte";
 
@@ -16,13 +16,6 @@
   $: displayTags = form.tags || [];
   let error = "";
   let confirmDeleteEntry = false;
-  let passwordLength = DEFAULT_PASSWORD_LENGTH;
-  let passwordOptions = {
-    uppercase: true,
-    lowercase: true,
-    digits: true,
-    symbols: true,
-  };
 
   function addTags(raw) {
     let next = form.tags;
@@ -67,10 +60,6 @@
     }
   }
 
-  async function handleGenerate() {
-    form.password = await generatePassword(passwordLength, passwordOptions);
-  }
-
   const FIELD_TYPES = [
     { value: "text", label: "Text" },
     { value: "note", label: "Note" },
@@ -80,6 +69,7 @@
 
   let openMenuId = null;
   let pendingLabelIds = new Set();
+  let passwordVisible = false;
 
   function addField() {
     const id = crypto.randomUUID();
@@ -129,19 +119,31 @@
 <div class="entry-editor">
   <h2>{entry.title ? "Edit Entry" : "New Entry"}</h2>
   <div class="form">
-    <Input bind:value={form.title} label="Title" placeholder="Title" />
-    <Input bind:value={form.username} label="Username" placeholder="Username" />
+    <Label text="Title" />
+    <Input bind:value={form.title} placeholder="Title" />
+    <Label text="Username" />
+    <Input bind:value={form.username} placeholder="Username" />
     <div class="password-row">
+      <Label text="Password" />
       <Input
         bind:value={form.password}
-        type="password"
-        label="Password"
+        type={passwordVisible ? "text" : "password"}
         placeholder="Password"
-        revealable={true}
       />
-      <button class="btn-secondary generate-btn" on:click={handleGenerate}>
-        Generate
+      <button
+        class="btn-copy-solid"
+        type="button"
+        aria-label={passwordVisible ? "Hide" : "Reveal"}
+        disabled={!form.password}
+        on:click={() => (passwordVisible = !passwordVisible)}
+      >
+        {#if passwordVisible}
+          <EyeOffIcon size={16} />
+        {:else}
+          <EyeIcon size={16} />
+        {/if}
       </button>
+      <PasswordGenerator on:use={(e) => (form.password = e.detail)} />
     </div>
     <TagManager tags={displayTags} onAddTag={addTags} onRemoveTag={removeTag} />
     {#each form.fields as field (field.id)}
@@ -197,11 +199,7 @@
         </div>
       </div>
     {/each}
-    <button
-      class="btn-secondary add-field-btn"
-      type="button"
-      on:click={addField}
-    >
+    <button class="add-field-btn" type="button" on:click={addField}>
       + Add custom field
     </button>
   </div>
@@ -279,8 +277,9 @@
     outline-offset: 1px;
   }
 
-  .password-row input {
+  .password-row > :global(.form-input) {
     flex: 1;
+    min-width: 0;
   }
 
   .password-row {
@@ -314,7 +313,7 @@
     gap: 0.5rem;
   }
 
-  .custom-field > :first-child {
+  .custom-field > :global(.entry-input) {
     flex: 1;
     min-width: 0;
   }
@@ -372,6 +371,21 @@
   }
 
   .add-field-btn {
-    align-self: flex-start;
+    align-self: stretch;
+    padding: 0.5rem 0.75rem;
+    background-color: transparent;
+    border: 1px dashed var(--input-border);
+    border-radius: 0.5rem;
+    color: var(--muted-color);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition:
+      border-color 0.15s ease,
+      color 0.15s ease;
+  }
+
+  .add-field-btn:hover {
+    border-color: var(--accent-color);
+    color: var(--accent-color);
   }
 </style>

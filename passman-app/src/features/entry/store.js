@@ -151,7 +151,9 @@ export async function generatePassword(length = DEFAULT_PASSWORD_LENGTH, options
       uppercase: options.uppercase ?? true,
       lowercase: options.lowercase ?? true,
       digits: options.digits ?? true,
-      symbols: options.symbols ?? true,
+      space: options.space ?? false,
+      underscore_dash: options.underscoreDash ?? true,
+      symbols: options.symbols ?? false,
     },
   });
 }

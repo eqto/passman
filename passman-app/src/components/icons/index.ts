@@ -5,4 +5,5 @@ export { default as FolderIcon } from './FolderIcon.svelte';
 export { default as TrashIcon } from './TrashIcon.svelte';
 export { default as ChevronIcon } from './ChevronIcon.svelte';
 export { default as LockIcon } from './LockIcon.svelte';
+export { default as KeyIcon } from './KeyIcon.svelte';
 export { default as SettingsIcon } from './SettingsIcon.svelte';

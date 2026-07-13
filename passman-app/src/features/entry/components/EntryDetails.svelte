@@ -4,7 +4,7 @@
   import { updateEntry } from "../store.js";
   import TagManager from "./TagManager.svelte";
   import EntryInput from "./EntryInput.svelte";
-  import Input from "../../../components/form/Input.svelte";
+  import { Input, Label } from "../../../components/form";
   import { CopyIcon, EyeIcon, EyeOffIcon } from "../../../components/icons";
 
   export let entry;
@@ -59,38 +59,60 @@
 
     <div class="details-body">
       <div class="field">
+        <Label text="Username" />
         <Input
           value={entry.username}
-          label="Username"
           placeholder="<empty>"
           readonly={true}
-          transparent={true}
-          copyable={true}
-          copyLabel="Copy username"
-          class_:empty={!entry.username}
-          on:copy={(e) => copy(e.detail, "Username")}
+          class_="transparent {!entry.username ? 'empty' : ''}"
         />
+        <button
+          class="btn-copy-solid"
+          type="button"
+          aria-label="Copy username"
+          disabled={!entry.username}
+          on:click={() => copy(entry.username, "Username")}
+        >
+          <CopyIcon size={16} />
+        </button>
       </div>
 
       <div class="field">
+        <Label text="Password" />
         <Input
           value={entry.password}
-          type="password"
-          label="Password"
+          type={passwordVisible ? "text" : "password"}
           placeholder="<empty>"
           readonly={true}
-          transparent={true}
-          copyable={true}
-          copyLabel="Copy password"
-          revealable={true}
-          class_:empty={!entry.password}
-          on:copy={(e) => copy(e.detail, "Password")}
+          class_="transparent {!entry.password ? 'empty' : ''}"
         />
+        <button
+          class="btn-copy-solid"
+          type="button"
+          aria-label="Copy password"
+          disabled={!entry.password}
+          on:click={() => copy(entry.password, "Password")}
+        >
+          <CopyIcon size={16} />
+        </button>
+        <button
+          class="btn-copy-solid"
+          type="button"
+          aria-label={passwordVisible ? "Hide" : "Reveal"}
+          disabled={!entry.password}
+          on:click={() => (passwordVisible = !passwordVisible)}
+        >
+          {#if passwordVisible}
+            <EyeOffIcon size={16} />
+          {:else}
+            <EyeIcon size={16} />
+          {/if}
+        </button>
       </div>
 
       {#if visibleTags.length > 0 || !trashMode}
         <div class="field">
-          <span class="label">Tags</span>
+          <Label text="Tags" />
           <TagManager
             tags={visibleTags}
             readOnly={trashMode}
@@ -183,12 +205,31 @@
     min-width: 0;
   }
 
-  .field > :global(.form-field) {
+  .field > :global(.form-input) {
     flex: 1;
     min-width: 0;
   }
 
-  .empty {
+  .field > :global(.label) {
+    flex-shrink: 0;
+  }
+
+  .field > :global(.transparent) {
+    background-color: transparent;
+    border-color: transparent;
+    cursor: text;
+  }
+
+  .field > :global(.transparent:hover) {
+    border-color: var(--input-border);
+    border-style: dashed;
+  }
+
+  .field > :global(.transparent:focus) {
+    outline: none;
+  }
+
+  .field > :global(.empty) {
     color: var(--muted-color);
     font-style: italic;
   }
