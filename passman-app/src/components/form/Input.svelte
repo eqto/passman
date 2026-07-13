@@ -1,15 +1,14 @@
 <script>
-  import { createEventDispatcher } from "svelte";
-
-  export let value = "";
-  export let type = "text";
-  export let placeholder = "";
-  export let class_ = "";
-  export let onFocus = null;
-  export let readonly = false;
-  export let multiline = false;
-
-  const dispatch = createEventDispatcher();
+  let {
+    value = "",
+    type = "text",
+    placeholder = "",
+    class_ = "",
+    readonly = false,
+    multiline = false,
+    onfocus = null,
+    oninput = null,
+  } = $props();
 </script>
 
 {#if multiline}
@@ -19,8 +18,8 @@
     {value}
     {placeholder}
     {readonly}
-    on:focus={onFocus}
-    on:input={(e) => dispatch("input", e.target.value)}
+    {onfocus}
+    oninput={(e) => oninput?.(e.target.value)}
   ></textarea>
 {:else}
   <input
@@ -29,8 +28,8 @@
     {value}
     {placeholder}
     {readonly}
-    on:focus={onFocus}
-    on:input={(e) => dispatch("input", e.target.value)}
+    {onfocus}
+    oninput={(e) => oninput?.(e.target.value)}
   />
 {/if}
 

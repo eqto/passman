@@ -32,8 +32,8 @@
     <Input
       value={label}
       placeholder={labelPlaceholder}
-      {onFocus}
-      on:input={(e) => dispatch("labelchange", e.detail)}
+      onfocus={onFocus}
+      oninput={(v) => dispatch("labelchange", v)}
       class_="label-input"
     />
     <div class="value-wrapper">
@@ -42,7 +42,7 @@
         {value}
         placeholder={valuePlaceholder}
         {multiline}
-        on:input={(e) => dispatch("input", e.detail)}
+        oninput={(v) => dispatch("input", v)}
       />
       {#if revealable}
         <PasswordGenerator on:use={(e) => dispatch("input", e.detail)} />

@@ -1,14 +1,11 @@
 <script>
-  export let text = "";
-  export let label = "";
-  export let width = "5rem";
+  let { text = "", label = "", width = "5rem" } = $props();
 
-  $: displayText = text || label;
+  let displayText = $derived(text || label);
 </script>
 
 <span class="label" style="width: {width}">
   {displayText}
-  <slot />
 </span>
 
 <style>
