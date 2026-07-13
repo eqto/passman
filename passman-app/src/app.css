@@ -466,6 +466,14 @@ button,
   gap: 0.5rem;
 }
 
+/* Entry panel width */
+.entry-details,
+.entry-editor {
+  min-width: 400px;
+  max-width: 640px;
+  margin-left: 0;
+}
+
 .path-row>input {
   flex: 1;
 }

@@ -281,7 +281,7 @@
 
   .panel.details {
     flex: 1;
-    min-width: 160px;
+    min-width: 320px;
   }
 
   .resize-handle {

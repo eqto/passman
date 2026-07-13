@@ -103,7 +103,7 @@
 
   .entry-input > :global(.label-input) {
     width: 5rem;
-    flex-shrink: 0;
+    flex: 0 0 5rem;
   }
 
   .value-wrapper {
