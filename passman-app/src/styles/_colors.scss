@@ -1,0 +1,47 @@
+// Material Design 3 color tokens
+// Source: Material Theme Builder (primary #0B2447, secondary #27374D, tertiary #19376D)
+
+// --- Shared ---
+$primary: #415f91;
+$on-primary: #ffffff;
+$primary-hover: #284777;
+
+$secondary: #3a608f;
+$on-secondary: #ffffff;
+
+$tertiary: #455e91;
+$on-tertiary: #ffffff;
+
+$error: #ba1a1a;
+$on-error: #ffffff;
+$error-hover: #93000a;
+
+// --- Light theme ---
+$light-background: #f9f9ff;
+$light-on-background: #191c20;
+$light-surface: #f9f9ff;
+$light-on-surface: #191c20;
+$light-surface-variant: #e0e2ec;
+$light-on-surface-variant: #44474e;
+$light-outline: #74777f;
+$light-outline-variant: #c4c6d0;
+$light-surface-container-lowest: #ffffff;
+$light-surface-container-low: #f3f3fa;
+$light-surface-container: #ededf4;
+$light-surface-container-high: #e7e8ee;
+
+// --- Dark theme ---
+$dark-background: #111318;
+$dark-on-background: #e2e2e9;
+$dark-surface: #111318;
+$dark-on-surface: #e2e2e9;
+$dark-surface-variant: #44474e;
+$dark-on-surface-variant: #c4c6d0;
+$dark-outline: #8e9099;
+$dark-outline-variant: #44474e;
+$dark-surface-container-lowest: #0c0e13;
+$dark-surface-container-low: #191c20;
+$dark-surface-container: #1e2024;
+$dark-surface-container-high: #282a2f;
+$dark-primary: #aac7ff;
+$dark-primary-hover: #284777;
