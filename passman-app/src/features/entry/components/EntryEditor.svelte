@@ -1,7 +1,9 @@
 <script>
   import { addEntry, updateEntry, generatePassword } from "../store.js";
   import { DEFAULT_PASSWORD_LENGTH } from "../../../lib/constants.js";
-  import CustomFieldEditor from "./CustomFieldEditor.svelte";
+  import Input from "../../../components/form/Input.svelte";
+  import EntryInput from "./EntryInput.svelte";
+  import { SettingsIcon } from "../../../components/icons";
   import TagManager from "./TagManager.svelte";
   import Confirm from "../../../components/dialog/Confirm.svelte";
 
@@ -67,17 +69,72 @@
   async function handleGenerate() {
     form.password = await generatePassword(passwordLength, passwordOptions);
   }
+
+  const FIELD_TYPES = [
+    { value: "text", label: "Text" },
+    { value: "note", label: "Note" },
+    { value: "password", label: "Password" },
+    { value: "otp", label: "OTP" },
+  ];
+
+  let openMenuId = null;
+  let pendingLabelIds = new Set();
+
+  function addField() {
+    const id = crypto.randomUUID();
+    pendingLabelIds = new Set([...pendingLabelIds, id]);
+    form = {
+      ...form,
+      fields: [...form.fields, { id, label: "", type: "text", value: "" }],
+    };
+  }
+
+  function clearPendingLabel(id) {
+    if (pendingLabelIds.has(id)) {
+      pendingLabelIds = new Set([...pendingLabelIds].filter((x) => x !== id));
+      updateField(id, { label: "" });
+    }
+  }
+
+  function updateField(id, patch) {
+    form = {
+      ...form,
+      fields: form.fields.map((f) => (f.id === id ? { ...f, ...patch } : f)),
+    };
+  }
+
+  function removeField(id) {
+    form = { ...form, fields: form.fields.filter((f) => f.id !== id) };
+  }
+
+  function setFieldType(id, type) {
+    updateField(id, { type });
+    openMenuId = null;
+  }
+
+  function toggleMenu(id) {
+    openMenuId = openMenuId === id ? null : id;
+  }
+
+  function handleClickOutside(event) {
+    if (!event.target.closest(".custom-field-menu")) {
+      openMenuId = null;
+    }
+  }
 </script>
+
+<svelte:window on:click={handleClickOutside} />
 
 <div class="entry-editor">
   <h2>{entry.title ? "Edit Entry" : "New Entry"}</h2>
   <div class="form">
-    <input bind:value={form.title} placeholder="Title" />
-    <input bind:value={form.username} placeholder="Username" />
+    <Input bind:value={form.title} label="Title" placeholder="Title" />
+    <Input bind:value={form.username} label="Username" placeholder="Username" />
     <div class="password-row">
-      <input
+      <Input
         bind:value={form.password}
         type="password"
+        label="Password"
         placeholder="Password"
       />
       <button class="btn-secondary generate-btn" on:click={handleGenerate}>
@@ -91,10 +148,66 @@
       <textarea bind:value={form.notes} placeholder="Notes" rows="6"></textarea>
     {/if}
     <TagManager tags={displayTags} onAddTag={addTags} onRemoveTag={removeTag} />
-    <CustomFieldEditor
-      customFields={form.fields}
-      onChange={(fields) => (form = { ...form, fields })}
-    />
+    {#each form.fields as field (field.id)}
+      <div class="custom-field">
+        <EntryInput
+          label={field.label}
+          value={field.value}
+          type={field.type === "password" || field.type === "otp"
+            ? "password"
+            : "text"}
+          labelPlaceholder={pendingLabelIds.has(field.id) ? "Field name" : ""}
+          valuePlaceholder="Field value"
+          editing={true}
+          copyable={false}
+          revealable={field.type === "password" || field.type === "otp"}
+          multiline={field.type === "note"}
+          onFocus={() => clearPendingLabel(field.id)}
+          on:labelchange={(e) => updateField(field.id, { label: e.detail })}
+          on:input={(e) => updateField(field.id, { value: e.detail })}
+        />
+        <div class="custom-field-menu">
+          <button
+            class="btn-icon gear-btn"
+            type="button"
+            aria-label="Field options"
+            on:click|stopPropagation={() => toggleMenu(field.id)}
+          >
+            <SettingsIcon size={16} />
+          </button>
+          {#if openMenuId === field.id}
+            <div class="menu-dropdown">
+              {#each FIELD_TYPES as type}
+                <button
+                  type="button"
+                  class="menu-item"
+                  class:active={field.type === type.value}
+                  on:click|stopPropagation={() =>
+                    setFieldType(field.id, type.value)}
+                >
+                  {type.label}
+                </button>
+              {/each}
+              <div class="menu-divider"></div>
+              <button
+                type="button"
+                class="menu-item danger"
+                on:click|stopPropagation={() => removeField(field.id)}
+              >
+                Remove
+              </button>
+            </div>
+          {/if}
+        </div>
+      </div>
+    {/each}
+    <button
+      class="btn-secondary add-field-btn"
+      type="button"
+      on:click={addField}
+    >
+      + Add custom field
+    </button>
   </div>
   {#if error}
     <p class="error">{error}</p>
@@ -148,8 +261,10 @@
     padding: 0.25rem;
   }
 
-  input,
-  textarea {
+  .form > label input,
+  .form > .password-row input,
+  .form > input,
+  .form > textarea {
     width: 100%;
     padding: 0.5rem 0.75rem;
     border: 1px solid var(--input-border);
@@ -159,8 +274,10 @@
     resize: vertical;
   }
 
-  input:focus,
-  textarea:focus {
+  .form > label input:focus,
+  .form > .password-row input:focus,
+  .form > input:focus,
+  .form > textarea:focus {
     outline: 2px solid var(--accent-color);
     outline-offset: 1px;
   }
@@ -191,5 +308,72 @@
 
   .delete-action {
     margin-right: auto;
+  }
+
+  .custom-field {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .custom-field > :first-child {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .custom-field-menu {
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .gear-btn {
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+  }
+
+  .menu-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.25rem;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    padding: 0.25rem;
+    z-index: 10;
+    min-width: 8rem;
+  }
+
+  .menu-item {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    background: transparent;
+    border: none;
+    border-radius: 0.25rem;
+    color: var(--text-color);
+    font-size: 0.875rem;
+    cursor: pointer;
+  }
+
+  .menu-item:hover,
+  .menu-item.active {
+    background-color: var(--hover-bg);
+  }
+
+  .menu-item.danger {
+    color: var(--danger-color);
+  }
+
+  .menu-divider {
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 0.25rem 0.5rem;
+  }
+
+  .add-field-btn {
+    align-self: flex-start;
   }
 </style>

@@ -3,7 +3,7 @@
   import { showToast } from "../../../stores/toast.js";
   import { updateEntry } from "../store.js";
   import TagManager from "./TagManager.svelte";
-  import CustomFieldDisplay from "./CustomFieldDisplay.svelte";
+  import EntryInput from "./EntryInput.svelte";
   import { CopyIcon, EyeIcon, EyeOffIcon } from "../../../components/icons";
 
   export let entry;
@@ -133,7 +133,17 @@
         </div>
       {/if}
 
-      <CustomFieldDisplay fields={entry?.fields || []} />
+      {#each entry?.fields || [] as field (field.id)}
+        <EntryInput
+          label={field.label}
+          value={field.value}
+          type={field.type === "password" || field.type === "otp"
+            ? "password"
+            : "text"}
+          revealable={field.type === "password" || field.type === "otp"}
+          multiline={field.type === "note"}
+        />
+      {/each}
     </div>
 
     <div class="details-footer" class:justify-end={!trashMode}>
@@ -207,16 +217,18 @@
 
   .field {
     display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
   }
 
   .field .label {
     font-size: 0.75rem;
     font-weight: 600;
-    text-transform: uppercase;
     color: var(--muted-color);
-    letter-spacing: 0.05em;
+    white-space: nowrap;
+    flex-shrink: 0;
+    min-width: 4rem;
   }
 
   .field-row {

@@ -3,8 +3,6 @@ export { default as EntryRow } from './components/EntryRow.svelte';
 export { default as EntryDetails } from './components/EntryDetails.svelte';
 export { default as EntryEditor } from './components/EntryEditor.svelte';
 export { default as EntryContextMenu } from './components/EntryContextMenu.svelte';
-export { default as CustomFieldDisplay } from './components/CustomFieldDisplay.svelte';
-export { default as CustomFieldEditor } from './components/CustomFieldEditor.svelte';
 export { default as MoveCopySubmenu } from './components/MoveCopySubmenu.svelte';
 export { default as TagManager } from './components/TagManager.svelte';
 
