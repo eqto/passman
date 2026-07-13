@@ -53,14 +53,20 @@
       />
     {/if}
   {:else}
-    <span class="field-label">{label || "—"}</span>
+    <span class="field-label" class:empty={!label}>{label || "<empty>"}</span>
     <div class="field-row">
       {#if multiline}
-        <div class="notes">{value || "—"}</div>
+        <div class="notes" class:empty={!value}>{value || "<empty>"}</div>
       {:else if revealable}
-        <input type={revealed ? "text" : "password"} {value} readonly />
+        <span
+          class="field-value"
+          class:masked={value && !revealed}
+          class:empty={!value}>{value || "<empty>"}</span
+        >
       {:else}
-        <input type="text" {value} readonly />
+        <span class="field-value" class:empty={!value}
+          >{value || "<empty>"}</span
+        >
       {/if}
       {#if !multiline && value && revealable}
         <button
@@ -105,6 +111,7 @@
   .field-input {
     min-width: 0;
     padding: 0.5rem 0.75rem;
+    line-height: 1.5;
     border: 1px solid var(--input-border);
     border-radius: 0.5rem;
     background-color: var(--input-bg);
@@ -135,14 +142,26 @@
     padding-right: 0.5rem;
   }
 
-  .field-row input {
+  .field-value {
     flex: 1;
     min-width: 0;
     padding: 0.5rem 0.75rem;
-    background-color: var(--input-bg);
-    border: 1px solid var(--input-border);
-    border-radius: 0.5rem;
+    line-height: 1.5;
     color: var(--text-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .field-value.masked {
+    -webkit-text-security: disc;
+    text-security: disc;
+    letter-spacing: 0.1em;
+  }
+
+  .empty {
+    color: var(--muted-color);
+    font-style: italic;
   }
 
   .notes {

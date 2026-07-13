@@ -61,13 +61,19 @@
       <div class="field">
         <span class="label">Username</span>
         <div class="field-row">
-          <input type="text" value={entry.username} readonly />
+          <span class="field-value" class:empty={!entry.username}
+            >{entry.username || "<empty>"}</span
+          >
           {#if entry.username}
             <button
               class="btn-copy-solid"
               aria-label="Copy username"
               on:click={() => copy(entry.username, "Username")}
             >
+              <CopyIcon size={16} />
+            </button>
+          {:else}
+            <button class="btn-copy-solid" aria-label="Copy username" disabled>
               <CopyIcon size={16} />
             </button>
           {/if}
@@ -77,28 +83,32 @@
       <div class="field">
         <span class="label">Password</span>
         <div class="field-row">
-          <input
-            type={passwordVisible ? "text" : "password"}
-            value={entry.password}
-            readonly
-          />
+          <span
+            class="field-value"
+            class:masked={entry.password && !passwordVisible}
+            class:empty={!entry.password}>{entry.password || "<empty>"}</span
+          >
+          <button
+            class="btn-copy-solid"
+            aria-label={passwordVisible ? "Hide password" : "Reveal password"}
+            on:click={() => (passwordVisible = !passwordVisible)}
+          >
+            {#if passwordVisible}
+              <EyeOffIcon size={16} />
+            {:else}
+              <EyeIcon size={16} />
+            {/if}
+          </button>
           {#if entry.password}
-            <button
-              class="btn-copy-solid"
-              aria-label={passwordVisible ? "Hide password" : "Reveal password"}
-              on:click={() => (passwordVisible = !passwordVisible)}
-            >
-              {#if passwordVisible}
-                <EyeOffIcon size={16} />
-              {:else}
-                <EyeIcon size={16} />
-              {/if}
-            </button>
             <button
               class="btn-copy-solid"
               aria-label="Copy password"
               on:click={() => copy(entry.password, "Password")}
             >
+              <CopyIcon size={16} />
+            </button>
+          {:else}
+            <button class="btn-copy-solid" aria-label="Copy password" disabled>
               <CopyIcon size={16} />
             </button>
           {/if}
@@ -234,17 +244,30 @@
   .field-row {
     display: flex;
     gap: 0.5rem;
+    align-items: center;
     padding-right: 0.5rem;
   }
 
-  .field-row input {
+  .field-value {
     flex: 1;
     min-width: 0;
     padding: 0.5rem 0.75rem;
-    background-color: var(--input-bg);
-    border: 1px solid var(--input-border);
-    border-radius: 0.5rem;
+    line-height: 1.5;
     color: var(--text-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .field-value.masked {
+    -webkit-text-security: disc;
+    text-security: disc;
+    letter-spacing: 0.1em;
+  }
+
+  .field-value.empty {
+    color: var(--muted-color);
+    font-style: italic;
   }
 
   .url-link {

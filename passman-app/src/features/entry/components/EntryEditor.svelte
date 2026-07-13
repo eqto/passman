@@ -44,6 +44,7 @@
       const now = new Date().toISOString();
       const updated = {
         ...form,
+        fields: form.fields.filter((f) => f.label.trim() || f.value.trim()),
         group_id: selectedGroup || form.group_id || null,
         updated_at: now,
       };
@@ -156,7 +157,7 @@
           type={field.type === "password" || field.type === "otp"
             ? "password"
             : "text"}
-          labelPlaceholder={pendingLabelIds.has(field.id) ? "Field name" : ""}
+          labelPlaceholder={field.label ? "" : "Field name"}
           valuePlaceholder="Field value"
           editing={true}
           copyable={false}
@@ -267,6 +268,7 @@
   .form > textarea {
     width: 100%;
     padding: 0.5rem 0.75rem;
+    line-height: 1.5;
     border: 1px solid var(--input-border);
     border-radius: 0.5rem;
     background-color: var(--input-bg);

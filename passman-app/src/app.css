@@ -389,6 +389,15 @@ button,
   display: block;
 }
 
+.btn-copy-solid:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.btn-copy-solid:disabled:hover {
+  outline: none;
+}
+
 /* Ghost Text Button */
 .btn-ghost {
   padding: 0.25rem 0.5rem;

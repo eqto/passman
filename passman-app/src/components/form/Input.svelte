@@ -45,6 +45,7 @@
   .form-input {
     width: 100%;
     padding: 0.5rem 0.75rem;
+    line-height: 1.5;
     border: 1px solid var(--input-border);
     border-radius: 0.5rem;
     background-color: var(--input-bg);
