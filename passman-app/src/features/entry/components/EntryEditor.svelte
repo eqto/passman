@@ -137,6 +137,7 @@
         type="password"
         label="Password"
         placeholder="Password"
+        revealable={true}
       />
       <button class="btn-secondary generate-btn" on:click={handleGenerate}>
         Generate
@@ -290,6 +291,7 @@
 
   .password-row {
     display: flex;
+    align-items: center;
     gap: 0.5rem;
   }
 

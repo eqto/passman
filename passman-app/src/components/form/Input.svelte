@@ -1,5 +1,6 @@
 <script>
   import { createEventDispatcher } from "svelte";
+  import { EyeIcon, EyeOffIcon, CopyIcon } from "../icons";
 
   export let value = "";
   export let type = "text";
@@ -7,22 +8,59 @@
   export let label = "";
   export let class_ = "";
   export let onFocus = null;
+  export let revealable = false;
+  export let readonly = false;
+  export let transparent = false;
+  export let copyable = false;
+  export let copyLabel = "Copy";
 
   const dispatch = createEventDispatcher();
+  let revealed = false;
+
+  function copy() {
+    dispatch("copy", value);
+  }
 </script>
 
-<label class="form-field">
+<label class="form-field" class:transparent>
   {#if label}
     <span class="form-label">{label}</span>
   {/if}
   <input
     class="form-input {class_}"
-    {type}
+    type={!value ? "text" : revealable && revealed ? "text" : type}
     {value}
     {placeholder}
+    {readonly}
     on:focus={onFocus}
     on:input={(e) => dispatch("input", e.target.value)}
   />
+  {#if copyable}
+    <button
+      class="btn-copy-solid"
+      type="button"
+      aria-label={copyLabel}
+      disabled={!value}
+      on:click={copy}
+    >
+      <CopyIcon size={16} />
+    </button>
+  {/if}
+  {#if revealable}
+    <button
+      class="btn-copy-solid"
+      type="button"
+      aria-label={revealed ? "Hide" : "Reveal"}
+      disabled={!value}
+      on:click={() => (revealed = !revealed)}
+    >
+      {#if revealed}
+        <EyeOffIcon size={16} />
+      {:else}
+        <EyeIcon size={16} />
+      {/if}
+    </button>
+  {/if}
 </label>
 
 <style>
@@ -55,5 +93,22 @@
   .form-input:focus {
     outline: 2px solid var(--accent-color);
     outline-offset: 1px;
+  }
+
+  .transparent .form-input {
+    background-color: transparent;
+    border-color: transparent;
+    cursor: text;
+  }
+
+  .transparent .form-input:hover {
+    border-color: var(--input-border);
+    border-style: dashed;
+  }
+
+  .transparent .form-input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    border-style: dashed;
   }
 </style>

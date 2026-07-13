@@ -3,6 +3,7 @@
   import { CopyIcon, EyeIcon, EyeOffIcon } from "../../../components/icons";
   import { writeText } from "@tauri-apps/plugin-clipboard-manager";
   import { showToast } from "../../../stores/toast.js";
+  import Input from "../../../components/form/Input.svelte";
 
   export let label = "";
   export let value = "";
@@ -53,40 +54,19 @@
       />
     {/if}
   {:else}
-    <span class="field-label" class:empty={!label}>{label || "<empty>"}</span>
-    <div class="field-row">
-      {#if multiline}
-        <div class="notes" class:empty={!value}>{value || "<empty>"}</div>
-      {:else if revealable}
-        <span
-          class="field-value"
-          class:masked={value && !revealed}
-          class:empty={!value}>{value || "<empty>"}</span
-        >
-      {:else}
-        <span class="field-value" class:empty={!value}
-          >{value || "<empty>"}</span
-        >
-      {/if}
-      {#if !multiline && value && revealable}
-        <button
-          class="btn-copy-solid"
-          aria-label={revealed ? "Hide" : "Reveal"}
-          on:click={() => (revealed = !revealed)}
-        >
-          {#if revealed}
-            <EyeOffIcon size={16} />
-          {:else}
-            <EyeIcon size={16} />
-          {/if}
-        </button>
-      {/if}
-      {#if !multiline && value && copyable}
-        <button class="btn-copy-solid" aria-label="Copy" on:click={copy}>
-          <CopyIcon size={16} />
-        </button>
-      {/if}
-    </div>
+    <Input
+      {value}
+      {type}
+      label={label || "<empty>"}
+      placeholder="<empty>"
+      readonly={true}
+      transparent={true}
+      {revealable}
+      {copyable}
+      copyLabel="Copy"
+      class_:empty={!value}
+      on:copy={() => copy()}
+    />
   {/if}
 </div>
 
@@ -99,13 +79,9 @@
     min-width: 0;
   }
 
-  .field-label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--muted-color);
-    white-space: nowrap;
-    flex-shrink: 0;
-    min-width: 4rem;
+  .entry-input > .form-field {
+    flex: 1;
+    min-width: 0;
   }
 
   .field-input {
@@ -134,44 +110,8 @@
     width: auto;
   }
 
-  .field-row {
-    display: flex;
-    gap: 0.5rem;
-    flex: 1;
-    align-items: center;
-    padding-right: 0.5rem;
-  }
-
-  .field-value {
-    flex: 1;
-    min-width: 0;
-    padding: 0.5rem 0.75rem;
-    line-height: 1.5;
-    color: var(--text-color);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .field-value.masked {
-    -webkit-text-security: disc;
-    text-security: disc;
-    letter-spacing: 0.1em;
-  }
-
   .empty {
     color: var(--muted-color);
     font-style: italic;
-  }
-
-  .notes {
-    flex: 1;
-    padding: 0.75rem;
-    background-color: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 0.5rem;
-    color: var(--text-color);
-    font-size: 0.875rem;
-    white-space: pre-wrap;
   }
 </style>

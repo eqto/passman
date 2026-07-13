@@ -4,6 +4,7 @@
   import { updateEntry } from "../store.js";
   import TagManager from "./TagManager.svelte";
   import EntryInput from "./EntryInput.svelte";
+  import Input from "../../../components/form/Input.svelte";
   import { CopyIcon, EyeIcon, EyeOffIcon } from "../../../components/icons";
 
   export let entry;
@@ -59,60 +60,33 @@
 
     <div class="details-body">
       <div class="field">
-        <span class="label">Username</span>
-        <div class="field-row">
-          <span class="field-value" class:empty={!entry.username}
-            >{entry.username || "<empty>"}</span
-          >
-          {#if entry.username}
-            <button
-              class="btn-copy-solid"
-              aria-label="Copy username"
-              on:click={() => copy(entry.username, "Username")}
-            >
-              <CopyIcon size={16} />
-            </button>
-          {:else}
-            <button class="btn-copy-solid" aria-label="Copy username" disabled>
-              <CopyIcon size={16} />
-            </button>
-          {/if}
-        </div>
+        <Input
+          value={entry.username}
+          label="Username"
+          placeholder="<empty>"
+          readonly={true}
+          transparent={true}
+          copyable={true}
+          copyLabel="Copy username"
+          class_:empty={!entry.username}
+          on:copy={(e) => copy(e.detail, "Username")}
+        />
       </div>
 
       <div class="field">
-        <span class="label">Password</span>
-        <div class="field-row">
-          <span
-            class="field-value"
-            class:masked={entry.password && !passwordVisible}
-            class:empty={!entry.password}>{entry.password || "<empty>"}</span
-          >
-          <button
-            class="btn-copy-solid"
-            aria-label={passwordVisible ? "Hide password" : "Reveal password"}
-            on:click={() => (passwordVisible = !passwordVisible)}
-          >
-            {#if passwordVisible}
-              <EyeOffIcon size={16} />
-            {:else}
-              <EyeIcon size={16} />
-            {/if}
-          </button>
-          {#if entry.password}
-            <button
-              class="btn-copy-solid"
-              aria-label="Copy password"
-              on:click={() => copy(entry.password, "Password")}
-            >
-              <CopyIcon size={16} />
-            </button>
-          {:else}
-            <button class="btn-copy-solid" aria-label="Copy password" disabled>
-              <CopyIcon size={16} />
-            </button>
-          {/if}
-        </div>
+        <Input
+          value={entry.password}
+          type="password"
+          label="Password"
+          placeholder="<empty>"
+          readonly={true}
+          transparent={true}
+          copyable={true}
+          copyLabel="Copy password"
+          revealable={true}
+          class_:empty={!entry.password}
+          on:copy={(e) => copy(e.detail, "Password")}
+        />
       </div>
 
       {#if entry.url}
@@ -232,40 +206,12 @@
     gap: 0.5rem;
   }
 
-  .field .label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--muted-color);
-    white-space: nowrap;
-    flex-shrink: 0;
-    min-width: 4rem;
-  }
-
-  .field-row {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-    padding-right: 0.5rem;
-  }
-
-  .field-value {
+  .field > .form-field {
     flex: 1;
     min-width: 0;
-    padding: 0.5rem 0.75rem;
-    line-height: 1.5;
-    color: var(--text-color);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
 
-  .field-value.masked {
-    -webkit-text-security: disc;
-    text-security: disc;
-    letter-spacing: 0.1em;
-  }
-
-  .field-value.empty {
+  .empty {
     color: var(--muted-color);
     font-style: italic;
   }
