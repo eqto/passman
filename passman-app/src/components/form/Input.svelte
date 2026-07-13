@@ -11,8 +11,10 @@
     oninput = null,
   } = $props();
 
-  let el;
-  $: if (el && autofocus) el.focus();
+  let el = $state();
+  $effect(() => {
+    if (el && autofocus) el.focus();
+  });
 </script>
 
 {#if multiline}

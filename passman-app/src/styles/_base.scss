@@ -1,0 +1,96 @@
+@use "mixins" as *;
+
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  color-scheme: light dark;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+#app {
+  width: 100vw;
+  height: 100vh;
+}
+
+input,
+textarea {
+  font-family: inherit;
+  line-height: 1.5;
+}
+
+button,
+.button {
+  font-family: inherit;
+  line-height: 1;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--font-size-sm);
+  justify-content: center;
+}
+
+.btn-text-bold {
+  font-weight: 500;
+}
+
+/* Empty State */
+.empty-state {
+  color: var(--muted-color);
+  font-size: var(--font-size-sm);
+  text-align: center;
+  padding: var(--space-4);
+}
+
+/* Section Header */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--muted-color);
+  letter-spacing: 0.05em;
+}
+
+/* Form Group */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+
+  label {
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--text-color);
+  }
+}
+
+/* Path Row */
+.path-row {
+  display: flex;
+  gap: var(--space-2);
+
+  > input {
+    flex: 1;
+  }
+}
+
+/* Entry panel width */
+.entry-details,
+.entry-editor {
+  min-width: var(--entry-min-width);
+  max-width: var(--entry-max-width);
+  margin-left: 0;
+}
