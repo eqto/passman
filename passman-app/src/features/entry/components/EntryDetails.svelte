@@ -168,9 +168,11 @@
   .details-body {
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    padding-right: 0.25rem;
   }
 
   .field {
@@ -178,9 +180,10 @@
     flex-direction: row;
     align-items: center;
     gap: 0.5rem;
+    min-width: 0;
   }
 
-  .field > .form-field {
+  .field > :global(.form-field) {
     flex: 1;
     min-width: 0;
   }

@@ -85,7 +85,7 @@
   }
 
   .form-label {
-    font-size: 0.8rem;
+    font-size: 1rem;
     color: var(--muted-color);
     font-weight: 500;
     white-space: nowrap;
@@ -94,7 +94,8 @@
   }
 
   .form-input {
-    width: 100%;
+    flex: 1;
+    min-width: 0;
     padding: 0.5rem 0.75rem;
     line-height: 1.5;
     border: 1px solid var(--input-border);
@@ -122,7 +123,5 @@
 
   .transparent .form-input:focus {
     outline: none;
-    border-color: var(--accent-color);
-    border-style: dashed;
   }
 </style>

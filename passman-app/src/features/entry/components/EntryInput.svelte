@@ -80,7 +80,7 @@
     min-width: 0;
   }
 
-  .entry-input > .form-field {
+  .entry-input > :global(.form-field) {
     flex: 1;
     min-width: 0;
   }

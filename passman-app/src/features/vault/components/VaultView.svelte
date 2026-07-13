@@ -34,6 +34,14 @@
   $: vaultGroups = $vaultData[vaultPath]?.groups || [];
   $: vaultTrash = $vaultData[vaultPath]?.trash || { groups: [], entries: [] };
 
+  $: if (
+    vaultGroups.length > 0 &&
+    !$selection.selectedGroup &&
+    !$selection.trashMode
+  ) {
+    selection.selectGroup(vaultGroups[0].id);
+  }
+
   $: trashGroups = vaultTrash.groups || [];
   $: trashGroupIds = trashGroups.map((g) => g.id);
   $: hasUngroupedTrashEntries = (vaultTrash.entries || []).some(
