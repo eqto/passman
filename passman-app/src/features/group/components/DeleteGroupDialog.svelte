@@ -23,7 +23,7 @@
   <DialogFooter>
     <DialogActions>
       <button class="modal-cancel-btn" onclick={onCancel}> Cancel </button>
-      <button class="btn-primary" onclick={() => onDelete(group)}>
+      <button class="btn-danger" onclick={() => onDelete(group)}>
         Delete
       </button>
     </DialogActions>
