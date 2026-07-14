@@ -139,8 +139,12 @@
     color: var(--selected-text);
   }
 
+  .tree-row:not(.selected) .tree-item {
+    color: var(--muted-color);
+  }
+
   .tree-row:not(.selected):hover .tree-item {
-    opacity: 0.8;
+    color: var(--text-color);
   }
 
   .tree-row.dragging {
@@ -181,7 +185,8 @@
     height: 1rem;
     color: var(--muted-color);
     cursor: pointer;
-    transition: transform 0.2s ease;
+    transition: transform var(--motion-duration-medium-1)
+      var(--motion-easing-standard);
     transform: rotate(90deg);
   }
 

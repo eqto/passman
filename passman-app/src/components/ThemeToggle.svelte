@@ -32,8 +32,8 @@
 
 <style>
   .theme-toggle-btn {
-    width: 2.25rem;
-    height: 2.25rem;
+    width: var(--btn-height);
+    height: var(--btn-height);
     padding: 0.5rem;
     display: flex;
     align-items: center;

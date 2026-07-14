@@ -179,8 +179,8 @@
   }
 
   .generate-btn {
-    width: 2.25rem;
-    height: 2.25rem;
+    width: var(--btn-height);
+    height: var(--btn-height);
     padding: 0;
     flex-shrink: 0;
     background-color: var(--hover-bg);
@@ -189,10 +189,32 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    transition: background-color var(--motion-duration-short-2)
+      var(--motion-easing-standard);
   }
 
   .generate-btn:hover {
-    filter: brightness(0.95);
+    background-color: var(--hover-bg);
+  }
+
+  .generate-btn::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-color: currentColor;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--motion-duration-short-2)
+      var(--motion-easing-standard);
+  }
+
+  .generate-btn:hover::after {
+    opacity: 0.08;
+  }
+
+  .generate-btn:active::after {
+    opacity: 0.12;
   }
 
   .password-generator-panel {
@@ -259,6 +281,41 @@
 
   .length-slider {
     width: 100%;
+    height: 1rem;
+    cursor: pointer;
+    appearance: none;
+    background: transparent;
+  }
+
+  .length-slider::-webkit-slider-runnable-track {
+    height: 0.25rem;
+    background-color: var(--input-border);
+    border-radius: var(--shape-full);
+  }
+
+  .length-slider::-moz-range-track {
+    height: 0.25rem;
+    background-color: var(--input-border);
+    border-radius: var(--shape-full);
+  }
+
+  .length-slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-top: -0.5rem;
+    background-color: var(--accent-color);
+    border: none;
+    border-radius: var(--shape-full);
+    cursor: pointer;
+  }
+
+  .length-slider::-moz-range-thumb {
+    width: 1.25rem;
+    height: 1.25rem;
+    background-color: var(--accent-color);
+    border: none;
+    border-radius: var(--shape-full);
     cursor: pointer;
   }
 
@@ -284,8 +341,8 @@
   }
 
   .option-item input[type="checkbox"] {
-    width: 0.875rem;
-    height: 0.875rem;
+    width: 1.125rem;
+    height: 1.125rem;
     accent-color: var(--accent-color);
     cursor: pointer;
     flex-shrink: 0;

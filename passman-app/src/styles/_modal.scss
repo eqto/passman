@@ -60,7 +60,7 @@
   gap: var(--space-2);
 }
 
-// M3 Text Button (cancel)
+// M3 Text Button (cancel) — mirrors .btn-text from _buttons.scss
 .modal-cancel-btn {
   padding: var(--space-2) var(--space-6);
   background: transparent;
@@ -71,10 +71,7 @@
   font-size: var(--font-size-sm);
   font-weight: 500;
   line-height: 1.25rem;
-
-  &:hover {
-    background-color: var(--hover-bg);
-  }
+  @include state-layer-hover;
 
   &:disabled {
     @include disabled;

@@ -45,11 +45,11 @@
   }
 
   .group-row:not(.selected) .group-item {
-    opacity: 0.85;
+    color: var(--muted-color);
   }
 
   .group-row:not(.selected):hover .group-item {
-    opacity: 0.8;
+    color: var(--text-color);
   }
 
   .group-item {

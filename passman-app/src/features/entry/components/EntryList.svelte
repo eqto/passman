@@ -182,10 +182,10 @@
     align-items: center;
     gap: 0.25rem;
     padding: 0.25rem 0.5rem;
-    background-color: var(--selected-bg);
-    color: var(--selected-text);
-    border: 1px solid var(--selected-bg);
-    border-radius: var(--shape-full);
+    background-color: var(--chip-active-bg);
+    color: var(--chip-active-text);
+    border: 1px solid var(--chip-active-border);
+    border-radius: var(--shape-sm);
     font-size: 0.75rem;
     cursor: pointer;
   }

@@ -10,6 +10,34 @@
   outline-offset: 2px;
 }
 
+// M3 State Layer — hover (8% opacity)
+@mixin state-layer-hover {
+  position: relative;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-color: currentColor;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--motion-duration-short-2) var(--motion-easing-standard);
+  }
+
+  &:hover::after {
+    opacity: 0.08;
+  }
+
+  &:focus-visible::after {
+    opacity: 0.12;
+  }
+
+  &:active::after {
+    opacity: 0.12;
+  }
+}
+
 // M3 Elevation 1 — for menus, chips
 @mixin elevation-1 {
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3),
@@ -28,6 +56,21 @@
   box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.3),
     0 1px 3px 0 rgba(0, 0, 0, 0.3),
     0 4px 8px 3px rgba(0, 0, 0, 0.15);
+}
+
+// M3 Linear Progress Indicator
+@mixin progress-track {
+  width: 100%;
+  height: 0.25rem;
+  background-color: var(--input-border);
+  border-radius: var(--shape-full);
+  overflow: hidden;
+}
+
+@mixin progress-indicator {
+  height: 100%;
+  background-color: var(--accent-color);
+  border-radius: var(--shape-full);
 }
 
 // Backwards compat aliases

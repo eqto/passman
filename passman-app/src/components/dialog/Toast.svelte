@@ -15,7 +15,7 @@
     background-color: var(--toast-bg);
     color: var(--toast-text);
     padding: var(--space-3) var(--space-4);
-    border-radius: var(--shape-sm);
+    border-radius: var(--shape-xs);
     box-shadow:
       0 0 1px 0 rgba(0, 0, 0, 0.3),
       0 1px 3px 0 rgba(0, 0, 0, 0.3),

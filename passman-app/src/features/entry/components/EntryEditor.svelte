@@ -333,8 +333,8 @@
   }
 
   .gear-btn {
-    width: 2.25rem;
-    height: 2.25rem;
+    width: var(--btn-height);
+    height: var(--btn-height);
     padding: 0;
   }
 
@@ -392,8 +392,8 @@
     font-size: 0.875rem;
     cursor: pointer;
     transition:
-      border-color 0.15s ease,
-      color 0.15s ease;
+      border-color var(--motion-duration-short-3) var(--motion-easing-standard),
+      color var(--motion-duration-short-3) var(--motion-easing-standard);
   }
 
   .add-field-btn:hover {

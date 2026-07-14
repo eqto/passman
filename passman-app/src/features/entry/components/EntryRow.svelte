@@ -85,11 +85,11 @@
   }
 
   .entry-row:not(.selected) .entry-info {
-    opacity: 0.85;
+    color: var(--muted-color);
   }
 
   .entry-row:not(.selected):hover .entry-info {
-    opacity: 0.8;
+    color: var(--text-color);
   }
 
   .entry-row.selected {
@@ -99,7 +99,7 @@
 
   .entry-row.selected .entry-subtitle {
     color: var(--selected-text);
-    opacity: 0.8;
+    opacity: 0.7;
   }
 
   .entry-info {

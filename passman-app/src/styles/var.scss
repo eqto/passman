@@ -3,12 +3,37 @@
   line-height: 1.5;
   font-weight: 400;
 
-  // Font sizes
-  --font-size-xs: 0.75rem;
-  --font-size-sm: 0.875rem;
-  --font-size-base: 1rem;
-  --font-size-lg: 1.125rem;
-  --font-size-xl: 1.25rem;
+  // Font sizes — M3 Type Scale
+  --font-size-xs: 0.75rem; // label-medium (12px)
+  --font-size-sm: 0.875rem; // body-medium (14px)
+  --font-size-base: 1rem; // body-large (16px)
+  --font-size-lg: 1.125rem; // title-medium (18px)
+  --font-size-xl: 1.25rem; // title-large (20px)
+
+  // M3 Type Scale — additional tokens
+  --type-label-small: 0.6875rem; // 11px
+  --type-label-medium: 0.75rem; // 12px
+  --type-label-large: 0.875rem; // 14px
+  --type-body-small: 0.75rem; // 12px
+  --type-body-medium: 0.875rem; // 14px
+  --type-body-large: 1rem; // 16px
+  --type-title-medium: 1.125rem; // 18px
+  --type-title-large: 1.25rem; // 20px
+  --type-headline-small: 1.75rem; // 28px
+
+  // M3 Motion tokens
+  --motion-duration-short-1: 50ms;
+  --motion-duration-short-2: 100ms;
+  --motion-duration-short-3: 150ms;
+  --motion-duration-medium-1: 200ms;
+  --motion-duration-medium-2: 250ms;
+  --motion-duration-long-1: 300ms;
+  --motion-duration-long-2: 350ms;
+  --motion-duration-long-3: 400ms;
+  --motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+  --motion-easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  --motion-easing-decelerated: cubic-bezier(0, 0, 0, 1);
+  --motion-easing-accelerated: cubic-bezier(0.3, 0, 1, 1);
 
   // Spacing
   --space-1: 0.25rem;

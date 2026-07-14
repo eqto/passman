@@ -93,21 +93,17 @@
 
   .progress-bar {
     width: 100%;
-    height: 0.625rem;
+    height: 0.25rem;
     background-color: var(--input-border);
-    border-radius: var(--shape-sm);
+    border-radius: var(--shape-full);
     overflow: hidden;
   }
 
   .progress-indeterminate {
     width: 40%;
     height: 100%;
-    background: linear-gradient(
-      90deg,
-      var(--accent-color),
-      var(--accent-hover)
-    );
-    border-radius: var(--shape-sm);
+    background-color: var(--accent-color);
+    border-radius: var(--shape-full);
     animation: indeterminate 1.5s ease-in-out infinite;
   }
 

@@ -20,8 +20,8 @@
   --card-bg: #{$light-surface-container-low};
   --sidebar-bg: #{$light-surface-container};
   --hover-bg: #{$light-surface-container-high};
-  --selected-bg: #{$secondary};
-  --selected-text: #{$on-secondary};
+  --selected-bg: #{$secondary-container};
+  --selected-text: #{$on-secondary-container};
   --scrim: #{$scrim};
   --shadow-color: #{$shadow};
   --inverse-surface: #{$light-inverse-surface};
@@ -34,9 +34,9 @@
   --chip-text: #{$light-on-surface-variant};
   --chip-hover-bg: #{$light-surface-container-high};
   --chip-hover-border: #{$light-outline};
-  --chip-active-bg: #{$secondary};
-  --chip-active-text: #{$on-secondary};
-  --chip-active-border: #{$secondary};
+  --chip-active-bg: #{$secondary-container};
+  --chip-active-text: #{$on-secondary-container};
+  --chip-active-border: #{$secondary-container};
 }
 
 :root.dark {
@@ -59,8 +59,8 @@
   --card-bg: #{$dark-surface-container-low};
   --sidebar-bg: #{$dark-surface-container};
   --hover-bg: #{$dark-surface-container-high};
-  --selected-bg: #{$dark-secondary};
-  --selected-text: #{$dark-on-secondary};
+  --selected-bg: #{$dark-secondary-container};
+  --selected-text: #{$dark-on-secondary-container};
   --scrim: #{$scrim};
   --shadow-color: #{$shadow};
   --inverse-surface: #{$dark-inverse-surface};
@@ -73,7 +73,7 @@
   --chip-text: #{$dark-on-surface-variant};
   --chip-hover-bg: #{$dark-surface-container-high};
   --chip-hover-border: #{$dark-outline};
-  --chip-active-bg: #{$dark-primary};
-  --chip-active-text: #{$dark-on-primary};
-  --chip-active-border: #{$dark-primary};
+  --chip-active-bg: #{$dark-secondary-container};
+  --chip-active-text: #{$dark-on-secondary-container};
+  --chip-active-border: #{$dark-secondary-container};
 }

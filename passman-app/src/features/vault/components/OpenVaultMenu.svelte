@@ -75,7 +75,27 @@
   }
 
   .dropdown-button:hover {
-    filter: brightness(0.95);
+    background-color: var(--hover-bg);
+  }
+
+  .dropdown-button::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-color: currentColor;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--motion-duration-short-2)
+      var(--motion-easing-standard);
+  }
+
+  .dropdown-button:hover::after {
+    opacity: 0.08;
+  }
+
+  .dropdown-button:active::after {
+    opacity: 0.12;
   }
 
   .dropdown-main-btn {

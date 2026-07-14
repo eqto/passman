@@ -30,10 +30,7 @@
   font-size: var(--font-size-sm);
   font-weight: 500;
   line-height: 1.25rem;
-
-  &:hover {
-    filter: brightness(0.95);
-  }
+  @include state-layer-hover;
 
   &:disabled {
     @include disabled;
@@ -78,8 +75,8 @@
 
 // M3 Danger Icon Button
 .btn-icon-danger {
-  width: 2rem;
-  height: 2rem;
+  width: var(--btn-height);
+  height: var(--btn-height);
   padding: 0;
   margin-right: var(--space-3);
   background: transparent;
@@ -124,10 +121,7 @@
   background-color: var(--hover-bg);
   color: var(--text-color);
   border-radius: var(--shape-full);
-
-  &:hover {
-    filter: brightness(0.95);
-  }
+  @include state-layer-hover;
 
   svg {
     display: block;
@@ -142,6 +136,24 @@
   }
 }
 
+// M3 Text Button — low prominence, no background
+.btn-text {
+  padding: var(--space-2) var(--space-6);
+  background: transparent;
+  border: none;
+  color: var(--accent-color);
+  height: var(--btn-height);
+  border-radius: var(--shape-full);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  line-height: 1.25rem;
+  @include state-layer-hover;
+
+  &:disabled {
+    @include disabled;
+  }
+}
+
 // M3 Outlined Button — low prominence
 .btn-ghost {
   padding: var(--space-1) var(--space-4);
@@ -151,6 +163,7 @@
   border-radius: var(--shape-full);
   font-size: var(--font-size-xs);
   font-weight: 500;
+  @include state-layer-hover;
 
   &:hover {
     border-color: var(--accent-color);
