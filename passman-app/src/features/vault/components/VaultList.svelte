@@ -194,7 +194,7 @@
   <div class="tab-actions">
     <button class="btn-secondary" onclick={() => (showCreate = true)}>
       <span class="action-icon">+</span>
-      <span>New Vault</span>
+      <span class="action-text">New Vault</span>
     </button>
     <OpenVaultMenu
       bind:dropdownPosition
@@ -333,7 +333,13 @@
 
   .action-icon {
     font-size: 0.875rem;
-    line-height: 1;
+    line-height: 1.25;
+    margin-right: 0.25rem;
+  }
+
+  .action-text {
+    position: relative;
+    top: 0.0625rem;
   }
 
   .vault-load-error {

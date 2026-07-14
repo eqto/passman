@@ -15,7 +15,7 @@
   function toggleOpenDropdown(event) {
     event.stopPropagation();
     const rect = event.currentTarget.getBoundingClientRect();
-    const menuWidth = 180;
+    const menuWidth = 120;
     const windowWidth = window.innerWidth;
 
     let x = rect.left;
@@ -46,7 +46,7 @@
     onclick={toggleOpenDropdown}
     title="Open options"
   >
-    <ChevronIcon size={16} />
+    <ChevronIcon size={16} direction="down" />
   </button>
 </div>
 {#if showDropdown}
@@ -106,7 +106,7 @@
     cursor: pointer;
     font-size: 0.875rem;
     font-weight: 500;
-    line-height: 1;
+    line-height: 1.25;
   }
 
   .dropdown-separator {
@@ -125,18 +125,19 @@
       0 1px 2px 0 rgba(0, 0, 0, 0.3),
       0 2px 6px 2px rgba(0, 0, 0, 0.15);
     z-index: 9999;
-    min-width: 180px;
+    min-width: auto;
+    width: fit-content;
   }
 
   .dropdown-item {
     width: 100%;
-    padding: 0.5rem 0.75rem;
+    padding: 0.375rem 0.625rem;
     text-align: left;
     background: transparent;
     border: none;
     color: var(--text-color);
     cursor: pointer;
-    font-size: 0.875rem;
+    font-size: 0.8rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;

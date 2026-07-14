@@ -134,6 +134,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 12rem;
+    line-height: 1.25;
   }
 
   .tab-actions-inner {
