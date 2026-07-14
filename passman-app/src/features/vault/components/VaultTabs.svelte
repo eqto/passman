@@ -1,7 +1,7 @@
 <script>
   import Tabs from "../../../components/Tab/Tabs.svelte";
   import Tab from "../../../components/Tab/Tab.svelte";
-  import { LockIcon } from "../../../components/icons";
+  import { Icon } from "../../../components/icons";
   import { vaults, currentVault, vaultData, reorderVaults } from "../store.js";
 
   let { onContextMenu, onLock, onRemove } = $props();
@@ -47,7 +47,7 @@
               onclick={() => onLock?.(vault)}
               title="Lock vault"
             >
-              <LockIcon size={18} />
+              <Icon name="lock" size={18} />
             </button>
           {:else}
             <button

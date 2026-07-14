@@ -22,10 +22,10 @@
 
   setContext("tabs", {
     registerTab: (tab) => {
-      tabs.push(tab);
+      if (tab && tab.id != null) tabs.push(tab);
     },
     unregisterTab: (id) => {
-      tabs = tabs.filter((tab) => tab.id !== id);
+      tabs = tabs.filter((tab) => tab?.id !== id);
     },
   });
 

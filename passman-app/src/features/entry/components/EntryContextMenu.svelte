@@ -1,5 +1,5 @@
 <script>
-  import { createEventDispatcher, onMount, afterUpdate } from "svelte";
+  import { onMount } from "svelte";
   import { groups, vaults, currentVault } from "../../vault/store.js";
   import {
     CONTEXT_MENU_WIDTH,
@@ -8,33 +8,39 @@
   import { computeSubmenuLeft } from "../../../lib/menuPosition.js";
   import MoveCopySubmenu from "./MoveCopySubmenu.svelte";
 
-  export let x = 0;
-  export let y = 0;
-  export let entry = null;
+  let {
+    x = 0,
+    y = 0,
+    entry = null,
+    oncopyPassword = null,
+    onmoveToGroup = null,
+    onmoveToVault = null,
+    oncopyToGroup = null,
+    oncopyToVault = null,
+  } = $props();
 
-  const dispatch = createEventDispatcher();
-  let menuEl;
-  let moveItemEl;
-  let copyItemEl;
-  let mainWidth = 0;
-  let left = x;
-  let top = y;
-  let showMove = false;
-  let showCopy = false;
-  let moveItemTop = y;
-  let copyItemTop = y;
+  let menuEl = $state();
+  let moveItemEl = $state();
+  let copyItemEl = $state();
+  let mainWidth = $state(0);
+  let left = $state(x);
+  let top = $state(y);
+  let showMove = $state(false);
+  let showCopy = $state(false);
+  let moveItemTop = $state(y);
+  let copyItemTop = $state(y);
 
   const MENU_WIDTH = CONTEXT_MENU_WIDTH;
 
-  $: currentGroupId = entry?.group_id || null;
-  $: moveGroups = ($groups || []).filter(
-    (group) => group.id !== currentGroupId,
+  let currentGroupId = $derived(entry?.group_id || null);
+  let moveGroups = $derived(
+    ($groups || []).filter((group) => group.id !== currentGroupId),
   );
-  $: moveVaults = ($vaults || []).filter(
-    (vault) => vault.path !== $currentVault?.path,
+  let moveVaults = $derived(
+    ($vaults || []).filter((vault) => vault.path !== $currentVault?.path),
   );
 
-  $: submenuLeft = computeSubmenuLeft(left, mainWidth);
+  let submenuLeft = $derived(computeSubmenuLeft(left, mainWidth));
 
   function adjustPosition() {
     if (!menuEl) return;
@@ -58,35 +64,39 @@
   }
 
   onMount(() => adjustPosition());
-  afterUpdate(() => adjustPosition());
+
+  $effect(() => {
+    // Re-run adjustPosition after DOM updates
+    adjustPosition();
+  });
 
   function handleCopyPassword() {
     if (entry?.password) {
-      dispatch("copyPassword", entry);
+      oncopyPassword?.(entry);
     }
   }
 
-  function handleMoveToGroup(event) {
-    dispatch("moveToGroup", { entry, group: event.detail });
+  function handleMoveToGroup(detail) {
+    onmoveToGroup?.({ entry, group: detail });
   }
 
-  function handleMoveToVault(event) {
-    dispatch("moveToVault", {
+  function handleMoveToVault(detail) {
+    onmoveToVault?.({
       entry,
-      vault: event.detail.vault,
-      groupId: event.detail.groupId,
+      vault: detail.vault,
+      groupId: detail.groupId,
     });
   }
 
-  function handleCopyToGroup(event) {
-    dispatch("copyToGroup", { entry, group: event.detail });
+  function handleCopyToGroup(detail) {
+    oncopyToGroup?.({ entry, group: detail });
   }
 
-  function handleCopyToVault(event) {
-    dispatch("copyToVault", {
+  function handleCopyToVault(detail) {
+    oncopyToVault?.({
       entry,
-      vault: event.detail.vault,
-      groupId: event.detail.groupId,
+      vault: detail.vault,
+      groupId: detail.groupId,
     });
   }
 
@@ -113,11 +123,11 @@
   bind:clientWidth={mainWidth}
   class="menu"
   style="left: {left}px; top: {top}px;"
-  on:click|stopPropagation
+  onclick={(e) => e.stopPropagation()}
 >
   <div
     class="menu-item"
-    on:click={handleCopyPassword}
+    onclick={handleCopyPassword}
     style="cursor: {!entry?.password
       ? 'not-allowed'
       : 'pointer'}; opacity: {!entry?.password ? '0.6' : '1'}"
@@ -125,13 +135,13 @@
     Copy Password
   </div>
   <div class="context-menu-divider"></div>
-  <div class="menu-item-wrapper" on:mouseenter={openMove}>
+  <div class="menu-item-wrapper" onmouseenter={openMove}>
     <div bind:this={moveItemEl} class="menu-item has-submenu">
       <span>Move to</span>
       <span class="context-menu-arrow">▶</span>
     </div>
   </div>
-  <div class="menu-item-wrapper" on:mouseenter={openCopy}>
+  <div class="menu-item-wrapper" onmouseenter={openCopy}>
     <div bind:this={copyItemEl} class="menu-item has-submenu">
       <span>Copy to</span>
       <span class="context-menu-arrow">▶</span>
@@ -146,8 +156,8 @@
     left={submenuLeft}
     top={moveItemTop}
     menuWidth={mainWidth}
-    on:selectGroup={handleMoveToGroup}
-    on:selectVaultGroup={handleMoveToVault}
+    onselectGroup={handleMoveToGroup}
+    onselectVaultGroup={handleMoveToVault}
   />
 {/if}
 
@@ -158,8 +168,8 @@
     left={submenuLeft}
     top={copyItemTop}
     menuWidth={mainWidth}
-    on:selectGroup={handleCopyToGroup}
-    on:selectVaultGroup={handleCopyToVault}
+    onselectGroup={handleCopyToGroup}
+    onselectVaultGroup={handleCopyToVault}
   />
 {/if}
 

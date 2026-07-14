@@ -1,24 +1,27 @@
 <script>
-  import { createEventDispatcher, onMount, afterUpdate } from "svelte";
+  import { onMount } from "svelte";
   import { vaultData } from "../../vault/store.js";
   import { computeSubmenuLeft } from "../../../lib/menuPosition.js";
 
-  export let groups = [];
-  export let vaults = [];
-  export let left = 0;
-  export let top = 0;
-  export let menuWidth = 160;
+  let {
+    groups = [],
+    vaults = [],
+    left = 0,
+    top = 0,
+    menuWidth = 160,
+    onselectGroup = null,
+    onselectVaultGroup = null,
+  } = $props();
 
-  const dispatch = createEventDispatcher();
-  let activeVault = null;
-  let vaultTop = 0;
-  let menuEl;
-  let adjustedTop = top;
+  let activeVault = $state(null);
+  let vaultTop = $state(0);
+  let menuEl = $state();
+  let adjustedTop = $state(top);
 
   const MENU_WIDTH = 160;
   const PADDING = 8;
 
-  $: vaultLeft = computeSubmenuLeft(left, menuWidth);
+  let vaultLeft = $derived(computeSubmenuLeft(left, menuWidth));
 
   function adjustPosition() {
     if (!menuEl) return;
@@ -34,14 +37,17 @@
   }
 
   onMount(() => adjustPosition());
-  afterUpdate(() => adjustPosition());
+
+  $effect(() => {
+    adjustPosition();
+  });
 
   function selectGroup(group) {
-    dispatch("selectGroup", group.id);
+    onselectGroup?.(group.id);
   }
 
   function selectVaultGroup(vault, group) {
-    dispatch("selectVaultGroup", { vault, groupId: group.id });
+    onselectVaultGroup?.({ vault, groupId: group.id });
   }
 
   function handleVaultHover(vault, event) {
@@ -49,7 +55,9 @@
     vaultTop = event?.currentTarget?.getBoundingClientRect().top ?? top;
   }
 
-  $: targetVaultGroups = (vault) => $vaultData[vault.path]?.groups || [];
+  function targetVaultGroups(vault) {
+    return $vaultData[vault.path]?.groups || [];
+  }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
@@ -57,14 +65,14 @@
   bind:this={menuEl}
   class="menu"
   style="left: {left}px; top: {adjustedTop}px"
-  on:click|stopPropagation
+  onclick={(e) => e.stopPropagation()}
 >
   {#if groups.length === 0 && vaults.length === 0}
     <div class="submenu-empty">No other groups or vaults</div>
   {:else}
     {#if groups.length > 0}
       {#each groups as group}
-        <div class="menu-item" on:click={() => selectGroup(group)}>
+        <div class="menu-item" onclick={() => selectGroup(group)}>
           {group.name}
         </div>
       {/each}
@@ -76,7 +84,7 @@
       {#each vaults as vault}
         <div
           class="menu-item-wrapper"
-          on:mouseenter={(e) => handleVaultHover(vault, e)}
+          onmouseenter={(e) => handleVaultHover(vault, e)}
         >
           <div
             class="menu-item has-submenu"
@@ -96,13 +104,13 @@
             <div
               class="menu"
               style="left: {vaultLeft}px; top: {vaultTop}px"
-              on:click|stopPropagation
+              onclick={(e) => e.stopPropagation()}
             >
               {#if targetVaultGroups(activeVault).length > 0}
                 {#each targetVaultGroups(activeVault) as group}
                   <div
                     class="menu-item"
-                    on:click={() => selectVaultGroup(activeVault, group)}
+                    onclick={() => selectVaultGroup(activeVault, group)}
                   >
                     {group.name}
                   </div>

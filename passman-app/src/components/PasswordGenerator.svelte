@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import { generatePassword } from "../features/entry/store.js";
   import { DEFAULT_PASSWORD_LENGTH } from "../lib/constants.js";
-  import { KeyIcon } from "./icons";
+  import { Icon } from "./icons";
 
   let { onuse = null } = $props();
 
@@ -114,7 +114,7 @@
     aria-label="Generate password"
     onclick={toggle}
   >
-    <KeyIcon size={18} />
+    <Icon name="key" size={18} />
   </button>
 
   {#if open}

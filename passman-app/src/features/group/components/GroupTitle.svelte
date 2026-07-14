@@ -1,8 +1,10 @@
 <script>
-  export let title = "";
-  export let showButton = false;
-  export let onButtonClick = null;
-  export let isTrash = false;
+  let {
+    title = "",
+    showButton = false,
+    onButtonClick = null,
+    isTrash = false,
+  } = $props();
 </script>
 
 <div class="section-header" class:trash-header={isTrash}>

@@ -7,16 +7,18 @@
     DialogActions,
   } from "../../../components/dialog";
 
-  export const groupId = "";
-  export let groupName = "";
-  export let vaultName = "";
-  export let action = "move";
-  export let onMerge;
-  export let onCopy;
-  export let onCancel;
+  let {
+    groupId = "",
+    groupName = "",
+    vaultName = "",
+    action = "move",
+    onMerge,
+    onCopy,
+    onCancel,
+  } = $props();
 
-  let showNameInput = false;
-  let newName = "";
+  let showNameInput = $state(false);
+  let newName = $state("");
 
   function startCopyAsNew() {
     newName = `${groupName} (copy)`;

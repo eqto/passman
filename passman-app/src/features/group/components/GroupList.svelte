@@ -25,22 +25,24 @@
   import { buildTree } from "../groupTree.js";
   import { onReorderGroups, handleDropInto } from "../groupActions.js";
 
-  export let vault;
-  export let selectedGroup = "";
-  export let selectedTags = [];
-  export let selectedTrashGroup = "";
-  export let trashMode = false;
-  export let trashGroups = [];
-  export let hasUngroupedTrashEntries = false;
-  export let onSelectGroup;
-  export let onSelectTag = (tag) => {};
-  export let onSelectTrashGroup;
-  export let onTrashClick;
+  let {
+    vault,
+    selectedGroup = "",
+    selectedTags = [],
+    selectedTrashGroup = "",
+    trashMode = false,
+    trashGroups = [],
+    hasUngroupedTrashEntries = false,
+    onSelectGroup,
+    onSelectTag = (tag) => {},
+    onSelectTrashGroup,
+    onTrashClick,
+  } = $props();
 
   const vaultPath = vault.path;
 
-  $: vaultGroups = $vaultData[vaultPath]?.groups || [];
-  $: vaultTags = (() => {
+  let vaultGroups = $derived($vaultData[vaultPath]?.groups || []);
+  let vaultTags = $derived.by(() => {
     const allEntries = $vaultData[vaultPath]?.entries || [];
     const filtered = selectedGroup
       ? allEntries.filter((e) => e.group_id === selectedGroup)
@@ -52,14 +54,14 @@
       }
     }
     return Array.from(set);
-  })();
+  });
 
-  let showAdd = false;
-  let deleteTarget = null;
-  let contextMenu = { show: false, x: 0, y: 0, type: "tag", item: "" };
-  let moveToVaultTarget = null;
-  let moveToVaultGroup = "";
-  let moveToVaultAction = "move";
+  let showAdd = $state(false);
+  let deleteTarget = $state(null);
+  let contextMenu = $state({ show: false, x: 0, y: 0, type: "tag", item: "" });
+  let moveToVaultTarget = $state(null);
+  let moveToVaultGroup = $state("");
+  let moveToVaultAction = $state("move");
 
   useContextMenu(closeContextMenu);
 
@@ -67,7 +69,9 @@
     currentVault.set(vault);
   }
 
-  $: moveVaults = ($vaults || []).filter((v) => v.path !== vaultPath);
+  let moveVaults = $derived(
+    ($vaults || []).filter((v) => v.path !== vaultPath),
+  );
 
   async function handleAddGroup(name) {
     await addGroup({ id: crypto.randomUUID(), name, parent_id: null });
@@ -105,7 +109,7 @@
     moveToVaultAction = "move";
   }
 
-  $: groupTree = buildTree(vaultGroups);
+  let groupTree = $derived(buildTree(vaultGroups));
 
   function closeContextMenu() {
     contextMenu = { show: false, x: 0, y: 0, type: "tag", item: "" };

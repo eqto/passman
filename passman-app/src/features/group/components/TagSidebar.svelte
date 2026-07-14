@@ -2,10 +2,12 @@
   import Chip from "../../../components/form/Chip.svelte";
   import { GroupTitle } from "../index";
 
-  export let tags = [];
-  export let selectedTags = [];
-  export let onSelectTag = (tag) => {};
-  export let onContextMenu = (e, tag) => {};
+  let {
+    tags = [],
+    selectedTags = [],
+    onSelectTag = (tag) => {},
+    onContextMenu = (e, tag) => {},
+  } = $props();
 </script>
 
 <GroupTitle title="Tags" showButton={false} />

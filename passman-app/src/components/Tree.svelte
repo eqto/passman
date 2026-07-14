@@ -1,27 +1,24 @@
 <script>
-  import { createEventDispatcher, getContext, setContext } from "svelte";
+  import { getContext, setContext } from "svelte";
   import { createDragList } from "./Tab/drag";
   import TreeItem from "./TreeItem.svelte";
+  import Self from "./Tree.svelte";
 
-  export let nodes = [];
-  export let selectedId = "";
-  export let highlightedId = "";
-  export let depth = 0;
-  export let expanded = new Set();
-  export let onSelect;
-  export let onContextMenu = null;
-
-  // Optional flat list of items used for reordering
-  export let items = [];
-
-  // Drag-and-drop callbacks dispatched to the caller
-  export let onReorder = null;
-  export let onDropInto = null;
-
-  export let getKey = (x) => x.id;
-  export let axis = "vertical";
-
-  const dispatch = createEventDispatcher();
+  let {
+    nodes = [],
+    selectedId = "",
+    highlightedId = "",
+    depth = 0,
+    expanded = $bindable(new Set()),
+    onSelect,
+    onContextMenu = null,
+    items = [],
+    onReorder = null,
+    onDropInto = null,
+    getKey = (x) => x.id,
+    axis = "vertical",
+    ontoggle = null,
+  } = $props();
 
   // Share a single drag state across recursive Tree instances via context
   const parentDrag = getContext("drag");
@@ -47,33 +44,35 @@
     } else {
       expanded.add(id);
     }
-    dispatch("toggle", { id, expanded });
+    ontoggle?.({ id, expanded });
   }
 
   // Destructure stores from drag so we can use $ auto-subscribe in template
   const dragItem = drag?.dragItem;
   const dropTarget = drag?.dropTarget;
 
-  $: dragProps = drag
-    ? {
-        dragItem: drag.dragItem,
-        dropTarget: drag.dropTarget,
-        dragStart: drag.dragStart,
-        dragEnd: drag.dragEnd,
-        handleDragOver: drag.handleDragOver,
-        dragLeave: drag.dragLeave,
-        drop: drag.drop,
-        items,
-      }
-    : {};
+  let dragProps = $derived(
+    drag
+      ? {
+          dragItem: drag.dragItem,
+          dropTarget: drag.dropTarget,
+          dragStart: drag.dragStart,
+          dragEnd: drag.dragEnd,
+          handleDragOver: drag.handleDragOver,
+          dragLeave: drag.dragLeave,
+          drop: drag.drop,
+          items,
+        }
+      : {},
+  );
 </script>
 
 {#if drag && nodes.length > 0}
   <div
     class="drop-zone-top"
     role="none"
-    on:dragover={(e) => drag.handleDragOverFirst(e, nodes[0].group ?? nodes[0])}
-    on:drop={(e) => drag.dropFirst(e, items, nodes[0].group ?? nodes[0])}
+    ondragover={(e) => drag.handleDragOverFirst(e, nodes[0].group ?? nodes[0])}
+    ondrop={(e) => drag.dropFirst(e, items, nodes[0].group ?? nodes[0])}
   ></div>
 {/if}
 
@@ -99,7 +98,7 @@
     {...dragProps}
   />
   {#if hasChildren && !isCollapsed}
-    <svelte:self
+    <Self
       nodes={children}
       {selectedId}
       {highlightedId}

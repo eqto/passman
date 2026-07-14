@@ -5,17 +5,13 @@
   import TagManager from "./TagManager.svelte";
   import EntryInput from "./EntryInput.svelte";
   import { Input, Label } from "../../../components/form";
-  import { CopyIcon, EyeIcon, EyeOffIcon } from "../../../components/icons";
+  import { Icon } from "../../../components/icons";
 
-  export let entry;
-  export let onEdit;
-  export let onRestore;
-  export let onDelete;
-  export let trashMode = false;
+  let { entry, onEdit, onRestore, onDelete, trashMode = false } = $props();
 
-  let passwordVisible = false;
+  let passwordVisible = $state(false);
 
-  $: visibleTags = entry?.tags || [];
+  let visibleTags = $derived(entry?.tags || []);
 
   async function updateTags(nextTags) {
     await updateEntry({
@@ -50,7 +46,7 @@
           class="entry-title"
           class:editable={!trashMode}
           title={trashMode ? entry.title : "Click to edit"}
-          on:click={() => !trashMode && onEdit(entry)}
+          onclick={() => !trashMode && onEdit(entry)}
         >
           {entry.title}
         </h2>
@@ -71,9 +67,9 @@
           type="button"
           aria-label="Copy username"
           disabled={!entry.username}
-          on:click={() => copy(entry.username, "Username")}
+          onclick={() => copy(entry.username, "Username")}
         >
-          <CopyIcon size={16} />
+          <Icon name="copy" size={16} />
         </button>
       </div>
 
@@ -91,21 +87,21 @@
           type="button"
           aria-label="Copy password"
           disabled={!entry.password}
-          on:click={() => copy(entry.password, "Password")}
+          onclick={() => copy(entry.password, "Password")}
         >
-          <CopyIcon size={16} />
+          <Icon name="copy" size={16} />
         </button>
         <button
           class="btn-copy-solid"
           type="button"
           aria-label={passwordVisible ? "Hide" : "Reveal"}
           disabled={!entry.password}
-          on:click={() => (passwordVisible = !passwordVisible)}
+          onclick={() => (passwordVisible = !passwordVisible)}
         >
           {#if passwordVisible}
-            <EyeOffIcon size={16} />
+            <Icon name="eye-off" size={16} />
           {:else}
-            <EyeIcon size={16} />
+            <Icon name="eye" size={16} />
           {/if}
         </button>
       </div>
@@ -137,14 +133,14 @@
 
     <div class="details-footer" class:justify-end={!trashMode}>
       {#if trashMode}
-        <button class="btn-secondary" on:click={() => onRestore(entry)}>
+        <button class="btn-secondary" onclick={() => onRestore(entry)}>
           Restore
         </button>
-        <button class="btn-danger" on:click={() => onDelete(entry)}>
+        <button class="btn-danger" onclick={() => onDelete(entry)}>
           Delete Permanently
         </button>
       {:else}
-        <button class="btn-secondary" on:click={() => onEdit(entry)}>
+        <button class="btn-secondary" onclick={() => onEdit(entry)}>
           Edit
         </button>
       {/if}

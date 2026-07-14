@@ -1,5 +1,5 @@
 <script>
-  import { getContext } from "svelte";
+  import { getContext, onMount } from "svelte";
   import { nextTabId } from "./tab-id.js";
 
   let { name = null, title = null, children } = $props();
@@ -7,7 +7,7 @@
   const tabs = getContext("tabs");
   const id = name ?? nextTabId();
 
-  $effect.pre(() => {
+  onMount(() => {
     tabs.registerTab({ id, name, title, content: children });
     return () => tabs.unregisterTab(id);
   });

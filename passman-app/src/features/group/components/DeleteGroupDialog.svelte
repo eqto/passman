@@ -7,9 +7,7 @@
     DialogActions,
   } from "../../../components/dialog";
 
-  export let group = null;
-  export let onDelete;
-  export let onCancel;
+  let { group = null, onDelete, onCancel } = $props();
 </script>
 
 <Dialog>

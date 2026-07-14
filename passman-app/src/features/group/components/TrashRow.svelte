@@ -1,8 +1,7 @@
 <script>
-  import { TrashIcon } from "../../../components/icons";
+  import { Icon } from "../../../components/icons";
 
-  export let trashMode = false;
-  export let onTrashClick;
+  let { trashMode = false, onTrashClick } = $props();
 </script>
 
 <div class="group-row trash-row" class:selected={trashMode}>
@@ -19,7 +18,7 @@
     }}
   >
     <span class="group-icon trash-icon">
-      <TrashIcon size={18} />
+      <Icon name="trash" size={18} />
     </span>
     <span class="group-name">Trash</span>
   </div>

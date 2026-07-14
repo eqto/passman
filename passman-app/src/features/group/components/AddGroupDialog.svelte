@@ -7,12 +7,10 @@
     DialogActions,
   } from "../../../components/dialog";
 
-  export let title = "Add Group";
-  export let onAdd;
-  export let onCancel;
+  let { title = "Add Group", onAdd, onCancel } = $props();
 
-  let groupName = "";
-  let error = "";
+  let groupName = $state("");
+  let error = $state("");
 
   function handleAdd() {
     error = "";

@@ -3,19 +3,20 @@
   import { Input, Label } from "../../../components/form";
   import EntryInput from "./EntryInput.svelte";
   import PasswordGenerator from "../../../components/PasswordGenerator.svelte";
-  import { SettingsIcon, EyeIcon, EyeOffIcon } from "../../../components/icons";
+  import { Icon } from "../../../components/icons";
   import TagManager from "./TagManager.svelte";
   import Confirm from "../../../components/dialog/Confirm.svelte";
 
-  export let entry;
-  export let selectedGroup = "";
-  export let onClose;
-  export let onDelete = null;
+  let { entry, selectedGroup = "", onClose, onDelete = null } = $props();
 
-  let form = { ...entry, tags: entry.tags || [], fields: entry.fields || [] };
-  $: displayTags = form.tags || [];
-  let error = "";
-  let confirmDeleteEntry = false;
+  let form = $state({
+    ...entry,
+    tags: entry.tags || [],
+    fields: entry.fields || [],
+  });
+  let displayTags = $derived(form.tags || []);
+  let error = $state("");
+  let confirmDeleteEntry = $state(false);
 
   function addTags(raw) {
     let next = form.tags;
@@ -67,9 +68,9 @@
     { value: "otp", label: "OTP" },
   ];
 
-  let openMenuId = null;
-  let pendingLabelIds = new Set();
-  let passwordVisible = false;
+  let openMenuId = $state(null);
+  let pendingLabelIds = $state(new Set());
+  let passwordVisible = $state(false);
 
   function addField() {
     const id = crypto.randomUUID();
@@ -146,9 +147,9 @@
         onclick={() => (passwordVisible = !passwordVisible)}
       >
         {#if passwordVisible}
-          <EyeOffIcon size={16} />
+          <Icon name="eye-off" size={16} />
         {:else}
-          <EyeIcon size={16} />
+          <Icon name="eye" size={16} />
         {/if}
       </button>
       <PasswordGenerator onuse={(pw) => (form.password = pw)} />
@@ -182,7 +183,7 @@
               toggleMenu(field.id);
             }}
           >
-            <SettingsIcon size={16} />
+            <Icon name="settings" size={16} />
           </button>
           {#if openMenuId === field.id}
             <div class="menu-dropdown">

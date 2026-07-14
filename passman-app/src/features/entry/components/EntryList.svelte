@@ -9,23 +9,25 @@
 
   const SEARCH_DEBOUNCE_MS = 150;
 
-  export let entries;
-  export let selectedEntry = null;
-  export let selectedTags = [];
-  export let trashMode = false;
-  export let hideNewButton = false;
-  export let onSelect;
-  export let onNew;
-  export let onToggleTag = (tag) => {};
-  export let onClearTags = () => {};
-  export let onMoveToGroup = () => {};
-  export let onMoveToVault = () => {};
-  export let onCopyToGroup = () => {};
-  export let onCopyToVault = () => {};
+  let {
+    entries,
+    selectedEntry = null,
+    selectedTags = [],
+    trashMode = false,
+    hideNewButton = false,
+    onSelect,
+    onNew,
+    onToggleTag = (tag) => {},
+    onClearTags = () => {},
+    onMoveToGroup = () => {},
+    onMoveToVault = () => {},
+    onCopyToGroup = () => {},
+    onCopyToVault = () => {},
+  } = $props();
 
-  let search = "";
-  let filterSearch = "";
-  let contextMenu = { show: false, x: 0, y: 0, entry: null };
+  let search = $state("");
+  let filterSearch = $state("");
+  let contextMenu = $state({ show: false, x: 0, y: 0, entry: null });
 
   const setFilterSearch = debounce((value) => {
     filterSearch = value;
@@ -38,19 +40,21 @@
     setFilterSearch(search);
   }
 
-  $: filtered = entries.filter((e) => {
-    const q = filterSearch.toLowerCase();
-    const matchesSearch =
-      e.title.toLowerCase().includes(q) ||
-      e.username.toLowerCase().includes(q) ||
-      (e.fields || []).some((f) => f.value.toLowerCase().includes(q)) ||
-      (e.tags || []).some((tag) => tag.toLowerCase().includes(q));
-    if (!matchesSearch) return false;
-    if (selectedTags.length > 0) {
-      return selectedTags.every((tag) => (e.tags || []).includes(tag));
-    }
-    return true;
-  });
+  let filtered = $derived(
+    entries.filter((e) => {
+      const q = filterSearch.toLowerCase();
+      const matchesSearch =
+        e.title.toLowerCase().includes(q) ||
+        e.username.toLowerCase().includes(q) ||
+        (e.fields || []).some((f) => f.value.toLowerCase().includes(q)) ||
+        (e.tags || []).some((tag) => tag.toLowerCase().includes(q));
+      if (!matchesSearch) return false;
+      if (selectedTags.length > 0) {
+        return selectedTags.every((tag) => (e.tags || []).includes(tag));
+      }
+      return true;
+    }),
+  );
 
   async function handleMenuCopyPassword() {
     if (contextMenu.entry?.password) {
@@ -71,17 +75,17 @@
     contextMenu = { show: false, x: 0, y: 0, entry: null };
   }
 
-  function handleMenuAction(handler, event) {
-    if (event.detail.vault !== undefined) {
-      handler(event.detail.entry, event.detail.vault, event.detail.groupId);
+  function handleMenuAction(handler, detail) {
+    if (detail.vault !== undefined) {
+      handler(detail.entry, detail.vault, detail.groupId);
     } else {
-      handler(event.detail.entry, event.detail.group);
+      handler(detail.entry, detail.group);
     }
     closeContextMenu();
   }
 </script>
 
-<svelte:window on:click={closeContextMenu} />
+<svelte:window onclick={closeContextMenu} />
 
 <div class="entry-list">
   <div class="list-header section-header">
@@ -90,7 +94,7 @@
 
   <input
     value={search}
-    on:input={onSearchInput}
+    oninput={onSearchInput}
     placeholder="Search entries..."
     class="modal-input search-input"
   />
@@ -98,11 +102,11 @@
   {#if selectedTags.length > 0}
     <div class="tag-filter-bar">
       {#each selectedTags as tag}
-        <button class="tag-filter-chip" on:click={() => onToggleTag(tag)}>
+        <button class="tag-filter-chip" onclick={() => onToggleTag(tag)}>
           {tag} <span class="remove">×</span>
         </button>
       {/each}
-      <button class="btn-ghost" on:click={onClearTags}>Clear</button>
+      <button class="btn-ghost" onclick={onClearTags}>Clear</button>
     </div>
   {/if}
 
@@ -124,7 +128,7 @@
   {/if}
 
   {#if !trashMode && !hideNewButton}
-    <button class="btn-secondary new-entry-btn" on:click={onNew}>
+    <button class="btn-secondary new-entry-btn" onclick={onNew}>
       + New Entry
     </button>
   {/if}
@@ -135,11 +139,11 @@
     x={contextMenu.x}
     y={contextMenu.y}
     entry={contextMenu.entry}
-    on:copyPassword={handleMenuCopyPassword}
-    on:moveToGroup={(e) => handleMenuAction(onMoveToGroup, e)}
-    on:moveToVault={(e) => handleMenuAction(onMoveToVault, e)}
-    on:copyToGroup={(e) => handleMenuAction(onCopyToGroup, e)}
-    on:copyToVault={(e) => handleMenuAction(onCopyToVault, e)}
+    oncopyPassword={handleMenuCopyPassword}
+    onmoveToGroup={(detail) => handleMenuAction(onMoveToGroup, detail)}
+    onmoveToVault={(detail) => handleMenuAction(onMoveToVault, detail)}
+    oncopyToGroup={(detail) => handleMenuAction(onCopyToGroup, detail)}
+    oncopyToVault={(detail) => handleMenuAction(onCopyToVault, detail)}
   />
 {/if}
 

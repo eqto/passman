@@ -24,7 +24,7 @@
 
 <button
   class="btn-icon theme-toggle-btn"
-  on:click={cycleTheme}
+  onclick={cycleTheme}
   title={$theme.charAt(0).toUpperCase() + $theme.slice(1)}
 >
   {@html getThemeIcon()}

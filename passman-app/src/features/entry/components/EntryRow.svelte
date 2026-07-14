@@ -3,14 +3,16 @@
   import { freeTags } from "../../../lib/tags.js";
   import { showToast } from "../../../stores/toast.js";
   import Chip from "../../../components/form/Chip.svelte";
-  import { CopyIcon } from "../../../components/icons";
+  import { Icon } from "../../../components/icons";
 
-  export let entry;
-  export let selected = false;
-  export let selectedTags = [];
-  export let onSelect;
-  export let onToggleTag;
-  export let onContextMenu;
+  let {
+    entry,
+    selected = false,
+    selectedTags = [],
+    onSelect,
+    onToggleTag,
+    onContextMenu,
+  } = $props();
 
   async function copyPassword(event, password) {
     event.stopPropagation();
@@ -59,7 +61,7 @@
       aria-label="Copy password"
       onclick={(e) => copyPassword(e, entry.password)}
     >
-      <CopyIcon size={16} />
+      <Icon name="copy" size={16} />
     </button>
   {/if}
 </div>

@@ -18,7 +18,7 @@
   import EntryEditor from "../../entry/components/EntryEditor.svelte";
   import { createColumnResize } from "../../../lib/columnResize.js";
 
-  export let vault;
+  let { vault } = $props();
 
   const vaultPath = vault.path;
   const selection = createVaultSelection(vaultPath);
@@ -30,55 +30,65 @@
     loadWidths();
   });
 
-  $: vaultEntries = $vaultData[vaultPath]?.entries || [];
-  $: vaultGroups = $vaultData[vaultPath]?.groups || [];
-  $: vaultTrash = $vaultData[vaultPath]?.trash || { groups: [], entries: [] };
-
-  $: if (
-    vaultGroups.length > 0 &&
-    !$selection.selectedGroup &&
-    !$selection.trashMode
-  ) {
-    selection.selectGroup(vaultGroups[0].id);
-  }
-
-  $: trashGroups = vaultTrash.groups || [];
-  $: trashGroupIds = trashGroups.map((g) => g.id);
-  $: hasUngroupedTrashEntries = (vaultTrash.entries || []).some(
-    (e) => !e.group_id,
+  let vaultEntries = $derived($vaultData[vaultPath]?.entries || []);
+  let vaultGroups = $derived($vaultData[vaultPath]?.groups || []);
+  let vaultTrash = $derived(
+    $vaultData[vaultPath]?.trash || { groups: [], entries: [] },
   );
 
-  $: if (
-    $selection.trashMode &&
-    $selection.selectedTrashGroup &&
-    !trashGroupIds.includes($selection.selectedTrashGroup)
-  ) {
-    selection.setSelectedTrashGroup(trashGroupIds[0] || "");
-  }
+  $effect(() => {
+    if (
+      vaultGroups.length > 0 &&
+      !$selection.selectedGroup &&
+      !$selection.trashMode
+    ) {
+      selection.selectGroup(vaultGroups[0].id);
+    }
+  });
 
-  $: selectedEntryData = $selection.selectedEntry
-    ? ($selection.trashMode
-        ? vaultTrash.entries.find((e) => e.id === $selection.selectedEntry.id)
-        : vaultEntries.find((e) => e.id === $selection.selectedEntry.id)) ||
-      $selection.selectedEntry
-    : null;
+  let trashGroups = $derived(vaultTrash.groups || []);
+  let trashGroupIds = $derived(trashGroups.map((g) => g.id));
+  let hasUngroupedTrashEntries = $derived(
+    (vaultTrash.entries || []).some((e) => !e.group_id),
+  );
 
-  $: filteredEntries = $selection.trashMode
-    ? vaultTrash.entries.filter((e) => {
-        if (!$selection.selectedTrashGroup) return true;
-        if ($selection.selectedTrashGroup === "__ungrouped__")
-          return !e.group_id;
-        return e.group_id === $selection.selectedTrashGroup;
-      })
-    : vaultEntries.filter((e) => {
-        if (
-          $selection.selectedGroup &&
-          e.group_id !== $selection.selectedGroup
-        ) {
-          return false;
-        }
-        return true;
-      });
+  $effect(() => {
+    if (
+      $selection.trashMode &&
+      $selection.selectedTrashGroup &&
+      !trashGroupIds.includes($selection.selectedTrashGroup)
+    ) {
+      selection.setSelectedTrashGroup(trashGroupIds[0] || "");
+    }
+  });
+
+  let selectedEntryData = $derived(
+    $selection.selectedEntry
+      ? ($selection.trashMode
+          ? vaultTrash.entries.find((e) => e.id === $selection.selectedEntry.id)
+          : vaultEntries.find((e) => e.id === $selection.selectedEntry.id)) ||
+          $selection.selectedEntry
+      : null,
+  );
+
+  let filteredEntries = $derived(
+    $selection.trashMode
+      ? vaultTrash.entries.filter((e) => {
+          if (!$selection.selectedTrashGroup) return true;
+          if ($selection.selectedTrashGroup === "__ungrouped__")
+            return !e.group_id;
+          return e.group_id === $selection.selectedTrashGroup;
+        })
+      : vaultEntries.filter((e) => {
+          if (
+            $selection.selectedGroup &&
+            e.group_id !== $selection.selectedGroup
+          ) {
+            return false;
+          }
+          return true;
+        }),
+  );
 
   function getGroupName(groupId) {
     const group = vaultGroups.find((g) => g.id === groupId);
@@ -180,7 +190,7 @@
   }
 </script>
 
-<svelte:window on:keydown={handleKeydown} />
+<svelte:window onkeydown={handleKeydown} />
 
 <div class="vault-view">
   <div class="vault-panels">
@@ -203,8 +213,8 @@
       class="resize-handle"
       type="button"
       aria-label="Resize groups panel"
-      on:mousedown={(e) => startResize("groups", e)}
-      on:keydown={(e) => handleKeyResize("groups", e)}
+      onmousedown={(e) => startResize("groups", e)}
+      onkeydown={(e) => handleKeyResize("groups", e)}
     ></button>
     <div class="panel entries" style="width: {columnWidths.entries}px">
       <EntryList
@@ -227,8 +237,8 @@
       class="resize-handle"
       type="button"
       aria-label="Resize entries panel"
-      on:mousedown={(e) => startResize("entries", e)}
-      on:keydown={(e) => handleKeyResize("entries", e)}
+      onmousedown={(e) => startResize("entries", e)}
+      onkeydown={(e) => handleKeyResize("entries", e)}
     ></button>
     <div class="panel details">
       {#if $selection.mode === "edit"}

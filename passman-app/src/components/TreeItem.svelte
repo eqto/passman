@@ -1,32 +1,33 @@
 <script>
-  import { ChevronIcon, FolderIcon } from "./icons";
+  import { Icon } from "./icons";
 
-  export let node;
-  export let id;
-  export let depth;
-  export let hasChildren;
-  export let isCollapsed;
-  export let selected;
-  export let highlighted = false;
-  export let toggle;
-  export let onSelect;
-  export let onContextMenu = null;
+  let {
+    node,
+    id,
+    depth,
+    hasChildren,
+    isCollapsed,
+    selected,
+    highlighted = false,
+    toggle,
+    onSelect,
+    onContextMenu = null,
+    dragItem = null,
+    dropTarget = null,
+    dragStart = null,
+    dragEnd = null,
+    handleDragOver = null,
+    dragLeave = null,
+    drop = null,
+    items = [],
+    dropPlaceholder = false,
+    placeholderDepth = 0,
+  } = $props();
 
-  // Drag-and-drop (passed from Tree when enabled)
-  export let dragItem = null;
-  export let dropTarget = null;
-  export let dragStart = null;
-  export let dragEnd = null;
-  export let handleDragOver = null;
-  export let dragLeave = null;
-  export let drop = null;
-  export let items = [];
-
-  export let dropPlaceholder = false;
-  export let placeholderDepth = 0;
-
-  $: isDragging = $dragItem?.id === id;
-  $: isDropInto = $dropTarget?.type === "into" && $dropTarget.item.id === id;
+  let isDragging = $derived($dragItem?.id === id);
+  let isDropInto = $derived(
+    $dropTarget?.type === "into" && $dropTarget.item.id === id,
+  );
 
   function onDragStartHandler(event) {
     dragStart(event, node.group ?? node);
@@ -53,27 +54,27 @@
     role="listitem"
     aria-grabbed={isDragging}
     draggable={!!dragStart}
-    on:dragstart={dragStart ? onDragStartHandler : null}
-    on:dragend={dragEnd ? onDragEndHandler : null}
-    on:dragover={handleDragOver
+    ondragstart={dragStart ? onDragStartHandler : null}
+    ondragend={dragEnd ? onDragEndHandler : null}
+    ondragover={handleDragOver
       ? (e) => handleDragOver(e, node.group ?? node)
       : null}
-    on:dragleave={dragLeave ?? null}
-    on:drop={drop ? (e) => drop(e, items, node.group ?? node) : null}
+    ondragleave={dragLeave ?? null}
+    ondrop={drop ? (e) => drop(e, items, node.group ?? node) : null}
     style="padding-left: {depth * 1.5}rem"
   >
     <div
       class="tree-item"
       role="button"
       tabindex="0"
-      on:click={() => onSelect(id)}
-      on:keydown={(e) => {
+      onclick={() => onSelect(id)}
+      onkeydown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
           onSelect(id);
         }
       }}
-      on:contextmenu={onContextMenu ? (e) => onContextMenu(e, id) : null}
+      oncontextmenu={onContextMenu ? (e) => onContextMenu(e, id) : null}
     >
       {#if hasChildren}
         <span
@@ -82,8 +83,11 @@
           role="button"
           tabindex="0"
           aria-label={isCollapsed ? "Expand" : "Collapse"}
-          on:click|stopPropagation={() => toggle()}
-          on:keydown={(e) => {
+          onclick={(e) => {
+            e.stopPropagation();
+            toggle();
+          }}
+          onkeydown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
               e.stopPropagation();
@@ -91,13 +95,13 @@
             }
           }}
         >
-          <ChevronIcon size={12} />
+          <Icon name="chevron" size={12} />
         </span>
       {:else}
         <span class="expand-icon-spacer"></span>
       {/if}
       <span class="folder-icon">
-        <FolderIcon size={16} />
+        <Icon name="folder" size={16} />
       </span>
       <span class="tree-name">{node.group?.name ?? node.name}</span>
     </div>

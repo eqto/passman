@@ -2,7 +2,7 @@
   import { writeText } from "@tauri-apps/plugin-clipboard-manager";
   import { showToast } from "../../../stores/toast.js";
   import { Input, Label } from "../../../components/form";
-  import { CopyIcon, EyeIcon, EyeOffIcon } from "../../../components/icons";
+  import { Icon } from "../../../components/icons";
   import PasswordGenerator from "../../../components/PasswordGenerator.svelte";
 
   let {
@@ -68,7 +68,7 @@
         disabled={!value}
         onclick={copy}
       >
-        <CopyIcon size={16} />
+        <Icon name="copy" size={16} />
       </button>
     {/if}
     {#if revealable}
@@ -80,9 +80,9 @@
         onclick={() => (revealed = !revealed)}
       >
         {#if revealed}
-          <EyeOffIcon size={16} />
+          <Icon name="eye-off" size={16} />
         {:else}
-          <EyeIcon size={16} />
+          <Icon name="eye" size={16} />
         {/if}
       </button>
     {/if}

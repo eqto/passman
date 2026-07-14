@@ -6,6 +6,14 @@
   const LOCK_TIMEOUT_MS = AUTO_LOCK_TIMEOUT_MS;
   let timer = null;
 
+  $effect(() => {
+    if ($isUnlocked) {
+      resetTimer();
+    } else {
+      if (timer) clearTimeout(timer);
+    }
+  });
+
   function resetTimer() {
     if (timer) clearTimeout(timer);
     if ($isUnlocked) {
@@ -19,19 +27,13 @@
     resetTimer();
   }
 
-  $: if ($isUnlocked) {
-    resetTimer();
-  } else {
-    if (timer) clearTimeout(timer);
-  }
-
   onDestroy(() => {
     if (timer) clearTimeout(timer);
   });
 </script>
 
 <svelte:window
-  on:mousemove={handleActivity}
-  on:keydown={handleActivity}
-  on:click={handleActivity}
+  onmousemove={handleActivity}
+  onkeydown={handleActivity}
+  onclick={handleActivity}
 />

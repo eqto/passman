@@ -32,19 +32,19 @@
   } from "./features/vault/store.js";
 
   let saveUnlisten = null;
-  let showLockConfirm = false;
+  let showLockConfirm = $state(false);
 
-  let showCreate = false;
-  let unlockTarget = null;
-  let showOpenDropdown = false;
-  let showButtercupImport = false;
-  let dropdownPosition = { x: 0, y: 0 };
+  let showCreate = $state(false);
+  let unlockTarget = $state(null);
+  let showOpenDropdown = $state(false);
+  let showButtercupImport = $state(false);
+  let dropdownPosition = $state({ x: 0, y: 0 });
 
-  let contextMenu = { show: false, x: 0, y: 0, vault: null };
-  let showSettings = false;
-  let settingsVault = null;
-  let removeVault = null;
-  let lockTarget = null;
+  let contextMenu = $state({ show: false, x: 0, y: 0, vault: null });
+  let showSettings = $state(false);
+  let settingsVault = $state(null);
+  let removeVault = $state(null);
+  let lockTarget = $state(null);
 
   onMount(async () => {
     await loadVaults();
@@ -163,10 +163,10 @@
     }
   }
 
-  $: unlockedVaults = ($vaults || []).filter(
-    (v) => $vaultData[v.path]?.unlocked,
+  let unlockedVaults = $derived(
+    ($vaults || []).filter((v) => $vaultData[v.path]?.unlocked),
   );
-  $: currentVaultUnlocked = $currentVault && $isUnlocked;
+  let currentVaultUnlocked = $derived($currentVault && $isUnlocked);
 
   async function handleGlobalLockConfirmed() {
     showLockConfirm = false;

@@ -1,9 +1,9 @@
 <script>
-  import { ChevronIcon } from "../../../components/icons";
+  import { Icon } from "../../../components/icons";
 
   let {
-    showDropdown = false,
-    dropdownPosition = { x: 0, y: 0 },
+    showDropdown = $bindable(false),
+    dropdownPosition = $bindable({ x: 0, y: 0 }),
     onpickexisting = null,
     onbuttercupimport = null,
   } = $props();
@@ -46,7 +46,7 @@
     onclick={toggleOpenDropdown}
     title="Open options"
   >
-    <ChevronIcon size={16} direction="down" />
+    <Icon name="chevron" size={16} direction="down" />
   </button>
 </div>
 {#if showDropdown}

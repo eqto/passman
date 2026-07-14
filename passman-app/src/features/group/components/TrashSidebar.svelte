@@ -2,15 +2,17 @@
   import Tree from "../../../components/Tree.svelte";
   import { buildTree } from "../groupTree.js";
 
-  export let trashGroups = [];
-  export let selectedTrashGroup = "";
-  export let hasUngroupedTrashEntries = false;
-  export let selectedGroup = "";
-  export let groups = [];
-  export let onSelectTrashGroup;
-  export let onSelectGroup;
+  let {
+    trashGroups = [],
+    selectedTrashGroup = "",
+    hasUngroupedTrashEntries = false,
+    selectedGroup = "",
+    groups = [],
+    onSelectTrashGroup,
+    onSelectGroup,
+  } = $props();
 
-  $: trashGroupTree = buildTree(trashGroups);
+  let trashGroupTree = $derived(buildTree(trashGroups));
 </script>
 
 <div class="trash-header">
