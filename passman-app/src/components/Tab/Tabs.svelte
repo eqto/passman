@@ -88,13 +88,15 @@
 <style>
   .tabs-bar {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 0.25rem;
-    overflow-x: auto;
     min-width: 0;
+    padding: 0.5rem;
   }
 
   .tab-content {
+    border-top: 1px solid var(--border-color);
     flex: 1;
     overflow: hidden;
     display: flex;

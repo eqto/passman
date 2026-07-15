@@ -240,6 +240,10 @@
     overflow: hidden;
   }
 
+  .vault-tabs :global(.tabs-bar) {
+    width: calc(100% - 20rem);
+  }
+
   .empty-state,
   .locked-state {
     flex: 1;

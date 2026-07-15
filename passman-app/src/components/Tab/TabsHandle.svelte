@@ -63,21 +63,24 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 0.5rem 0.5rem 0.75rem;
-    border: none;
+    border: 1px solid var(--border-color);
     border-radius: var(--shape-sm);
     background: transparent;
     color: var(--text-color);
     cursor: pointer;
     white-space: nowrap;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   }
 
   .tab:hover {
     background-color: var(--hover-bg);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
   }
 
   .tab.selected {
     background-color: var(--selected-bg);
     color: var(--selected-text);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
   }
 
   .tab.dragging {
