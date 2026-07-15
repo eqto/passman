@@ -3,7 +3,6 @@
   import { invoke } from "@tauri-apps/api/core";
   import {
     Vaults,
-    Topbar,
     vaults,
     initSaveListener,
   } from "./features/vault/index.js";
@@ -44,7 +43,6 @@
 
 <main>
   <Vaults />
-  <Topbar />
 </main>
 
 <style>

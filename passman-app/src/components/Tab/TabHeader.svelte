@@ -13,6 +13,8 @@
   const { drag, getTabs } = getContext("tabs");
   const { dragItem, dropTarget } = drag;
 
+  let el = $state(null);
+
   let dragging = $derived($dragItem === tab);
   let dropBefore = $derived(
     $dropTarget?.type === "before" && $dropTarget.item.id === tab.id,
@@ -20,12 +22,19 @@
   let dropAfter = $derived(
     $dropTarget?.type === "after" && $dropTarget.item.id === tab.id,
   );
+
+  $effect(() => {
+    if (selected && el) {
+      el.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+    }
+  });
 </script>
 
 {#if dropBefore}
   <div class="drop-indicator"></div>
 {/if}
 <div
+  bind:this={el}
   class="tab"
   class:selected
   class:dragging

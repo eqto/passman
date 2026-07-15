@@ -88,13 +88,10 @@
 
 <style>
   .topbar {
-    position: absolute;
-    top: 0.5rem;
-    right: 0.75rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    z-index: 10;
+    padding-right: 0.75rem;
   }
 
   .action-icon {

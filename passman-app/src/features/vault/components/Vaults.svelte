@@ -1,4 +1,5 @@
 <script>
+  import { open } from "@tauri-apps/plugin-dialog";
   import Tabs from "../../../components/Tab/Tabs.svelte";
   import Tab from "../../../components/Tab/Tab.svelte";
   import { Icon } from "../../../components/icons";
@@ -10,6 +11,9 @@
     RemoveVaultDialog,
     VaultView,
     UnlockDialog,
+    Topbar,
+    CreateVaultDialog,
+    registerAndOpenVault,
     vaults,
     currentVault,
     vaultData,
@@ -32,6 +36,7 @@
   let showLockConfirm = $state(false);
   let showUnlockDialog = $state(false);
   let unlockTargetVault = $state(null);
+  let showCreate = $state(false);
 
   function selectVault(id) {
     const vault = $vaults.find((v) => v.id === id);
@@ -99,17 +104,24 @@
   }
 
   function handleUnlockClick(vault) {
-    unlockTargetVault = vault;
+    unlockTargetVault = { ...vault, registered: true };
     showUnlockDialog = true;
   }
 
   async function handleUnlockCurrent(path, password) {
-    await unlockVault(password);
+    if (unlockTargetVault?.registered) {
+      await unlockVault(password);
+    } else {
+      const id = crypto.randomUUID();
+      await registerAndOpenVault(id, path, password);
+    }
     showUnlockDialog = false;
+    unlockTargetVault = null;
   }
 
   function handleCancelUnlock() {
     showUnlockDialog = false;
+    unlockTargetVault = null;
   }
 
   function handleCloseTab(id) {
@@ -130,6 +142,20 @@
     showLockConfirm = false;
     await lockVault();
   }
+
+  async function pickExistingVault() {
+    const selected = await open({
+      directory: false,
+      multiple: false,
+      filters: [{ name: "Passman Vault", extensions: ["pmv"] }],
+    });
+    if (selected) {
+      const parts = selected.split(/[/\\]/);
+      const name = parts[parts.length - 1].replace(/\.pmv$/, "");
+      unlockTargetVault = { path: selected, name, registered: false };
+      showUnlockDialog = true;
+    }
+  }
 </script>
 
 <svelte:window
@@ -137,6 +163,10 @@
   onclick={handleWindowClick}
   onkeydown={handleKeydown}
 />
+
+{#snippet topbarSnippet()}
+  <Topbar />
+{/snippet}
 
 <div class="vault-tabs">
   <Tabs
@@ -146,6 +176,7 @@
     onKeydown={handleTabKeydown}
     onContextMenu={handleContextMenu}
     onClose={handleCloseTab}
+    headerAddon={topbarSnippet}
   >
     {#each $vaults as vault (vault.id)}
       <Tab name={vault.id} label={vault.name} title={vault.path}>
@@ -170,7 +201,21 @@
     {/each}
   </Tabs>
   {#if !$currentVault}
-    <div class="empty-state">Select or create a vault to get started.</div>
+    <div class="empty-state">
+      <div class="empty-state-content">
+        <Icon name="key" size={64} />
+        <h2>Welcome to Passman</h2>
+        <p>Select an open vault tab, or choose an action below to get started.</p>
+        <div class="empty-state-actions">
+          <button class="btn-primary" onclick={() => (showCreate = true)}>
+            Create New Vault
+          </button>
+          <button class="btn-secondary" onclick={pickExistingVault}>
+            Open Existing Vault
+          </button>
+        </div>
+      </div>
+    </div>
   {/if}
 </div>
 
@@ -227,16 +272,19 @@
   />
 {/if}
 
+{#if showCreate}
+  <CreateVaultDialog
+    oncreated={() => (showCreate = false)}
+    oncancel={() => (showCreate = false)}
+  />
+{/if}
+
 <style>
   .vault-tabs {
     flex: 1;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-  }
-
-  .vault-tabs :global(.tabs-bar) {
-    width: calc(100% - 20rem);
   }
 
   .empty-state,
@@ -251,6 +299,33 @@
   .empty-state {
     text-align: center;
     padding: 2rem;
+  }
+
+  .empty-state-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+    max-width: 24rem;
+  }
+
+  .empty-state-content h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-color);
+  }
+
+  .empty-state-content p {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--muted-color);
+  }
+
+  .empty-state-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
   }
 
   .locked-content {
