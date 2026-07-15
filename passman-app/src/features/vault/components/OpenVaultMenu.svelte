@@ -65,13 +65,12 @@
     position: relative;
     display: flex;
     align-items: center;
-    padding: 0.5rem 0.375rem 0.25rem;
+    padding: 0.5rem 0.25rem 0.25rem;
     background-color: var(--hover-bg);
     color: var(--text-color);
     border-radius: var(--shape-sm);
     gap: 0.125rem;
     height: var(--btn-height);
-    line-height: 1.5rem;
   }
 
   .dropdown-button:hover {
@@ -101,17 +100,16 @@
   .dropdown-main-btn {
     background: transparent;
     border: none;
-    padding: 0;
     color: var(--text-color);
     cursor: pointer;
     font-size: 0.875rem;
     font-weight: 500;
-    line-height: 1.25;
   }
 
   .dropdown-separator {
-    width: 1px;
-    height: 1.25rem;
+    width: 2px;
+    height: 1rem;
+    margin-top: -0.25rem;
     background-color: var(--border-color);
   }
 
