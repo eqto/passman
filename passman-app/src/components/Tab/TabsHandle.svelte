@@ -8,6 +8,7 @@
     onSelect,
     onKeydown,
     onContextMenu,
+    onClose = null,
     onDragStart,
     onDragEnd,
     onDragOver,
@@ -35,13 +36,25 @@
   onkeydown={onKeydown}
   oncontextmenu={onContextMenu}
 >
-  <span class="tab-name">
-    {#if tab.label}
-      {@render tab.label()}
-    {:else}
-      {tab.name}
-    {/if}
-  </span>
+  <span class="tab-name">{tab.name}</span>
+  {#if onClose}
+    <span
+      class="tab-actions"
+      aria-hidden="true"
+      onclick={(e) => e.stopPropagation()}
+    >
+      <button
+        class="tab-action-btn delete-tab-btn"
+        onclick={(e) => {
+          e.stopPropagation();
+          onClose(tab.id);
+        }}
+        title="Close"
+      >
+        ×
+      </button>
+    </span>
+  {/if}
 </div>
 
 <style>
@@ -86,5 +99,32 @@
     text-overflow: ellipsis;
     max-width: 12rem;
     line-height: 1.25;
+  }
+
+  .tab-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .tab-action-btn {
+    width: 1.75rem;
+    height: 1.75rem;
+    padding: 0;
+    border-radius: var(--shape-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    font-size: 1.25rem;
+    line-height: 1;
+  }
+
+  .delete-tab-btn:hover {
+    color: var(--on-danger-container);
+    background-color: var(--danger-container);
   }
 </style>

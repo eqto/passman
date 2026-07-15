@@ -43,10 +43,8 @@
 {/if}
 
 <main>
-  <header class="app-header">
-    <Vaults />
-    <Topbar />
-  </header>
+  <Vaults />
+  <Topbar />
 </main>
 
 <style>
@@ -57,15 +55,7 @@
     flex-direction: column;
     background-color: var(--bg-color);
     color: var(--text-color);
-  }
-
-  .app-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.5rem 1rem;
-    background-color: var(--sidebar-bg);
-    gap: 1rem;
+    position: relative;
   }
 
   .vault-load-error {

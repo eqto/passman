@@ -26,8 +26,9 @@
   let showSettings = $state(false);
   let settingsVault = $state(null);
   let removeVault = $state(null);
-  let lockTarget = $state(null);
   let showLockConfirm = $state(false);
+  let showUnlockDialog = $state(false);
+  let unlockTargetVault = $state(null);
 
   useContextMenu(handleWindowClick);
 
@@ -83,16 +84,6 @@
     settingsVault = null;
   }
 
-  function handleLock(vault) {
-    lockTarget = vault;
-  }
-
-  async function handleLockConfirmed() {
-    if (!lockTarget) return;
-    await lockVaultByPath(lockTarget.path);
-    lockTarget = null;
-  }
-
   function handleRemove(vault) {
     removeVault = vault;
   }
@@ -112,12 +103,23 @@
     }
   }
 
+  function handleUnlockClick(vault) {
+    unlockTargetVault = vault;
+    showUnlockDialog = true;
+  }
+
   async function handleUnlockCurrent(path, password) {
     await unlockVault(password);
+    showUnlockDialog = false;
   }
 
   function handleCancelUnlock() {
-    currentVault.set(null);
+    showUnlockDialog = false;
+  }
+
+  function handleCloseTab(id) {
+    const vault = $vaults.find((v) => v.id === id);
+    if (vault) handleRemove(vault);
   }
 
   function handleKeydown(event) {
@@ -148,45 +150,25 @@
     onReorder={reorderVaults}
     onKeydown={handleTabKeydown}
     onContextMenu={handleContextMenu}
+    onClose={handleCloseTab}
   >
     {#each $vaults as vault (vault.id)}
-      <Tab name={vault.id} title={vault.path}>
-        {#snippet label()}
-          <span class="tab-name">{vault.name}</span>
-          <span
-            class="tab-actions-inner"
-            aria-hidden="true"
-            onclick={(e) => e.stopPropagation()}
-          >
-            {#if $vaultData[vault.path]?.unlocked}
-              <button
-                class="btn-icon tab-action-btn lock-tab-btn"
-                onclick={() => handleLock(vault)}
-                title="Lock vault"
-              >
-                <Icon name="lock" size={18} />
-              </button>
-            {:else}
-              <button
-                class="btn-icon tab-action-btn delete-tab-btn"
-                onclick={() => handleRemove(vault)}
-                title="Remove vault"
-              >
-                ×
-              </button>
-            {/if}
-          </span>
-        {/snippet}
+      <Tab name={vault.id} label={vault.name} title={vault.path}>
         {#if $vaultData[vault.path]?.unlocked}
           <VaultView {vault} />
         {:else}
           <div class="locked-state">
-            <UnlockDialog
-              path={vault.path}
-              name={vault.name}
-              onUnlock={handleUnlockCurrent}
-              onCancel={handleCancelUnlock}
-            />
+            <div class="locked-content">
+              <Icon name="lock" size={48} />
+              <h2>{vault.name} is locked</h2>
+              <p>Enter your password to access this vault.</p>
+              <button
+                class="btn-primary"
+                onclick={() => handleUnlockClick(vault)}
+              >
+                Unlock
+              </button>
+            </div>
           </div>
         {/if}
       </Tab>
@@ -223,13 +205,12 @@
   />
 {/if}
 
-{#if lockTarget}
-  <Confirm
-    title="Lock Vault"
-    message={`Lock "${lockTarget.name}"? You will need to re-enter the password to access it again.`}
-    confirmLabel="Lock"
-    onconfirm={handleLockConfirmed}
-    oncancel={() => (lockTarget = null)}
+{#if showUnlockDialog && unlockTargetVault}
+  <UnlockDialog
+    path={unlockTargetVault.path}
+    name={unlockTargetVault.name}
+    onUnlock={handleUnlockCurrent}
+    onCancel={handleCancelUnlock}
   />
 {/if}
 
@@ -257,47 +238,6 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    border-top: 1px solid var(--border-color);
-  }
-
-  .vault-tabs :global(.tab-name) {
-    font-weight: 500;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 12rem;
-    line-height: 1.25;
-  }
-
-  .vault-tabs :global(.tab-actions-inner) {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-  }
-
-  .vault-tabs :global(.tab-action-btn) {
-    width: 1.75rem;
-    height: 1.75rem;
-    padding: 0;
-    border-radius: var(--shape-full);
-  }
-
-  .vault-tabs :global(.lock-tab-btn) {
-    padding: 0.25rem;
-  }
-
-  .vault-tabs :global(.tab.selected .lock-tab-btn) {
-    color: var(--selected-text);
-    background-color: transparent;
-  }
-
-  .vault-tabs :global(.tab.selected .lock-tab-btn:hover) {
-    color: var(--selected-text);
-    background-color: var(--hover-bg);
-  }
-
-  .vault-tabs :global(.delete-tab-btn:hover) {
-    color: var(--on-danger-container);
-    background-color: var(--danger-container);
   }
 
   .empty-state,
@@ -312,5 +252,24 @@
   .empty-state {
     text-align: center;
     padding: 2rem;
+  }
+
+  .locked-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    text-align: center;
+  }
+
+  .locked-content h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+
+  .locked-content p {
+    margin: 0;
+    color: var(--muted-color);
   }
 </style>

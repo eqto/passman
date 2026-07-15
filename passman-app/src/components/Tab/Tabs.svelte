@@ -9,6 +9,7 @@
     onReorder = null,
     onKeydown = null,
     onContextMenu = null,
+    onClose = null,
     children,
   } = $props();
 
@@ -66,6 +67,7 @@
       onSelect={() => onSelect?.(tab.id)}
       onKeydown={(e) => onKeydown?.(e, tab.id)}
       onContextMenu={(e) => onContextMenu?.(e, tab.id)}
+      onClose={onClose ? () => onClose(tab.id) : null}
       onDragStart={(e) => handleDragStart(e, tab)}
       onDragEnd={handleDragEnd}
       onDragOver={(e) => handleDragOver(e, tab)}
