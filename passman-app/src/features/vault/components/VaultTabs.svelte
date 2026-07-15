@@ -2,9 +2,29 @@
   import Tabs from "../../../components/Tab/Tabs.svelte";
   import Tab from "../../../components/Tab/Tab.svelte";
   import { Icon } from "../../../components/icons";
-  import { vaults, currentVault, vaultData, reorderVaults } from "../store.js";
+  import { Confirm } from "../../../components/dialog";
+  import { closeAllContextMenus } from "../../../stores/contextMenu.js";
+  import { useContextMenu } from "../../../lib/createContextMenu.js";
+  import VaultContextMenu from "./VaultContextMenu.svelte";
+  import VaultSettingsDialog from "./VaultSettingsDialog.svelte";
+  import RemoveVaultDialog from "./RemoveVaultDialog.svelte";
+  import {
+    vaults,
+    currentVault,
+    vaultData,
+    isUnlocked,
+    reorderVaults,
+    lockVaultByPath,
+    deleteVault,
+  } from "../store.js";
 
-  let { onContextMenu, onLock, onRemove } = $props();
+  let contextMenu = $state({ show: false, x: 0, y: 0, vault: null });
+  let showSettings = $state(false);
+  let settingsVault = $state(null);
+  let removeVault = $state(null);
+  let lockTarget = $state(null);
+
+  useContextMenu(handleWindowClick);
 
   function selectVault(id) {
     const vault = $vaults.find((v) => v.id === id);
@@ -24,10 +44,74 @@
   function handleContextMenu(event, id) {
     const vault = $vaults.find((v) => v.id === id);
     if (vault) {
-      onContextMenu?.(event, vault);
+      event.preventDefault();
+      closeAllContextMenus();
+      contextMenu = { show: true, x: event.clientX, y: event.clientY, vault };
+    }
+  }
+
+  function closeContextMenu() {
+    contextMenu = { show: false, x: 0, y: 0, vault: null };
+  }
+
+  function handleWindowClick() {
+    if (contextMenu.show) closeContextMenu();
+  }
+
+  function openSettings() {
+    if (
+      !contextMenu.vault ||
+      !$isUnlocked ||
+      !$currentVault ||
+      $currentVault.id !== contextMenu.vault.id
+    ) {
+      closeContextMenu();
+      return;
+    }
+    settingsVault = contextMenu.vault;
+    showSettings = true;
+    closeContextMenu();
+  }
+
+  function closeSettings() {
+    showSettings = false;
+    settingsVault = null;
+  }
+
+  function handleLock(vault) {
+    lockTarget = vault;
+  }
+
+  async function handleLockConfirmed() {
+    if (!lockTarget) return;
+    await lockVaultByPath(lockTarget.path);
+    lockTarget = null;
+  }
+
+  function handleRemove(vault) {
+    removeVault = vault;
+  }
+
+  async function handleRemoveConfirmed() {
+    if (!removeVault) return;
+    const vault = removeVault;
+    removeVault = null;
+    const unlocked = $vaultData[vault.path]?.unlocked;
+    if (unlocked) {
+      await lockVaultByPath(vault.path);
+    }
+    try {
+      await deleteVault(vault.id, vault.path);
+    } catch (e) {
+      console.error("Failed to remove vault:", e);
     }
   }
 </script>
+
+<svelte:window
+  oncontextmenu={(e) => e.preventDefault()}
+  onclick={handleWindowClick}
+/>
 
 <div class="tabs">
   <Tabs
@@ -48,7 +132,7 @@
           {#if $vaultData[vault.path]?.unlocked}
             <button
               class="btn-icon tab-action-btn lock-tab-btn"
-              onclick={() => onLock?.(vault)}
+              onclick={() => handleLock(vault)}
               title="Lock vault"
             >
               <Icon name="lock" size={18} />
@@ -56,7 +140,7 @@
           {:else}
             <button
               class="btn-icon tab-action-btn delete-tab-btn"
-              onclick={() => onRemove?.(vault)}
+              onclick={() => handleRemove(vault)}
               title="Remove vault"
             >
               ×
@@ -67,6 +151,50 @@
     {/each}
   </Tabs>
 </div>
+
+{#if contextMenu.show}
+  <VaultContextMenu
+    x={contextMenu.x}
+    y={contextMenu.y}
+    canRename={contextMenu.vault &&
+      $currentVault &&
+      $currentVault.id === contextMenu.vault.id &&
+      $isUnlocked}
+    onsettings={openSettings}
+    onremove={() => {
+      if (contextMenu.vault) {
+        removeVault = contextMenu.vault;
+      }
+      closeContextMenu();
+    }}
+  />
+{/if}
+
+{#if showSettings}
+  <VaultSettingsDialog
+    vault={settingsVault}
+    onrenamed={closeSettings}
+    oncancel={closeSettings}
+  />
+{/if}
+
+{#if lockTarget}
+  <Confirm
+    title="Lock Vault"
+    message={`Lock "${lockTarget.name}"? You will need to re-enter the password to access it again.`}
+    confirmLabel="Lock"
+    onconfirm={handleLockConfirmed}
+    oncancel={() => (lockTarget = null)}
+  />
+{/if}
+
+{#if removeVault}
+  <RemoveVaultDialog
+    vault={removeVault}
+    onRemove={handleRemoveConfirmed}
+    onCancel={() => (removeVault = null)}
+  />
+{/if}
 
 <style>
   .tabs {
