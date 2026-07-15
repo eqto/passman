@@ -3,8 +3,7 @@
   import Tab from "../../../components/Tab/Tab.svelte";
   import { Icon } from "../../../components/icons";
   import { Confirm } from "../../../components/dialog";
-  import { closeAllContextMenus } from "../../../stores/contextMenu.js";
-  import { useContextMenu } from "../../../lib/createContextMenu.js";
+  import { createContextMenuState } from "../../../lib/createContextMenu.svelte.js";
   import {
     VaultContextMenu,
     VaultSettingsDialog,
@@ -22,15 +21,17 @@
     lockVault,
   } from "../index.js";
 
-  let contextMenu = $state({ show: false, x: 0, y: 0, vault: null });
+  const {
+    state: contextMenu,
+    open: openContextMenu,
+    close: closeContextMenu,
+  } = createContextMenuState({ vault: null });
   let showSettings = $state(false);
   let settingsVault = $state(null);
   let removeVault = $state(null);
   let showLockConfirm = $state(false);
   let showUnlockDialog = $state(false);
   let unlockTargetVault = $state(null);
-
-  useContextMenu(handleWindowClick);
 
   function selectVault(id) {
     const vault = $vaults.find((v) => v.id === id);
@@ -50,14 +51,8 @@
   function handleContextMenu(event, id) {
     const vault = $vaults.find((v) => v.id === id);
     if (vault) {
-      event.preventDefault();
-      closeAllContextMenus();
-      contextMenu = { show: true, x: event.clientX, y: event.clientY, vault };
+      openContextMenu(event, { vault });
     }
-  }
-
-  function closeContextMenu() {
-    contextMenu = { show: false, x: 0, y: 0, vault: null };
   }
 
   function handleWindowClick() {

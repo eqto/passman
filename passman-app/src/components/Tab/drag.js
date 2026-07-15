@@ -1,46 +1,18 @@
 import { writable } from "svelte/store";
 
-type Axis = "vertical" | "horizontal";
-
-type Zone = "before" | "after" | "into";
-
-interface DragListOptions<T> {
-  axis?: Axis;
-  getKey?: (item: T) => string | number;
-  onReorder?: (items: T[], info: { source: T; target: T; zone: Zone }) => void;
-  onDropInto?: (info: { source: T; target: T }) => void;
-}
-
-interface DropTarget<T> {
-  type: Zone;
-  item: T;
-}
-
-interface DragList<T> {
-  dragItem: ReturnType<typeof writable<T | null>>;
-  dropTarget: ReturnType<typeof writable<DropTarget<T> | null>>;
-  dragStart: (event: DragEvent, item: T) => void;
-  dragEnd: () => void;
-  handleDragOver: (event: DragEvent, item: T) => void;
-  dragLeave: () => void;
-  handleDragOverFirst: (event: DragEvent, item: T) => void;
-  dropFirst: (event: DragEvent, items: T[], target: T) => T[] | null;
-  drop: (event: DragEvent, items: T[], target: T) => T[] | null;
-}
-
-export function createDragList<T>({
+export function createDragList({
   axis = "vertical",
-  getKey = (x) => x as unknown as string | number,
+  getKey = (x) => x,
   onReorder,
   onDropInto,
-}: DragListOptions<T> = {}): DragList<T> {
-  let _dragItem: T | null = null;
-  const dragItem = writable<T | null>(null);
-  const dropTarget = writable<DropTarget<T> | null>(null);
+} = {}) {
+  let _dragItem = null;
+  const dragItem = writable(null);
+  const dropTarget = writable(null);
 
   const centerThreshold = 0.25;
 
-  function getZone(event: DragEvent, rect: DOMRect): Zone {
+  function getZone(event, rect) {
     const pos = axis === "horizontal" ? event.clientX : event.clientY;
     const size = axis === "horizontal" ? rect.width : rect.height;
     const start = axis === "horizontal" ? rect.left : rect.top;
@@ -57,11 +29,11 @@ export function createDragList<T>({
     dragItem,
     dropTarget,
 
-    dragStart(event: DragEvent, item: T) {
+    dragStart(event, item) {
       _dragItem = item;
       dragItem.set(item);
-      event.dataTransfer!.effectAllowed = "move";
-      event.dataTransfer!.setData("text/plain", String(getKey(item)));
+      event.dataTransfer.effectAllowed = "move";
+      event.dataTransfer.setData("text/plain", String(getKey(item)));
     },
 
     dragEnd() {
@@ -70,14 +42,14 @@ export function createDragList<T>({
       dropTarget.set(null);
     },
 
-    handleDragOver(event: DragEvent, item: T, element?: HTMLElement) {
+    handleDragOver(event, item, element) {
       event.preventDefault();
       if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
       if (!_dragItem || getKey(_dragItem) === getKey(item)) {
         dropTarget.set(null);
         return;
       }
-      const rect = (element ?? event.currentTarget as HTMLElement).getBoundingClientRect();
+      const rect = (element ?? event.currentTarget).getBoundingClientRect();
       const zone = getZone(event, rect);
       dropTarget.set({ type: zone, item });
     },
@@ -86,7 +58,7 @@ export function createDragList<T>({
       dropTarget.set(null);
     },
 
-    handleDragOverFirst(event: DragEvent, item: T) {
+    handleDragOverFirst(event, item) {
       event.preventDefault();
       if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
       if (!_dragItem || getKey(_dragItem) === getKey(item)) {
@@ -96,7 +68,7 @@ export function createDragList<T>({
       dropTarget.set({ type: "before", item });
     },
 
-    dropFirst(event: DragEvent, items: T[], target: T): T[] | null {
+    dropFirst(event, items, target) {
       event.preventDefault();
       dropTarget.set(null);
       if (!_dragItem || getKey(_dragItem) === getKey(target)) {
@@ -122,7 +94,7 @@ export function createDragList<T>({
       return current;
     },
 
-    drop(event: DragEvent, items: T[], target: T, element?: HTMLElement): T[] | null {
+    drop(event, items, target, element) {
       event.preventDefault();
       dropTarget.set(null);
       if (!_dragItem || getKey(_dragItem) === getKey(target)) {
@@ -140,7 +112,7 @@ export function createDragList<T>({
         return null;
       }
 
-      const rect = (element ?? event.currentTarget as HTMLElement).getBoundingClientRect();
+      const rect = (element ?? event.currentTarget).getBoundingClientRect();
       const zone = getZone(event, rect);
 
       if (zone === "into" && onDropInto) {

@@ -3,6 +3,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { SAVE_LISTENER_TIMEOUT_MS } from "../../lib/constants.js";
 import { showToast } from "../../stores/toast.js";
+import { deleteVaultStore } from "../../stores/selection.js";
 
 export const vaults = writable([]);
 export const currentVault = writable(null);
@@ -27,31 +28,6 @@ export const entries = derived(
   [currentVault, vaultData],
   ([$currentVault, $vaultData]) => {
     return $currentVault ? $vaultData[$currentVault.path]?.entries || [] : [];
-  }
-);
-
-export const trash = derived(
-  [currentVault, vaultData],
-  ([$currentVault, $vaultData]) => {
-    return $currentVault
-      ? $vaultData[$currentVault.path]?.trash || { groups: [], entries: [] }
-      : { groups: [], entries: [] };
-  }
-);
-
-export const tags = derived(
-  [currentVault, vaultData],
-  ([$currentVault, $vaultData]) => {
-    if (!$currentVault) return [];
-    const allEntries = $vaultData[$currentVault.path]?.entries || [];
-    const storedTags = $vaultData[$currentVault.path]?.tags || [];
-    const set = new Set(storedTags);
-    for (const entry of allEntries) {
-      for (const tag of entry.tags || []) {
-        set.add(tag);
-      }
-    }
-    return Array.from(set);
   }
 );
 
@@ -132,8 +108,7 @@ export async function closeVault(path) {
     currentVault.set(null);
   }
   clearVaultData(path);
-  const { selection } = await import("../../stores/selection.js");
-  selection.resetVault(path);
+  deleteVaultStore(path);
 }
 
 export const lockVaultByPath = closeVault;

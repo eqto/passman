@@ -1,15 +1,8 @@
 <script>
-  import { vaults, currentVault, vaultData } from "../../vault/index.js";
-  import { showToast } from "../../../stores/toast.js";
-  import { closeAllContextMenus } from "../../../stores/contextMenu.js";
-  import { useContextMenu } from "../../../lib/createContextMenu.js";
-  import {
-    addGroup,
-    deleteGroup,
-    mergeGroups,
-    moveGroupToVault,
-    copyGroupToVault,
-  } from "../store.js";
+  import { vaults, vaultData } from "../../vault/index.js";
+  import { createContextMenuState } from "../../../lib/createContextMenu.svelte.js";
+  import { createGroupVaultMove } from "../groupVaultMove.svelte.js";
+  import { addGroup, deleteGroup, mergeGroups } from "../store.js";
   import { moveEntriesWithTagToGroup } from "../../entry/store.js";
   import {
     AddGroupDialog,
@@ -58,16 +51,12 @@
 
   let showAdd = $state(false);
   let deleteTarget = $state(null);
-  let contextMenu = $state({ show: false, x: 0, y: 0, type: "tag", item: "" });
-  let moveToVaultTarget = $state(null);
-  let moveToVaultGroup = $state("");
-  let moveToVaultAction = $state("move");
-
-  useContextMenu(closeContextMenu);
-
-  function switchToVaultAndGroup(vault, groupName) {
-    currentVault.set(vault);
-  }
+  const {
+    state: contextMenu,
+    open: openContextMenu,
+    close: closeContextMenu,
+  } = createContextMenuState({ type: "tag", item: "" });
+  const vaultMove = createGroupVaultMove(vaultPath, getGroupName);
 
   let moveVaults = $derived(
     ($vaults || []).filter((v) => v.path !== vaultPath),
@@ -86,16 +75,8 @@
     deleteTarget = null;
   }
 
-  function openContextMenu(event, type, item) {
-    event.preventDefault();
-    closeAllContextMenus();
-    contextMenu = {
-      show: true,
-      x: event.clientX,
-      y: event.clientY,
-      type,
-      item,
-    };
+  function openContextMenuEvent(event, type, item) {
+    openContextMenu(event, { type, item });
   }
 
   function getGroupName(groupId) {
@@ -103,17 +84,7 @@
     return group ? group.name : groupId;
   }
 
-  function resetMoveToVault() {
-    moveToVaultTarget = null;
-    moveToVaultGroup = "";
-    moveToVaultAction = "move";
-  }
-
   let groupTree = $derived(buildTree(vaultGroups));
-
-  function closeContextMenu() {
-    contextMenu = { show: false, x: 0, y: 0, type: "tag", item: "" };
-  }
 
   async function handleMoveToGroup(detail) {
     const { item, target } = detail;
@@ -139,60 +110,15 @@
   }
 
   async function handleVaultAction(detail, action) {
-    const { sourceId, targetPath } = detail;
-    const target = $vaults.find((v) => v.path === targetPath);
-    const targetGroups = ($vaultData[targetPath]?.groups || []).map(
-      (g) => g.id,
-    );
-    if (target && targetGroups.includes(sourceId)) {
-      moveToVaultGroup = sourceId;
-      moveToVaultTarget = target;
-      moveToVaultAction = action;
-      closeContextMenu();
-    } else if (target) {
-      try {
-        const fn = action === "copy" ? copyGroupToVault : moveGroupToVault;
-        await fn(sourceId, targetPath, sourceId);
-        switchToVaultAndGroup(target, sourceId);
-        showToast(
-          `${action === "copy" ? "Copied" : "Moved"} "${getGroupName(sourceId)}" to ${target.name}`,
-        );
-      } catch (e) {
-        console.error(e);
-        alert(`${action === "copy" ? "Copy" : "Move"} failed: ${e}`);
-      }
-      closeContextMenu();
-    }
+    await vaultMove.handleVaultAction(detail, action, closeContextMenu);
   }
 
   async function handleVaultResolve(targetId) {
-    if (moveToVaultTarget && moveToVaultGroup) {
-      try {
-        const fn =
-          moveToVaultAction === "copy" ? copyGroupToVault : moveGroupToVault;
-        await fn(moveToVaultGroup, moveToVaultTarget.path, targetId);
-        switchToVaultAndGroup(moveToVaultTarget, targetId);
-        const verb = moveToVaultAction === "copy" ? "Copied" : "Moved";
-        if (targetId === moveToVaultGroup) {
-          showToast(
-            `${verb} "${getGroupName(moveToVaultGroup)}" into ${moveToVaultTarget.name}`,
-          );
-        } else {
-          showToast(
-            `${verb} "${getGroupName(moveToVaultGroup)}" to ${moveToVaultTarget.name} as "${getGroupName(targetId)}"`,
-          );
-        }
-      } catch (e) {
-        console.error(e);
-        alert(`${moveToVaultAction === "copy" ? "Copy" : "Move"} failed: ${e}`);
-      }
-    }
-    resetMoveToVault();
-    closeContextMenu();
+    await vaultMove.handleResolve(targetId, closeContextMenu);
   }
 
   function cancelMoveToVault() {
-    resetMoveToVault();
+    vaultMove.reset();
   }
 </script>
 
@@ -227,7 +153,7 @@
             ? contextMenu.item
             : ""}
           onSelect={onSelectGroup}
-          onContextMenu={(e, id) => openContextMenu(e, "group", id)}
+          onContextMenu={(e, id) => openContextMenuEvent(e, "group", id)}
           items={vaultGroups}
           onReorder={onReorderGroups}
           onDropInto={({ source, target }) =>
@@ -239,7 +165,7 @@
         tags={vaultTags}
         {selectedTags}
         {onSelectTag}
-        onContextMenu={(e, tag) => openContextMenu(e, "tag", tag)}
+        onContextMenu={(e, tag) => openContextMenuEvent(e, "tag", tag)}
       />
     </div>
 
@@ -277,13 +203,13 @@
   />
 {/if}
 
-{#if moveToVaultTarget}
+{#if vaultMove.moveToVaultTarget}
   <GroupVaultMoveDialog
-    groupId={moveToVaultGroup}
-    groupName={getGroupName(moveToVaultGroup)}
-    vaultName={moveToVaultTarget.name}
-    action={moveToVaultAction}
-    onMerge={() => handleVaultResolve(moveToVaultGroup)}
+    groupId={vaultMove.moveToVaultGroup}
+    groupName={getGroupName(vaultMove.moveToVaultGroup)}
+    vaultName={vaultMove.moveToVaultTarget.name}
+    action={vaultMove.moveToVaultAction}
+    onMerge={() => handleVaultResolve(vaultMove.moveToVaultGroup)}
     onCopy={(targetId) => handleVaultResolve(targetId)}
     onCancel={cancelMoveToVault}
   />

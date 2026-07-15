@@ -7,3 +7,4 @@ export { default as MoveCopySubmenu } from './components/MoveCopySubmenu.svelte'
 export { default as TagManager } from './components/TagManager.svelte';
 
 export * from './store.js';
+export { createEntryActions } from './actions.js';

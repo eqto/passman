@@ -1,17 +1,8 @@
 <script>
   import { onMount } from "svelte";
   import { vaultData } from "../store.js";
-  import {
-    deleteEntry,
-    restoreEntry,
-    deleteTrashEntry,
-    moveEntryToGroup,
-    moveEntryToVault,
-    copyEntryToGroup,
-    copyEntryToVault,
-  } from "../../entry/store.js";
+  import { createEntryActions } from "../../entry/actions.js";
   import { createVaultSelection } from "../../../stores/selection.js";
-  import { writeText } from "@tauri-apps/plugin-clipboard-manager";
   import { GroupList } from "../../group";
   import EntryList from "../../entry/components/EntryList.svelte";
   import EntryDetails from "../../entry/components/EntryDetails.svelte";
@@ -22,6 +13,7 @@
 
   const vaultPath = vault.path;
   const selection = createVaultSelection(vaultPath);
+  const entryActions = createEntryActions(selection, vaultPath);
 
   const { columnWidths, loadWidths, startResize, handleKeyResize } =
     createColumnResize();
@@ -90,82 +82,6 @@
         }),
   );
 
-  function getGroupName(groupId) {
-    const group = vaultGroups.find((g) => g.id === groupId);
-    return group ? group.name : groupId;
-  }
-
-  function handleNew() {
-    const entry = {
-      id: crypto.randomUUID(),
-      title: "",
-      username: "",
-      password: "",
-      url: "",
-      notes: "",
-      tags: [],
-      group_id: $selection.selectedGroup || null,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-    selection.newEntry(entry);
-  }
-
-  async function handleDelete(entry) {
-    if ($selection.trashMode) {
-      if (!confirm(`Permanently delete "${entry.title}"?`)) return;
-      await deleteTrashEntry(entry.id);
-    } else {
-      if (!confirm(`Move "${entry.title}" to Trash?`)) return;
-      await deleteEntry(entry.id, entry.group_id, getGroupName(entry.group_id));
-    }
-    resetSelectionIfCurrent(entry);
-  }
-
-  async function handleRestore(entry) {
-    if (!confirm(`Restore "${entry.title}"?`)) return;
-    const groupName = await restoreEntry(entry.id);
-    if (groupName) {
-      selection.setTrashMode(false);
-      const restored = vaultEntries.find((e) => e.id === entry.id);
-      if (restored?.group_id) {
-        selection.setSelectedGroup(restored.group_id);
-      } else if (!$selection.selectedGroup) {
-        selection.setSelectedGroup("");
-      }
-    }
-    resetSelectionIfCurrent(entry);
-  }
-
-  async function handleMoveToGroup(entry, groupId) {
-    await moveEntryToGroup(entry, groupId);
-    resetSelectionIfCurrent(entry);
-  }
-
-  async function handleMoveToVault(entry, vault, groupId) {
-    if (!$vaultData[vault.path]?.unlocked) return;
-    await moveEntryToVault(entry, vault.path, groupId);
-    resetSelectionIfCurrent(entry);
-  }
-
-  async function handleCopyToGroup(entry, groupId) {
-    await copyEntryToGroup(entry, groupId);
-  }
-
-  async function handleCopyToVault(entry, vault, groupId) {
-    if (!$vaultData[vault.path]?.unlocked) return;
-    await copyEntryToVault(entry, vault.path, groupId);
-  }
-
-  function resetSelectionIfCurrent(entry) {
-    if (
-      $selection.selectedEntry?.id === entry.id ||
-      $selection.editingEntry?.id === entry.id
-    ) {
-      selection.resetSelection();
-    }
-  }
-
   async function handleKeydown(event) {
     if ($selection.mode === "edit") return;
 
@@ -185,7 +101,7 @@
       $selection.selectedEntry.password
     ) {
       event.preventDefault();
-      await writeText($selection.selectedEntry.password);
+      await entryActions.handleCopyPassword();
     }
   }
 </script>
@@ -224,13 +140,13 @@
         trashMode={$selection.trashMode}
         hideNewButton={$selection.mode === "edit"}
         onSelect={selection.selectEntry}
-        onNew={handleNew}
+        onNew={entryActions.handleNew}
         onToggleTag={selection.selectTag}
         onClearTags={selection.clearTags}
-        onMoveToGroup={handleMoveToGroup}
-        onMoveToVault={handleMoveToVault}
-        onCopyToGroup={handleCopyToGroup}
-        onCopyToVault={handleCopyToVault}
+        onMoveToGroup={entryActions.handleMoveToGroup}
+        onMoveToVault={entryActions.handleMoveToVault}
+        onCopyToGroup={entryActions.handleCopyToGroup}
+        onCopyToVault={entryActions.handleCopyToVault}
       />
     </div>
     <button
@@ -246,15 +162,15 @@
           entry={$selection.editingEntry}
           selectedGroup={$selection.selectedGroup}
           onClose={selection.closeEditor}
-          onDelete={handleDelete}
+          onDelete={entryActions.handleDelete}
         />
       {:else}
         <EntryDetails
           entry={selectedEntryData}
           trashMode={$selection.trashMode}
           onEdit={selection.editEntry}
-          onRestore={handleRestore}
-          onDelete={handleDelete}
+          onRestore={entryActions.handleRestore}
+          onDelete={entryActions.handleDelete}
         />
       {/if}
     </div>

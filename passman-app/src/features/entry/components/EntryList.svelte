@@ -2,8 +2,7 @@
   import { writeText } from "@tauri-apps/plugin-clipboard-manager";
   import { debounce } from "../../../lib/debounce.js";
   import { showToast } from "../../../stores/toast.js";
-  import { closeAllContextMenus } from "../../../stores/contextMenu.js";
-  import { useContextMenu } from "../../../lib/createContextMenu.js";
+  import { createContextMenuState } from "../../../lib/createContextMenu.svelte.js";
   import EntryContextMenu from "./EntryContextMenu.svelte";
   import EntryRow from "./EntryRow.svelte";
 
@@ -27,17 +26,24 @@
 
   let search = $state("");
   let filterSearch = $state("");
-  let contextMenu = $state({ show: false, x: 0, y: 0, entry: null });
+  const {
+    state: contextMenu,
+    open: openContextMenuState,
+    close: closeContextMenu,
+  } = createContextMenuState({ entry: null });
 
   const setFilterSearch = debounce((value) => {
     filterSearch = value;
   }, SEARCH_DEBOUNCE_MS);
 
-  useContextMenu(closeContextMenu);
-
   function onSearchInput(event) {
     search = event.target.value;
     setFilterSearch(search);
+  }
+
+  function openContextMenu(event, entry) {
+    if (trashMode) return;
+    openContextMenuState(event, { entry });
   }
 
   let filtered = $derived(
@@ -62,17 +68,6 @@
       showToast("Password copied to clipboard");
     }
     closeContextMenu();
-  }
-
-  function openContextMenu(event, entry) {
-    if (trashMode) return;
-    event.preventDefault();
-    closeAllContextMenus();
-    contextMenu = { show: true, x: event.clientX, y: event.clientY, entry };
-  }
-
-  function closeContextMenu() {
-    contextMenu = { show: false, x: 0, y: 0, entry: null };
   }
 
   function handleMenuAction(handler, detail) {
