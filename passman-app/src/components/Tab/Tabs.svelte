@@ -9,6 +9,7 @@
     onReorder = null,
     onKeydown = null,
     onContextMenu = null,
+    children,
   } = $props();
 
   let tabs = $state([]);
@@ -50,8 +51,7 @@
   }
 </script>
 
-<!-- svelte-ignore slot_element_deprecated -->
-<slot />
+{@render children?.()}
 
 {#each tabs as tab (tab.id)}
   <TabsHandle

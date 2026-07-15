@@ -40,7 +40,11 @@
     {#each $vaults as vault (vault.id)}
       <Tab name={vault.id} title={vault.path}>
         <span class="tab-name">{vault.name}</span>
-        <span class="tab-actions-inner" onclick={(e) => e.stopPropagation()}>
+        <span
+          class="tab-actions-inner"
+          aria-hidden="true"
+          onclick={(e) => e.stopPropagation()}
+        >
           {#if $vaultData[vault.path]?.unlocked}
             <button
               class="btn-icon tab-action-btn lock-tab-btn"

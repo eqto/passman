@@ -5,9 +5,10 @@
   let { name = null, title = null, children } = $props();
 
   const tabs = getContext("tabs");
-  const id = name ?? nextTabId();
+  let id;
 
   onMount(() => {
+    id = name ?? nextTabId();
     tabs.registerTab({ id, name, title, content: children });
     return () => tabs.unregisterTab(id);
   });
