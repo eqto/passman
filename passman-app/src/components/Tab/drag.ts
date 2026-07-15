@@ -70,14 +70,14 @@ export function createDragList<T>({
       dropTarget.set(null);
     },
 
-    handleDragOver(event: DragEvent, item: T) {
+    handleDragOver(event: DragEvent, item: T, element?: HTMLElement) {
       event.preventDefault();
       if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
       if (!_dragItem || getKey(_dragItem) === getKey(item)) {
         dropTarget.set(null);
         return;
       }
-      const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+      const rect = (element ?? event.currentTarget as HTMLElement).getBoundingClientRect();
       const zone = getZone(event, rect);
       dropTarget.set({ type: zone, item });
     },
@@ -122,7 +122,7 @@ export function createDragList<T>({
       return current;
     },
 
-    drop(event: DragEvent, items: T[], target: T): T[] | null {
+    drop(event: DragEvent, items: T[], target: T, element?: HTMLElement): T[] | null {
       event.preventDefault();
       dropTarget.set(null);
       if (!_dragItem || getKey(_dragItem) === getKey(target)) {
@@ -140,7 +140,7 @@ export function createDragList<T>({
         return null;
       }
 
-      const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+      const rect = (element ?? event.currentTarget as HTMLElement).getBoundingClientRect();
       const zone = getZone(event, rect);
 
       if (zone === "into" && onDropInto) {

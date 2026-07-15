@@ -1,37 +1,45 @@
 <script>
+  import { getContext } from "svelte";
+
   let {
     tab,
     selected = false,
-    dragging = false,
-    dropBefore = false,
-    dropAfter = false,
     onSelect,
     onKeydown,
     onContextMenu,
     onClose = null,
-    onDragStart,
-    onDragEnd,
-    onDragOver,
-    onDragLeave,
-    onDrop,
   } = $props();
+
+  const { drag, getTabs } = getContext("tabs");
+  const { dragItem, dropTarget } = drag;
+
+  let dragging = $derived($dragItem === tab);
+  let dropBefore = $derived(
+    $dropTarget?.type === "before" && $dropTarget.item.id === tab.id,
+  );
+  let dropAfter = $derived(
+    $dropTarget?.type === "after" && $dropTarget.item.id === tab.id,
+  );
 </script>
 
+{#if dropBefore}
+  <div class="drop-indicator"></div>
+{/if}
 <div
   class="tab"
   class:selected
   class:dragging
-  class:drop-before={dropBefore}
-  class:drop-after={dropAfter}
   role="button"
   tabindex="0"
   draggable="true"
   title={tab.title}
-  ondragstart={onDragStart}
-  ondragend={onDragEnd}
-  ondragover={onDragOver}
-  ondragleave={onDragLeave}
-  ondrop={onDrop}
+  ondragstart={(e) => drag.dragStart(e, tab)}
+  ondragend={() => drag.dragEnd()}
+  ondragover={(e) => drag.handleDragOver(e, tab, e.currentTarget)}
+  ondragleave={() => drag.dragLeave()}
+  ondrop={(e) => {
+    drag.drop(e, getTabs(), tab, e.currentTarget);
+  }}
   onclick={onSelect}
   onkeydown={onKeydown}
   oncontextmenu={onContextMenu}
@@ -56,6 +64,9 @@
     </span>
   {/if}
 </div>
+{#if dropAfter}
+  <div class="drop-indicator"></div>
+{/if}
 
 <style>
   .tab {
@@ -88,12 +99,12 @@
     opacity: 0.6;
   }
 
-  .tab.drop-before {
-    border-left: 2px solid var(--accent-color);
-  }
-
-  .tab.drop-after {
-    border-right: 2px solid var(--accent-color);
+  .drop-indicator {
+    width: 2px;
+    height: 1.75rem;
+    background-color: var(--accent-color);
+    border-radius: 1px;
+    flex-shrink: 0;
   }
 
   .tab-name {
