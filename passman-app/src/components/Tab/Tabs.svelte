@@ -1,7 +1,7 @@
 <script>
   import { setContext } from "svelte";
   import { createDragList } from "./drag";
-  import TabsHandle from "./TabsHandle.svelte";
+  import TabHeader from "./TabHeader.svelte";
 
   let {
     selectedKey = null,
@@ -56,7 +56,7 @@
 
 <div class="tabs-bar">
   {#each tabs as tab (tab.id)}
-    <TabsHandle
+    <TabHeader
       {tab}
       selected={tab.id === selectedKey}
       dragging={$dragItem === tab}
