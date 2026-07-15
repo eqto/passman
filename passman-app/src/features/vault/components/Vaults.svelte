@@ -5,10 +5,12 @@
   import { Confirm } from "../../../components/dialog";
   import { closeAllContextMenus } from "../../../stores/contextMenu.js";
   import { useContextMenu } from "../../../lib/createContextMenu.js";
-  import VaultContextMenu from "./VaultContextMenu.svelte";
-  import VaultSettingsDialog from "./VaultSettingsDialog.svelte";
-  import RemoveVaultDialog from "./RemoveVaultDialog.svelte";
   import {
+    VaultContextMenu,
+    VaultSettingsDialog,
+    RemoveVaultDialog,
+    VaultView,
+    UnlockDialog,
     vaults,
     currentVault,
     vaultData,
@@ -16,13 +18,16 @@
     reorderVaults,
     lockVaultByPath,
     deleteVault,
-  } from "../store.js";
+    unlockVault,
+    lockVault,
+  } from "../index.js";
 
   let contextMenu = $state({ show: false, x: 0, y: 0, vault: null });
   let showSettings = $state(false);
   let settingsVault = $state(null);
   let removeVault = $state(null);
   let lockTarget = $state(null);
+  let showLockConfirm = $state(false);
 
   useContextMenu(handleWindowClick);
 
@@ -106,14 +111,37 @@
       console.error("Failed to remove vault:", e);
     }
   }
+
+  async function handleUnlockCurrent(path, password) {
+    await unlockVault(password);
+  }
+
+  function handleCancelUnlock() {
+    currentVault.set(null);
+  }
+
+  function handleKeydown(event) {
+    if ((event.ctrlKey || event.metaKey) && event.key === "l") {
+      event.preventDefault();
+      if ($currentVault && $isUnlocked) {
+        showLockConfirm = true;
+      }
+    }
+  }
+
+  async function handleGlobalLockConfirmed() {
+    showLockConfirm = false;
+    await lockVault();
+  }
 </script>
 
 <svelte:window
   oncontextmenu={(e) => e.preventDefault()}
   onclick={handleWindowClick}
+  onkeydown={handleKeydown}
 />
 
-<div class="tabs">
+<div class="vault-tabs">
   <Tabs
     selectedKey={$currentVault ? $currentVault.id : null}
     onSelect={selectVault}
@@ -123,33 +151,50 @@
   >
     {#each $vaults as vault (vault.id)}
       <Tab name={vault.id} title={vault.path}>
-        <span class="tab-name">{vault.name}</span>
-        <span
-          class="tab-actions-inner"
-          aria-hidden="true"
-          onclick={(e) => e.stopPropagation()}
-        >
-          {#if $vaultData[vault.path]?.unlocked}
-            <button
-              class="btn-icon tab-action-btn lock-tab-btn"
-              onclick={() => handleLock(vault)}
-              title="Lock vault"
-            >
-              <Icon name="lock" size={18} />
-            </button>
-          {:else}
-            <button
-              class="btn-icon tab-action-btn delete-tab-btn"
-              onclick={() => handleRemove(vault)}
-              title="Remove vault"
-            >
-              ×
-            </button>
-          {/if}
-        </span>
+        {#snippet label()}
+          <span class="tab-name">{vault.name}</span>
+          <span
+            class="tab-actions-inner"
+            aria-hidden="true"
+            onclick={(e) => e.stopPropagation()}
+          >
+            {#if $vaultData[vault.path]?.unlocked}
+              <button
+                class="btn-icon tab-action-btn lock-tab-btn"
+                onclick={() => handleLock(vault)}
+                title="Lock vault"
+              >
+                <Icon name="lock" size={18} />
+              </button>
+            {:else}
+              <button
+                class="btn-icon tab-action-btn delete-tab-btn"
+                onclick={() => handleRemove(vault)}
+                title="Remove vault"
+              >
+                ×
+              </button>
+            {/if}
+          </span>
+        {/snippet}
+        {#if $vaultData[vault.path]?.unlocked}
+          <VaultView {vault} />
+        {:else}
+          <div class="locked-state">
+            <UnlockDialog
+              path={vault.path}
+              name={vault.name}
+              onUnlock={handleUnlockCurrent}
+              onCancel={handleCancelUnlock}
+            />
+          </div>
+        {/if}
       </Tab>
     {/each}
   </Tabs>
+  {#if !$currentVault}
+    <div class="empty-state">Select or create a vault to get started.</div>
+  {/if}
 </div>
 
 {#if contextMenu.show}
@@ -196,16 +241,26 @@
   />
 {/if}
 
+{#if showLockConfirm}
+  <Confirm
+    title="Lock Vault"
+    message={`Lock "${$currentVault?.name}"? You will need to re-enter the password to access it again.`}
+    confirmLabel="Lock"
+    onconfirm={handleGlobalLockConfirmed}
+    oncancel={() => (showLockConfirm = false)}
+  />
+{/if}
+
 <style>
-  .tabs {
+  .vault-tabs {
+    flex: 1;
     display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    overflow-x: auto;
-    min-width: 0;
+    flex-direction: column;
+    overflow: hidden;
+    border-top: 1px solid var(--border-color);
   }
 
-  .tabs :global(.tab-name) {
+  .vault-tabs :global(.tab-name) {
     font-weight: 500;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -213,35 +268,49 @@
     line-height: 1.25;
   }
 
-  .tabs :global(.tab-actions-inner) {
+  .vault-tabs :global(.tab-actions-inner) {
     display: flex;
     align-items: center;
     gap: 0.25rem;
   }
 
-  .tabs :global(.tab-action-btn) {
+  .vault-tabs :global(.tab-action-btn) {
     width: 1.75rem;
     height: 1.75rem;
     padding: 0;
     border-radius: var(--shape-full);
   }
 
-  .tabs :global(.lock-tab-btn) {
+  .vault-tabs :global(.lock-tab-btn) {
     padding: 0.25rem;
   }
 
-  .tabs :global(.tab.selected .lock-tab-btn) {
+  .vault-tabs :global(.tab.selected .lock-tab-btn) {
     color: var(--selected-text);
     background-color: transparent;
   }
 
-  .tabs :global(.tab.selected .lock-tab-btn:hover) {
+  .vault-tabs :global(.tab.selected .lock-tab-btn:hover) {
     color: var(--selected-text);
     background-color: var(--hover-bg);
   }
 
-  .tabs :global(.delete-tab-btn:hover) {
+  .vault-tabs :global(.delete-tab-btn:hover) {
     color: var(--on-danger-container);
     background-color: var(--danger-container);
+  }
+
+  .empty-state,
+  .locked-state {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted-color);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 2rem;
   }
 </style>

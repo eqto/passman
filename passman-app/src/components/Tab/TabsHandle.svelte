@@ -36,8 +36,8 @@
   oncontextmenu={onContextMenu}
 >
   <span class="tab-name">
-    {#if tab.content}
-      {@render tab.content()}
+    {#if tab.label}
+      {@render tab.label()}
     {:else}
       {tab.name}
     {/if}

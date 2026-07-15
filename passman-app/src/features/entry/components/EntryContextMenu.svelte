@@ -1,6 +1,6 @@
 <script>
   import { onMount } from "svelte";
-  import { groups, vaults, currentVault } from "../../vault/store.js";
+  import { groups, vaults, currentVault } from "../../vault/index.js";
   import {
     CONTEXT_MENU_WIDTH,
     CONTEXT_MENU_PADDING,

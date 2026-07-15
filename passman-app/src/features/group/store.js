@@ -1,7 +1,7 @@
 import { get } from "svelte/store";
 import { invoke } from "@tauri-apps/api/core";
 
-import { currentVault, updateVaultData } from "../vault/store.js";
+import { currentVault, updateVaultData } from "../vault/index.js";
 
 export async function addGroup(group) {
   const vault = get(currentVault);

@@ -1,11 +1,14 @@
 <script>
   import { open } from "@tauri-apps/plugin-dialog";
   import ThemeToggle from "../../../components/ThemeToggle.svelte";
-  import OpenVaultMenu from "./OpenVaultMenu.svelte";
-  import CreateVaultDialog from "./CreateVaultDialog.svelte";
-  import ImportButtercupDialog from "./ImportButtercupDialog.svelte";
-  import UnlockDialog from "./UnlockDialog.svelte";
-  import { openVault, registerAndOpenVault } from "../store.js";
+  import {
+    OpenVaultMenu,
+    CreateVaultDialog,
+    ImportButtercupDialog,
+    UnlockDialog,
+    openVault,
+    registerAndOpenVault,
+  } from "../index.js";
 
   let showCreate = $state(false);
   let showButtercupImport = $state(false);

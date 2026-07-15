@@ -1,6 +1,6 @@
 <script>
   import { onDestroy } from "svelte";
-  import { lockVault, isUnlocked } from "../features/vault/store.js";
+  import { lockVault, isUnlocked } from "../features/vault/index.js";
   import { AUTO_LOCK_TIMEOUT_MS } from "../lib/constants.js";
 
   const LOCK_TIMEOUT_MS = AUTO_LOCK_TIMEOUT_MS;

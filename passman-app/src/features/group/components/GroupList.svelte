@@ -1,5 +1,5 @@
 <script>
-  import { vaults, currentVault, vaultData } from "../../vault/store.js";
+  import { vaults, currentVault, vaultData } from "../../vault/index.js";
   import { showToast } from "../../../stores/toast.js";
   import { closeAllContextMenus } from "../../../stores/contextMenu.js";
   import { useContextMenu } from "../../../lib/createContextMenu.js";

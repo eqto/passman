@@ -1,4 +1,5 @@
-export { default as VaultTabs } from './components/VaultTabs.svelte';
+export { default as Vaults } from './components/Vaults.svelte';
+export { default as Topbar } from './components/Topbar.svelte';
 export { default as VaultView } from './components/VaultView.svelte';
 export { default as VaultContextMenu } from './components/VaultContextMenu.svelte';
 export { default as VaultSettingsDialog } from './components/VaultSettingsDialog.svelte';

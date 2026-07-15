@@ -1,5 +1,5 @@
 import { writable, get } from "svelte/store";
-import { currentVault } from "../features/vault/store.js";
+import { currentVault } from "../features/vault/index.js";
 
 const DEFAULT_STATE = {
   selectedGroup: "",

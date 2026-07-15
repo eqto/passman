@@ -1,5 +1,5 @@
 <script>
-  import { vaultData } from "../../vault/store.js";
+  import { vaultData } from "../../vault/index.js";
   import { computeSubmenuLeft } from "../../../lib/menuPosition.js";
 
   let {

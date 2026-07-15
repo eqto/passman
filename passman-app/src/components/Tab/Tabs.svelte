@@ -53,21 +53,48 @@
 
 {@render children?.()}
 
-{#each tabs as tab (tab.id)}
-  <TabsHandle
-    {tab}
-    selected={tab.id === selectedKey}
-    dragging={$dragItem === tab}
-    dropBefore={$dropTarget?.type === "before" &&
-      $dropTarget.item.id === tab.id}
-    dropAfter={$dropTarget?.type === "after" && $dropTarget.item.id === tab.id}
-    onSelect={() => onSelect?.(tab.id)}
-    onKeydown={(e) => onKeydown?.(e, tab.id)}
-    onContextMenu={(e) => onContextMenu?.(e, tab.id)}
-    onDragStart={(e) => handleDragStart(e, tab)}
-    onDragEnd={handleDragEnd}
-    onDragOver={(e) => handleDragOver(e, tab)}
-    onDragLeave={handleDragLeave}
-    onDrop={(e) => handleDrop(e, tab)}
-  />
-{/each}
+<div class="tabs-bar">
+  {#each tabs as tab (tab.id)}
+    <TabsHandle
+      {tab}
+      selected={tab.id === selectedKey}
+      dragging={$dragItem === tab}
+      dropBefore={$dropTarget?.type === "before" &&
+        $dropTarget.item.id === tab.id}
+      dropAfter={$dropTarget?.type === "after" &&
+        $dropTarget.item.id === tab.id}
+      onSelect={() => onSelect?.(tab.id)}
+      onKeydown={(e) => onKeydown?.(e, tab.id)}
+      onContextMenu={(e) => onContextMenu?.(e, tab.id)}
+      onDragStart={(e) => handleDragStart(e, tab)}
+      onDragEnd={handleDragEnd}
+      onDragOver={(e) => handleDragOver(e, tab)}
+      onDragLeave={handleDragLeave}
+      onDrop={(e) => handleDrop(e, tab)}
+    />
+  {/each}
+</div>
+
+<div class="tab-content">
+  {#each tabs as tab (tab.id)}
+    {#if tab.id === selectedKey && tab.content}
+      {@render tab.content()}
+    {/if}
+  {/each}
+</div>
+
+<style>
+  .tabs-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    overflow-x: auto;
+    min-width: 0;
+  }
+
+  .tab-content {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+  }
+</style>
