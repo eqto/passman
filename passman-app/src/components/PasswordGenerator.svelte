@@ -1,6 +1,6 @@
 <script>
   import { onMount } from "svelte";
-  import { generatePassword } from "../features/entry/store.js";
+  import { invoke } from "@tauri-apps/api/core";
   import { DEFAULT_PASSWORD_LENGTH } from "../lib/constants.js";
   import { Icon } from "./icons";
 
@@ -36,7 +36,17 @@
   async function generate() {
     error = "";
     try {
-      generated = await generatePassword(length, options);
+      generated = await invoke("generate_password", {
+        options: {
+          length,
+          uppercase: options.uppercase ?? true,
+          lowercase: options.lowercase ?? true,
+          digits: options.digits ?? true,
+          space: options.space ?? false,
+          underscore_dash: options.underscoreDash ?? true,
+          symbols: options.symbols ?? false,
+        },
+      });
     } catch (e) {
       error = e.toString();
     }

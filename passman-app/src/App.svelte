@@ -1,18 +1,28 @@
 <script>
   import { onMount, onDestroy } from "svelte";
-  import { Vaults, Topbar } from "./features/vault/index.js";
-  import AutoLock from "./components/AutoLock.svelte";
-  import { Toast } from "./components/dialog";
+  import { invoke } from "@tauri-apps/api/core";
   import {
-    loadVaults,
-    loadError,
+    Vaults,
+    Topbar,
+    vaults,
     initSaveListener,
   } from "./features/vault/index.js";
+  import AutoLock from "./components/AutoLock.svelte";
+  import { Toast } from "./components/dialog";
 
   let saveUnlisten = null;
+  let loadError = $state(null);
 
   onMount(async () => {
-    await loadVaults();
+    try {
+      const config = await invoke("list_vaults");
+      const list = Array.isArray(config) ? config : config.vaults || [];
+      vaults.set(list);
+    } catch (e) {
+      console.error("Failed to load vaults:", e);
+      loadError = e.message || String(e);
+      vaults.set([]);
+    }
     try {
       saveUnlisten = await initSaveListener();
     } catch (e) {
@@ -28,8 +38,8 @@
 <AutoLock />
 <Toast />
 
-{#if $loadError}
-  <div class="vault-load-error" title={$loadError}>⚠ {$loadError}</div>
+{#if loadError}
+  <div class="vault-load-error" title={loadError}>⚠ {loadError}</div>
 {/if}
 
 <main>

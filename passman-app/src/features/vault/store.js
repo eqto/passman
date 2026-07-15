@@ -7,8 +7,7 @@ import { showToast } from "../../stores/toast.js";
 export const vaults = writable([]);
 export const currentVault = writable(null);
 export const vaultData = writable({});
-export const saveStatus = writable("idle");
-export const loadError = writable(null);
+
 
 export const isUnlocked = derived(
   [currentVault, vaultData],
@@ -98,22 +97,9 @@ function setVaultData(path, vault) {
   });
 }
 
-export async function loadVaults() {
-  try {
-    loadError.set(null);
-    const config = await invoke("list_vaults");
-    const list = Array.isArray(config) ? config : (config.vaults || []);
-    vaults.set(list);
-  } catch (e) {
-    console.error("Failed to load vaults:", e);
-    loadError.set(e.message || String(e));
-    vaults.set([]);
-  }
-}
-
 export async function createVault(id, name, path, password) {
   const vault = await invoke("create_vault", { id, name, path, password });
-  await loadVaults();
+  vaults.update((list) => [...list, vault]);
   currentVault.set(vault);
   setVaultData(path, vault);
   return vault;
@@ -134,7 +120,7 @@ export async function openVault(path, password) {
 
 export async function registerAndOpenVault(id, path, password) {
   const vault = await invoke("register_and_open_vault", { id, path, password });
-  await loadVaults();
+  vaults.update((list) => [...list, { id, name: vault.name, path }]);
   currentVault.set({ ...vault, id });
   setVaultData(path, vault);
   return vault;
@@ -173,7 +159,7 @@ export async function unlockVault(password) {
 
 export async function deleteVault(id, path) {
   await invoke("delete_vault", { id, path });
-  await loadVaults();
+  vaults.update((list) => list.filter((v) => v.id !== id));
   clearVaultData(path);
   if (get(currentVault)?.path === path) {
     currentVault.set(null);
@@ -182,7 +168,9 @@ export async function deleteVault(id, path) {
 
 export async function renameVault(id, name) {
   const updated = await invoke("rename_vault", { id, name });
-  await loadVaults();
+  vaults.update((list) =>
+    list.map((v) => (v.id === id ? { ...v, name } : v)),
+  );
   currentVault.update((v) => {
     if (v && v.id === id) {
       return { ...v, name };
@@ -201,7 +189,7 @@ export async function reorderVaults(orderedIds) {
 export async function convertButtercupVault(bcupPath, password, outputPath) {
   const id = crypto.randomUUID();
   const vault = await invoke("convert_buttercup_vault", { bcupPath, password, outputPath, id });
-  await loadVaults();
+  vaults.update((list) => [...list, { id, name: vault.name, path: outputPath }]);
   currentVault.set({ ...vault, id });
   setVaultData(outputPath, vault);
   return vault;

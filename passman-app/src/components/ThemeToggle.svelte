@@ -1,5 +1,71 @@
 <script>
-  import { theme } from "../stores/theme.js";
+  import { writable } from "svelte/store";
+  import { onMount, onDestroy } from "svelte";
+
+  const STORE_KEY = "passman.theme";
+
+  function loadTheme() {
+    try {
+      const saved = localStorage.getItem(STORE_KEY);
+      if (saved === "light" || saved === "dark" || saved === "auto") {
+        return saved;
+      }
+    } catch (e) {
+      console.error("Failed to load theme from localStorage:", e);
+    }
+    return "auto";
+  }
+
+  function saveTheme(value) {
+    try {
+      localStorage.setItem(STORE_KEY, value);
+    } catch (e) {
+      console.error("Failed to save theme to localStorage:", e);
+    }
+  }
+
+  function applyTheme(value) {
+    const root = document.documentElement;
+    if (value === "dark") {
+      root.classList.add("dark");
+    } else if (value === "light") {
+      root.classList.remove("dark");
+    } else {
+      const prefersDark = window.matchMedia(
+        "(prefers-color-scheme: dark)",
+      ).matches;
+      root.classList.toggle("dark", prefersDark);
+    }
+  }
+
+  const theme = writable(loadTheme());
+
+  let mediaQuery;
+  let mediaHandler;
+
+  onMount(() => {
+    theme.subscribe((value) => {
+      applyTheme(value);
+      saveTheme(value);
+    });
+
+    mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    mediaHandler = () => {
+      let currentTheme = "auto";
+      const unsubscribe = theme.subscribe((value) => {
+        currentTheme = value;
+        unsubscribe();
+      });
+      if (currentTheme === "auto") applyTheme("auto");
+    };
+    mediaQuery.addEventListener("change", mediaHandler);
+  });
+
+  onDestroy(() => {
+    if (mediaQuery && mediaHandler) {
+      mediaQuery.removeEventListener("change", mediaHandler);
+    }
+  });
 
   function cycleTheme() {
     const themes = ["light", "dark", "auto"];

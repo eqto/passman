@@ -2,7 +2,6 @@ import { get } from "svelte/store";
 import { invoke } from "@tauri-apps/api/core";
 
 import { currentVault, vaultData, updateVaultData, groups, entries } from "../vault/index.js";
-import { DEFAULT_PASSWORD_LENGTH } from "../../lib/constants.js";
 
 export async function addEntry(entry) {
   const vault = get(currentVault);
@@ -141,19 +140,5 @@ export async function copyEntryToVault(entry, targetPath, targetGroupId) {
   const targetEntries = (get(vaultData)[targetPath] || {}).entries || [];
   updateVaultData(targetPath, {
     entries: [...targetEntries, added],
-  });
-}
-
-export async function generatePassword(length = DEFAULT_PASSWORD_LENGTH, options = {}) {
-  return await invoke("generate_password", {
-    options: {
-      length,
-      uppercase: options.uppercase ?? true,
-      lowercase: options.lowercase ?? true,
-      digits: options.digits ?? true,
-      space: options.space ?? false,
-      underscore_dash: options.underscoreDash ?? true,
-      symbols: options.symbols ?? false,
-    },
   });
 }
