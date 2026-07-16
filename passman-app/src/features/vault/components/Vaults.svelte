@@ -141,7 +141,6 @@
     showLockConfirm = false;
     await lockVault();
   }
-
 </script>
 
 <svelte:window
@@ -187,13 +186,17 @@
       <div class="empty-state-content">
         <Icon name="key" size={64} />
         <h2>Welcome to Passman</h2>
-        <p>Select an open vault tab, or choose an action below to get started.</p>
+        <p>
+          Select an open vault tab, or choose an action below to get started.
+        </p>
         <div class="empty-state-actions">
           <button class="btn-primary" onclick={() => (showCreate = true)}>
             Create New Vault
           </button>
         </div>
-        <p class="empty-state-hint">or open an existing vault from the toolbar</p>
+        <p class="empty-state-hint">
+          or open an existing vault from the toolbar
+        </p>
       </div>
     </div>
   {/if}
@@ -265,9 +268,9 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    position: relative;
   }
 
-  .empty-state,
   .locked-state {
     flex: 1;
     display: flex;
@@ -277,8 +280,15 @@
   }
 
   .empty-state {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     text-align: center;
     padding: 2rem;
+    color: var(--muted-color);
+    pointer-events: none;
   }
 
   .empty-state-content {
@@ -287,6 +297,7 @@
     align-items: center;
     gap: 1.25rem;
     max-width: 24rem;
+    pointer-events: auto;
   }
 
   .empty-state-content h2 {
