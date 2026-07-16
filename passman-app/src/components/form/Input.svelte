@@ -53,7 +53,6 @@
     font-size: 1rem;
     min-width: 0;
     padding: 0.625rem 0.75rem;
-    line-height: 1.5;
     border: 1px solid var(--input-border);
     border-radius: var(--shape-xs);
     background-color: var(--input-bg);

@@ -36,15 +36,17 @@
   }
 </script>
 
-<div class="btn-secondary dropdown-button">
-  <button class="dropdown-main-btn" onclick={pickExistingVault}
-    >Open Vault</button
-  >
+<div class="dropdown-button">
+  <button class="dropdown-main-btn" onclick={pickExistingVault}>
+    <Icon name="folder" size={16} />
+    <span class="dropdown-label">Open Vault</span>
+  </button>
   <div class="dropdown-separator"></div>
   <button
-    class="btn-icon dropdown-toggle"
+    class="dropdown-toggle"
     onclick={toggleOpenDropdown}
-    title="Open options"
+    title="More import options"
+    aria-label="More import options"
   >
     <Icon name="chevron" size={16} direction="down" />
   </button>
@@ -65,16 +67,12 @@
     position: relative;
     display: flex;
     align-items: center;
-    padding: 0.5rem 0.25rem 0.25rem;
-    background-color: var(--hover-bg);
-    color: var(--text-color);
-    border-radius: var(--shape-sm);
-    gap: 0.125rem;
+    padding: 0 0.5rem 0 0.75rem;
+    background-color: var(--accent-container);
+    color: var(--on-accent-container);
+    border-radius: var(--shape-full);
+    gap: 0.25rem;
     height: var(--btn-height);
-  }
-
-  .dropdown-button:hover {
-    background-color: var(--hover-bg);
   }
 
   .dropdown-button::after {
@@ -98,19 +96,42 @@
   }
 
   .dropdown-main-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
     background: transparent;
     border: none;
-    color: var(--text-color);
+    color: inherit;
     cursor: pointer;
-    font-size: 0.875rem;
+    font-size: var(--font-size-sm);
     font-weight: 500;
   }
 
   .dropdown-separator {
-    width: 2px;
+    width: 1px;
     height: 1rem;
-    margin-top: -0.25rem;
-    background-color: var(--border-color);
+    background-color: currentColor;
+    opacity: 0.4;
+  }
+
+  .dropdown-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    padding: 0;
+    background: transparent;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    border-radius: var(--shape-full);
+    transition: background-color var(--motion-duration-short-2)
+      var(--motion-easing-standard);
+  }
+
+  .dropdown-toggle:hover {
+    background-color: var(--accent-hover);
   }
 
   .dropdown-menu {

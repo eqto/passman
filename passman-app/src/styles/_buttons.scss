@@ -9,7 +9,6 @@
   border-radius: var(--shape-full);
   font-size: var(--font-size-sm);
   font-weight: 500;
-  line-height: 1.25rem;
 
   &:hover {
     background-color: var(--accent-hover);
@@ -29,7 +28,6 @@
   border-radius: var(--shape-full);
   font-size: var(--font-size-sm);
   font-weight: 500;
-  line-height: 1.25rem;
   @include state-layer-hover;
 
   &:disabled {
@@ -46,7 +44,6 @@
   border-radius: var(--shape-full);
   font-size: var(--font-size-sm);
   font-weight: 500;
-  line-height: 1.25rem;
 
   &:hover {
     background-color: var(--danger-hover);
@@ -146,7 +143,6 @@
   border-radius: var(--shape-full);
   font-size: var(--font-size-sm);
   font-weight: 500;
-  line-height: 1.25rem;
   @include state-layer-hover;
 
   &:disabled {

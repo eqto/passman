@@ -358,10 +358,6 @@
     flex-shrink: 0;
   }
 
-  .option-item span {
-    line-height: 1.25;
-  }
-
   .generator-actions {
     display: flex;
     gap: 0.375rem;

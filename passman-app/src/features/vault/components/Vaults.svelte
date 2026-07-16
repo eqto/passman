@@ -1,5 +1,4 @@
 <script>
-  import { open } from "@tauri-apps/plugin-dialog";
   import Tabs from "../../../components/Tab/Tabs.svelte";
   import Tab from "../../../components/Tab/Tab.svelte";
   import { Icon } from "../../../components/icons";
@@ -143,19 +142,6 @@
     await lockVault();
   }
 
-  async function pickExistingVault() {
-    const selected = await open({
-      directory: false,
-      multiple: false,
-      filters: [{ name: "Passman Vault", extensions: ["pmv"] }],
-    });
-    if (selected) {
-      const parts = selected.split(/[/\\]/);
-      const name = parts[parts.length - 1].replace(/\.pmv$/, "");
-      unlockTargetVault = { path: selected, name, registered: false };
-      showUnlockDialog = true;
-    }
-  }
 </script>
 
 <svelte:window
@@ -164,11 +150,8 @@
   onkeydown={handleKeydown}
 />
 
-{#snippet topbarSnippet()}
-  <Topbar />
-{/snippet}
-
 <div class="vault-tabs">
+  <Topbar />
   <Tabs
     selectedKey={$currentVault ? $currentVault.id : null}
     onSelect={selectVault}
@@ -176,7 +159,6 @@
     onKeydown={handleTabKeydown}
     onContextMenu={handleContextMenu}
     onClose={handleCloseTab}
-    headerAddon={topbarSnippet}
   >
     {#each $vaults as vault (vault.id)}
       <Tab name={vault.id} label={vault.name} title={vault.path}>
@@ -210,10 +192,8 @@
           <button class="btn-primary" onclick={() => (showCreate = true)}>
             Create New Vault
           </button>
-          <button class="btn-secondary" onclick={pickExistingVault}>
-            Open Existing Vault
-          </button>
         </div>
+        <p class="empty-state-hint">or open an existing vault from the toolbar</p>
       </div>
     </div>
   {/if}
@@ -344,6 +324,12 @@
 
   .locked-content p {
     margin: 0;
+    color: var(--muted-color);
+  }
+
+  .empty-state-hint {
+    margin: 0;
+    font-size: var(--font-size-sm);
     color: var(--muted-color);
   }
 </style>

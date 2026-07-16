@@ -66,7 +66,6 @@
     font-size: 0.875rem;
     font-weight: 400;
     color: var(--text-color);
-    line-height: 1.5;
   }
 
   .group-icon {

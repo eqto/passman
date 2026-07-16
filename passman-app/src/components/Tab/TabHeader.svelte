@@ -1,5 +1,6 @@
 <script>
   import { getContext } from "svelte";
+  import { Icon } from "../icons";
 
   let {
     tab,
@@ -25,7 +26,11 @@
 
   $effect(() => {
     if (selected && el) {
-      el.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+      el.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "nearest",
+      });
     }
   });
 </script>
@@ -54,7 +59,7 @@
   oncontextmenu={onContextMenu}
 >
   <span class="tab-name">{tab.name}</span>
-  {#if onClose}
+  <!-- {#if onClose}
     <span
       class="tab-actions"
       aria-hidden="true"
@@ -67,11 +72,12 @@
           onClose(tab.id);
         }}
         title="Close"
+        aria-label="Close"
       >
-        ×
+        <Icon name="close" size={16} />
       </button>
     </span>
-  {/if}
+  {/if} -->
 </div>
 {#if dropAfter}
   <div class="drop-indicator"></div>
@@ -82,10 +88,9 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.5rem 0.5rem 0.5rem 0.75rem;
     border: 1px solid var(--border-color);
     border-radius: var(--shape-sm);
-    background: transparent;
+    background-color: var(--card-bg);
     color: var(--text-color);
     cursor: pointer;
     white-space: nowrap;
@@ -118,10 +123,12 @@
 
   .tab-name {
     font-weight: 500;
+    font-size: var(--font-size-sm);
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 12rem;
-    line-height: 1.25;
+    white-space: nowrap;
+    padding: 0.5rem 1rem;
   }
 
   .tab-actions {
@@ -131,8 +138,8 @@
   }
 
   .tab-action-btn {
-    width: 1.75rem;
-    height: 1.75rem;
+    width: 2rem;
+    height: 2rem;
     padding: 0;
     border-radius: var(--shape-full);
     display: flex;
@@ -142,8 +149,10 @@
     background: transparent;
     color: inherit;
     cursor: pointer;
-    font-size: 1.25rem;
-    line-height: 1;
+  }
+
+  .tab-action-btn:focus-visible {
+    box-shadow: 0 0 0 2px var(--accent-color);
   }
 
   .delete-tab-btn:hover {

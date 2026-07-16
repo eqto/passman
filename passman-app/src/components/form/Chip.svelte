@@ -45,7 +45,6 @@
     border-radius: var(--shape-sm);
     color: var(--chip-text);
     cursor: pointer;
-    line-height: 1.25;
     font-weight: 500;
   }
 

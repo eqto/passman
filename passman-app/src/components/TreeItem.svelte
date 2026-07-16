@@ -227,8 +227,6 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    line-height: 1rem;
-    padding-top: 0.5px;
   }
 
   .tree-item :global(svg) {

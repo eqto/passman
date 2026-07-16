@@ -26,7 +26,6 @@
     text-transform: uppercase;
     color: var(--muted-color);
     letter-spacing: 0.05em;
-    line-height: 1.75;
   }
 
   .section-header:not(:first-child) {

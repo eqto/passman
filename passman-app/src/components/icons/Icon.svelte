@@ -18,12 +18,7 @@
   let attrs = $derived(name === "lock" ? FILL_ATTRS : STROKE_ATTRS);
 </script>
 
-<svg
-  xmlns="http://www.w3.org/2000/svg"
-  width={size}
-  height={size}
-  {...attrs}
->
+<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} {...attrs}>
   {#if name === "chevron"}
     <polyline
       points={direction === "down" ? "6 9 12 15 18 9" : "9 18 15 12 9 6"}
@@ -65,5 +60,11 @@
     <path
       d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
     ></path>
+  {:else if name === "close"}
+    <line x1="18" y1="6" x2="6" y2="18"></line>
+    <line x1="6" y1="6" x2="18" y2="18"></line>
+  {:else if name === "file"}
+    <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+    <polyline points="13 2 13 9 20 9"></polyline>
   {/if}
 </svg>

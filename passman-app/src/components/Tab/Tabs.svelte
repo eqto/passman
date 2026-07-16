@@ -10,7 +10,6 @@
     onKeydown = null,
     onContextMenu = null,
     onClose = null,
-    headerAddon = null,
     children,
   } = $props();
 
@@ -71,11 +70,6 @@
       />
     {/each}
   </div>
-  {#if headerAddon}
-    <div class="tabs-header-addon">
-      {@render headerAddon()}
-    </div>
-  {/if}
 </div>
 
 <div class="tab-content">
@@ -98,25 +92,12 @@
 
   .tabs-bar {
     display: flex;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    scrollbar-width: none; /* Hide scrollbar for Firefox */
-    -ms-overflow-style: none; /* Hide scrollbar for IE/Edge */
+    flex-wrap: wrap;
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
     flex: 1;
     min-width: 0;
-  }
-
-  .tabs-bar::-webkit-scrollbar {
-    display: none; /* Hide scrollbar for Chrome/Safari/Webkit */
-  }
-
-  .tabs-header-addon {
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
   }
 
   .tab-content {
