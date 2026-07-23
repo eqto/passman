@@ -3,7 +3,7 @@ members = ["passman-core", "passman-app/src-tauri", "passman-cli"]
 resolver = "2"
 
 [workspace.package]
-version = "0.1.0-rc.1"
+version = "0.1.0-rc.2"
 edition = "2021"
 authors = ["Passman Contributors"]
 license = "MIT"
