@@ -207,6 +207,7 @@ pub fn add_tag(
         if !open_vault.vault.payload.tags.iter().any(|t| t == &trimmed) {
             open_vault.vault.payload.tags.push(trimmed);
         }
+        open_vault.vault.payload.tags.sort();
         open_vault.vault.payload.touch();
         Ok(open_vault.vault.payload.tags.clone())
     })

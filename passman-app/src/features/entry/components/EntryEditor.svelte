@@ -14,7 +14,9 @@
     tags: entry.tags || [],
     fields: entry.fields || [],
   });
-  let displayTags = $derived(form.tags || []);
+  let displayTags = $derived(
+    (form.tags || []).slice().sort((a, b) => a.localeCompare(b)),
+  );
   let error = $state("");
   let confirmDeleteEntry = $state(false);
 
@@ -25,11 +27,16 @@
         next = [...next, tag];
       }
     }
-    form = { ...form, tags: next };
+    form = { ...form, tags: next.slice().sort((a, b) => a.localeCompare(b)) };
   }
 
   function removeTag(tag) {
-    form = { ...form, tags: form.tags.filter((t) => t !== tag) };
+    form = {
+      ...form,
+      tags: form.tags
+        .filter((t) => t !== tag)
+        .sort((a, b) => a.localeCompare(b)),
+    };
   }
 
   async function handleSave() {
@@ -38,6 +45,7 @@
       const now = new Date().toISOString();
       const updated = {
         ...form,
+        tags: (form.tags || []).slice().sort((a, b) => a.localeCompare(b)),
         fields: form.fields.filter((f) => f.label.trim() || f.value.trim()),
         group_id: selectedGroup || form.group_id || null,
         updated_at: now,

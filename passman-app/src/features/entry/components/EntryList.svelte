@@ -168,6 +168,10 @@
     gap: 0.25rem;
   }
 
+  .new-entry-btn {
+    margin-top: 0.75rem;
+  }
+
   .tag-filter-bar {
     display: flex;
     flex-wrap: wrap;

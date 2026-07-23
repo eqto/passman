@@ -11,12 +11,14 @@
 
   let passwordVisible = $state(false);
 
-  let visibleTags = $derived(entry?.tags || []);
+  let visibleTags = $derived(
+    (entry?.tags || []).slice().sort((a, b) => a.localeCompare(b)),
+  );
 
   async function updateTags(nextTags) {
     await updateEntry({
       ...entry,
-      tags: nextTags,
+      tags: nextTags.slice().sort((a, b) => a.localeCompare(b)),
       updated_at: new Date().toISOString(),
     });
   }

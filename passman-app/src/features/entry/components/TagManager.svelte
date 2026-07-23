@@ -178,4 +178,10 @@
     color: var(--text-color);
     font-size: 0.875rem;
   }
+
+  .tag-input-row .btn-secondary {
+    height: auto;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.875rem;
+  }
 </style>

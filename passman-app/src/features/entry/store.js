@@ -101,7 +101,7 @@ export async function moveEntriesInGroupToTag(groupId, tag) {
   const $entries = get(entries);
   const targets = $entries.filter((e) => e.group_id === groupId);
   for (const entry of targets) {
-    const updated = { ...entry, tags: [...(entry.tags || []), tag], updated_at: new Date().toISOString() };
+    const updated = { ...entry, tags: [...(entry.tags || []), tag].sort((a, b) => a.localeCompare(b)), updated_at: new Date().toISOString() };
     await invoke("update_entry", { path: vault.path, entry: updated });
   }
   const list = await invoke("list_entries", { path: vault.path });

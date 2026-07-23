@@ -16,7 +16,7 @@ export function splitTags(entryTags) {
  * Return only the free-form tags from an entry.
  */
 export function freeTags(entryTags) {
-  return entryTags || [];
+  return (entryTags || []).slice().sort((a, b) => a.localeCompare(b));
 }
 
 /**

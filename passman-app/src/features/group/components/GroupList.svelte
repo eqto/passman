@@ -46,7 +46,7 @@
         set.add(tag);
       }
     }
-    return Array.from(set);
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
   });
 
   let showAdd = $state(false);
