@@ -155,4 +155,3 @@ pub struct VaultFile {
     pub path: String,
     pub needs_save: bool,
 }
-

@@ -124,7 +124,9 @@ mod tests {
             symbols: true,
         })
         .unwrap();
-        assert!(password.chars().all(|c| !c.is_alphanumeric() && c != '_' && c != '-' && c != ' '));
+        assert!(password
+            .chars()
+            .all(|c| !c.is_alphanumeric() && c != '_' && c != '-' && c != ' '));
     }
 
     #[test]

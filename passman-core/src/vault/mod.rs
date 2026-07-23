@@ -3,9 +3,7 @@ mod types;
 
 pub use types::*;
 
-use crate::crypto::{
-    decrypt, derive_key, encrypt, random_bytes, KdfParams, KEY_SIZE,
-};
+use crate::crypto::{decrypt, derive_key, encrypt, random_bytes, KdfParams, KEY_SIZE};
 use base64::{engine::general_purpose, Engine as _};
 use chrono::Utc;
 use format::{read_vault_file, write_vault_file};

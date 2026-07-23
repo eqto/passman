@@ -1,8 +1,8 @@
+use crate::vault::HistoryItem;
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
 use std::collections::HashMap;
 use thiserror::Error;
-use crate::vault::HistoryItem;
 
 pub const FORMAT_B_SIGNATURE: &str = "b~>buttercup/b";
 pub const DEFAULT_ALGORITHM: &str = "cbc";

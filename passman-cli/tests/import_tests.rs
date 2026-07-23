@@ -84,7 +84,10 @@ fn test_import_creates_pmv() {
     assert_eq!(opened.payload.entries[0].fields[0].value, "1234");
     assert_eq!(opened.payload.entries[0].fields[1].label, "URL");
     assert_eq!(opened.payload.entries[0].fields[1].field_type, "text");
-    assert_eq!(opened.payload.entries[0].fields[1].value, "https://example.com");
+    assert_eq!(
+        opened.payload.entries[0].fields[1].value,
+        "https://example.com"
+    );
     assert!(opened.payload.entries[0].deleted_at.is_some());
     assert_eq!(opened.payload.entries[0].history.len(), 1);
     assert_eq!(opened.payload.entries[0].history[0].property, "password");

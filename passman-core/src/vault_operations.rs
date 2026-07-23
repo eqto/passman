@@ -1,5 +1,5 @@
-use crate::vault::{Group, Trash, VaultEntry, VaultPayload};
 use crate::random_bytes;
+use crate::vault::{Group, Trash, VaultEntry, VaultPayload};
 use std::collections::HashSet;
 
 pub fn collect_child_ids(groups: &[Group], parent_id: &str) -> Vec<String> {
@@ -57,14 +57,20 @@ pub fn move_entries_to_trash(payload: &mut VaultPayload, entries: Vec<VaultEntry
         return;
     }
     let now = chrono::Utc::now();
-    payload.trash.entries.extend(prepare_trash_entries(entries, now, None));
+    payload
+        .trash
+        .entries
+        .extend(prepare_trash_entries(entries, now, None));
 }
 
 pub fn move_group_to_trash(payload: &mut VaultPayload, group: Group, entries: Vec<VaultEntry>) {
     let now = chrono::Utc::now();
     let group_id = group.id.clone();
     payload.trash.groups.push(group);
-    payload.trash.entries.extend(prepare_trash_entries(entries, now, Some(&group_id)));
+    payload
+        .trash
+        .entries
+        .extend(prepare_trash_entries(entries, now, Some(&group_id)));
 }
 
 fn prepare_trash_entries(

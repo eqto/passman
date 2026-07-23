@@ -1,9 +1,9 @@
-use passman_core::{Group, Trash, VaultEntry};
 use passman_core::vault_operations::{
-    apply_copy_to_target, apply_move_to_target, delete_group_with_children,
-    merge_groups_in_vault, move_group_to_parent, prepare_copy_from_source,
-    prepare_move_from_source, GroupDeletionResult as CoreGroupDeletionResult,
+    apply_copy_to_target, apply_move_to_target, delete_group_with_children, merge_groups_in_vault,
+    move_group_to_parent, prepare_copy_from_source, prepare_move_from_source,
+    GroupDeletionResult as CoreGroupDeletionResult,
 };
+use passman_core::{Group, Trash, VaultEntry};
 use serde::Serialize;
 use tauri::State;
 

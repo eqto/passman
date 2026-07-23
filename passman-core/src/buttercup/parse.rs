@@ -1,7 +1,7 @@
 use super::types::*;
+use crate::vault::HistoryItem;
 use chrono::{DateTime, Utc};
 use std::collections::{HashMap, HashSet};
-use crate::vault::HistoryItem;
 
 pub(super) fn is_trash_group(group: &RawGroup) -> bool {
     group
@@ -33,7 +33,11 @@ fn get_property(properties: &HashMap<String, RawValue>, name: &str) -> String {
 }
 
 pub(super) fn identify_trash_groups(raw: &RawVault) -> (Option<String>, HashSet<String>) {
-    let trash_group_id = raw.g.iter().find(|g| is_trash_group(g)).map(|g| g.id.clone());
+    let trash_group_id = raw
+        .g
+        .iter()
+        .find(|g| is_trash_group(g))
+        .map(|g| g.id.clone());
 
     let mut trash_group_ids: HashSet<String> = HashSet::new();
     if let Some(tid) = &trash_group_id {
@@ -143,7 +147,11 @@ pub(super) fn build_entries(
     let mut trash_entries = Vec::new();
 
     for entry in raw_entries {
-        let group_id = if entry.g.is_empty() { None } else { Some(entry.g.clone()) };
+        let group_id = if entry.g.is_empty() {
+            None
+        } else {
+            Some(entry.g.clone())
+        };
         let id = entry.id.clone();
 
         let mut fields = extract_custom_fields(&entry);

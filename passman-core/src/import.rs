@@ -223,8 +223,18 @@ impl From<ButtercupVault> for ImportJson {
             groups: vault.groups.into_iter().map(map_buttercup_group).collect(),
             entries: vault.entries.into_iter().map(map_buttercup_entry).collect(),
             trash: ImportTrash {
-                groups: vault.trash.groups.into_iter().map(map_buttercup_group).collect(),
-                entries: vault.trash.entries.into_iter().map(map_buttercup_entry).collect(),
+                groups: vault
+                    .trash
+                    .groups
+                    .into_iter()
+                    .map(map_buttercup_group)
+                    .collect(),
+                entries: vault
+                    .trash
+                    .entries
+                    .into_iter()
+                    .map(map_buttercup_entry)
+                    .collect(),
             },
         }
     }
