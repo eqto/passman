@@ -14,16 +14,16 @@ export function createContextMenuState(defaults = {}) {
   const base = { show: false, x: 0, y: 0, ...defaults };
   let state = $state({ ...base });
 
-  useContextMenu(() => { state = { ...base }; });
+  useContextMenu(() => { Object.assign(state, base); });
 
   function open(event, extra = {}) {
     event.preventDefault();
     closeAllContextMenus();
-    state = { show: true, x: event.clientX, y: event.clientY, ...extra };
+    Object.assign(state, { show: true, x: event.clientX, y: event.clientY, ...extra });
   }
 
   function close() {
-    state = { ...base };
+    Object.assign(state, base);
   }
 
   return { state, open, close };
