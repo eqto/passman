@@ -14,7 +14,7 @@ export default defineConfig(async () => ({
   envPrefix: ["VITE_", "TAURI_"],
   build: {
     target: "es2021",
-    minify: "esbuild",
+    minify: "oxc",
     sourcemap: true,
     outDir: "dist",
   },
