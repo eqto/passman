@@ -42,7 +42,6 @@ jobs:
           bun run build
       - name: Build app
         run: CGO_ENABLED=1 go build -tags gtk3 -o /tmp/passman .
-
   build-app:
     name: Build App (${{ matrix.target }})
     if: github.event_name == 'release'
@@ -97,7 +96,7 @@ jobs:
       - name: Install Wails CLI
         run: go install github.com/wailsapp/wails/v3/cmd/wails3@latest
       - name: Generate bindings
-        run: wails3 generate bindings -tags gtk3
+        run: wails3 generate bindings ${{ matrix.os == 'ubuntu-latest' && '-tags gtk3' || '' }}
       - name: Build frontend
         run: |
           cd frontend
@@ -107,7 +106,7 @@ jobs:
         env:
           CGO_ENABLED: "1"
           GOARCH: ${{ matrix.goarch }}
-        run: go build -tags gtk3 -o ${{ matrix.artifact }} .
+        run: go build ${{ matrix.os == 'ubuntu-latest' && '-tags gtk3' || '' }} -o ${{ matrix.artifact }} .
       - name: Package .rpm
         if: matrix.package == 'rpm'
         run: |
