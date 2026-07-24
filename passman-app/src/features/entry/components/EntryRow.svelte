@@ -38,32 +38,32 @@
   oncontextmenu={(e) => onContextMenu(e, entry)}
 >
   <div class="entry-info">
-    <div class="entry-title-row">
-      <div class="entry-title">{entry.title}</div>
-      {#if freeTags(entry.tags).length > 0}
-        <div class="entry-tags">
-          {#each freeTags(entry.tags) as tag}
-            <Chip size="small" active={selectedTags.includes(tag)} text={tag} />
-          {/each}
-        </div>
-      {/if}
-    </div>
+    <div class="entry-title">{entry.title}</div>
     <div class="entry-subtitle">
       {entry.username ||
         (entry.fields || []).find((f) => f.label === "URL")?.value ||
         "No details"}
     </div>
   </div>
-  {#if entry.password}
-    <button
-      class="btn-copy"
-      title="Copy password"
-      aria-label="Copy password"
-      onclick={(e) => copyPassword(e, entry.password)}
-    >
-      <Icon name="copy" size={16} />
-    </button>
-  {/if}
+  <div class="entry-right">
+    {#if freeTags(entry.tags).length > 0}
+      <div class="entry-tags">
+        {#each freeTags(entry.tags) as tag}
+          <Chip size="small" active={selectedTags.includes(tag)} text={tag} />
+        {/each}
+      </div>
+    {/if}
+    {#if entry.password}
+      <button
+        class="btn-copy"
+        title="Copy password"
+        aria-label="Copy password"
+        onclick={(e) => copyPassword(e, entry.password)}
+      >
+        <Icon name="copy" size={16} />
+      </button>
+    {/if}
+  </div>
 </div>
 
 <style>
@@ -109,21 +109,29 @@
     flex: 1;
   }
 
-  .entry-row:hover .btn-copy,
-  .entry-row.selected .btn-copy {
+  .entry-right {
+    position: relative;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  .entry-row:hover .btn-copy {
     opacity: 1;
+  }
+
+  .btn-copy {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1;
   }
 
   .entry-row.selected .btn-copy:hover {
     background-color: var(--hover-bg);
     color: var(--selected-text);
-  }
-
-  .entry-title-row {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    min-width: 0;
   }
 
   .entry-title {
@@ -148,7 +156,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 0.25rem;
-    flex-shrink: 0;
-    max-width: 50%;
+    justify-content: flex-end;
+    max-width: 40%;
   }
 </style>
