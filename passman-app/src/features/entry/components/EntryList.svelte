@@ -47,19 +47,21 @@
   }
 
   let filtered = $derived(
-    entries.filter((e) => {
-      const q = filterSearch.toLowerCase();
-      const matchesSearch =
-        e.title.toLowerCase().includes(q) ||
-        e.username.toLowerCase().includes(q) ||
-        (e.fields || []).some((f) => f.value.toLowerCase().includes(q)) ||
-        (e.tags || []).some((tag) => tag.toLowerCase().includes(q));
-      if (!matchesSearch) return false;
-      if (selectedTags.length > 0) {
-        return selectedTags.every((tag) => (e.tags || []).includes(tag));
-      }
-      return true;
-    }),
+    entries
+      .filter((e) => {
+        const q = filterSearch.toLowerCase();
+        const matchesSearch =
+          e.title.toLowerCase().includes(q) ||
+          e.username.toLowerCase().includes(q) ||
+          (e.fields || []).some((f) => f.value.toLowerCase().includes(q)) ||
+          (e.tags || []).some((tag) => tag.toLowerCase().includes(q));
+        if (!matchesSearch) return false;
+        if (selectedTags.length > 0) {
+          return selectedTags.every((tag) => (e.tags || []).includes(tag));
+        }
+        return true;
+      })
+      .sort((a, b) => a.title.localeCompare(b.title)),
   );
 
   async function handleMenuCopyPassword() {
