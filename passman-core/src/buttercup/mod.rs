@@ -1,4 +1,5 @@
 pub mod decrypt;
+pub mod format_a;
 pub mod parse;
 pub mod types;
 
@@ -7,7 +8,7 @@ pub use types::{
     ButtercupVault,
 };
 
-use types::{RawVault, FORMAT_B_SIGNATURE};
+use types::{Format, RawVault, FORMAT_A_SIGNATURE, FORMAT_B_SIGNATURE};
 
 pub fn decrypt_buttercup_file(
     path: &str,
@@ -21,35 +22,52 @@ pub fn decrypt_buttercup_vault(
     contents: &str,
     password: &str,
 ) -> Result<ButtercupVault, ButtercupError> {
-    if !contents.starts_with(FORMAT_B_SIGNATURE) {
+    let format = if contents.starts_with(FORMAT_B_SIGNATURE) {
+        Format::B
+    } else if contents.starts_with(FORMAT_A_SIGNATURE) {
+        Format::A
+    } else {
         return Err(ButtercupError::InvalidSignature);
-    }
+    };
 
-    let encrypted_text = &contents[FORMAT_B_SIGNATURE.len()..];
+    let sig_len = match format {
+        Format::A => FORMAT_A_SIGNATURE.len(),
+        Format::B => FORMAT_B_SIGNATURE.len(),
+    };
+
+    let encrypted_text = &contents[sig_len..];
     let components = decrypt::parse_encrypted_components(encrypted_text)?;
     let compressed = decrypt::decrypt_components(&components, password)?;
     let decompressed = decrypt::decompress(&compressed)?;
-    let raw: RawVault = serde_json::from_str(&decompressed)?;
 
-    let (trash_group_id, trash_group_ids) = parse::identify_trash_groups(&raw);
+    match format {
+        Format::A => format_a::parse_format_a(&decompressed),
+        Format::B => {
+            let raw: RawVault = serde_json::from_str(&decompressed)?;
 
-    let (groups, trash_groups) = parse::build_groups(raw.g, &trash_group_id, &trash_group_ids);
-    let (entries, trash_entries) = parse::build_entries(raw.e, &trash_group_ids, &trash_group_id);
+            let (trash_group_id, trash_group_ids) = parse::identify_trash_groups(&raw);
 
-    Ok(ButtercupVault {
-        name: raw
-            .a
-            .get("name")
-            .map(|v| v.value.clone())
-            .unwrap_or_default(),
-        uuid: raw._id,
-        groups,
-        entries,
-        trash: ButtercupTrash {
-            groups: trash_groups,
-            entries: trash_entries,
-        },
-    })
+            let (groups, trash_groups) =
+                parse::build_groups(raw.g, &trash_group_id, &trash_group_ids);
+            let (entries, trash_entries) =
+                parse::build_entries(raw.e, &trash_group_ids, &trash_group_id);
+
+            Ok(ButtercupVault {
+                name: raw
+                    .a
+                    .get("name")
+                    .map(|v| v.value.clone())
+                    .unwrap_or_default(),
+                uuid: raw._id,
+                groups,
+                entries,
+                trash: ButtercupTrash {
+                    groups: trash_groups,
+                    entries: trash_entries,
+                },
+            })
+        }
+    }
 }
 
 #[cfg(test)]

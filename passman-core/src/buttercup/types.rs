@@ -4,10 +4,17 @@ use serde::Deserialize;
 use std::collections::HashMap;
 use thiserror::Error;
 
+pub const FORMAT_A_SIGNATURE: &str = "b~>buttercup/a";
 pub const FORMAT_B_SIGNATURE: &str = "b~>buttercup/b";
 pub const DEFAULT_ALGORITHM: &str = "cbc";
 pub const PASSWORD_KEY_SIZE: usize = 32;
 pub const HMAC_KEY_SIZE: usize = 32;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Format {
+    A,
+    B,
+}
 
 #[derive(Debug, Error)]
 pub enum ButtercupError {
