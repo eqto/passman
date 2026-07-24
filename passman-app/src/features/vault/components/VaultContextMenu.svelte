@@ -50,14 +50,6 @@
     >
       Settings
     </div>
-  {:else}
-    <div
-      class="menu-item"
-      style="opacity: 0.6; cursor: not-allowed"
-      role="menuitem"
-    >
-      Settings (vault locked)
-    </div>
   {/if}
   <div
     class="menu-item danger"
