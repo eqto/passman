@@ -27,15 +27,15 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libjavascriptcoregtk-4.1-dev libsoup-3.0-dev libglib2.0-dev build-essential pkg-config
-      - name: Go vet
-        run: go vet ./...
-      - name: Go test
-        run: go test ./...
       - name: Build frontend
         run: |
           cd frontend
           bun install
           bun run build
+      - name: Go vet
+        run: go vet ./...
+      - name: Go test
+        run: go test ./...
       - name: Build app
         run: CGO_ENABLED=1 go build -tags gtk3 -o /tmp/passman .
   build-app:
