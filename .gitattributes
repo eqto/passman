@@ -1,0 +1,6 @@
+# Generated Wails bindings — not hand-written source
+frontend/bindings/** linguist-generated
+frontend/wailsjs/** linguist-generated
+
+# Build artifacts
+build/** linguist-generated
