@@ -5,6 +5,7 @@
     OpenVaultMenu,
     CreateVaultDialog,
     ImportButtercupDialog,
+    ImportKeePassDialog,
     UnlockDialog,
     openVault,
     registerAndOpenVault,
@@ -12,6 +13,7 @@
 
   let showCreate = $state(false);
   let showButtercupImport = $state(false);
+  let showKeePassImport = $state(false);
   let showOpenDropdown = $state(false);
   let dropdownPosition = $state({ x: 0, y: 0 });
   let unlockTarget = $state(null);
@@ -45,21 +47,28 @@
   function handleButtercupImport() {
     showButtercupImport = true;
   }
+
+  function handleKeePassImport() {
+    showKeePassImport = true;
+  }
 </script>
 
 <svelte:window onclick={handleWindowClick} />
 
 <div class="topbar">
-  <button class="btn-secondary" onclick={() => (showCreate = true)}>
-    <span class="action-icon">+</span>
-    <span class="action-text">New Vault</span>
-  </button>
-  <OpenVaultMenu
-    bind:dropdownPosition
-    bind:showDropdown={showOpenDropdown}
-    onpickexisting={pickExistingVault}
-    onbuttercupimport={handleButtercupImport}
-  />
+  <div class="topbar-left">
+    <button class="btn-secondary" onclick={() => (showCreate = true)}>
+      <span class="action-icon">+</span>
+      <span class="action-text">New Vault</span>
+    </button>
+    <OpenVaultMenu
+      bind:dropdownPosition
+      bind:showDropdown={showOpenDropdown}
+      onpickexisting={pickExistingVault}
+      onbuttercupimport={handleButtercupImport}
+      onkeepassimport={handleKeePassImport}
+    />
+  </div>
   <ThemeToggle />
 </div>
 
@@ -86,15 +95,28 @@
   />
 {/if}
 
+{#if showKeePassImport}
+  <ImportKeePassDialog
+    onsuccess={() => (showKeePassImport = false)}
+    oncancel={() => (showKeePassImport = false)}
+  />
+{/if}
+
 <style>
   .topbar {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: space-between;
     gap: 0.75rem;
     padding: 0.5rem 0.75rem;
     background-color: var(--bg-color);
     border-bottom: 1px solid var(--border-color);
+  }
+
+  .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
   }
 
   .action-icon {

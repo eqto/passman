@@ -1,7 +1,7 @@
 use clap::{Parser, Subcommand};
 use passman_core::{
     build_payload, create_vault_file, derive_vault_name, save_vault_file, ButtercupError,
-    ImportJson, VaultFile,
+    ImportJson, KeePassError, VaultFile,
 };
 use std::io;
 use std::path::Path;
@@ -52,6 +52,16 @@ enum Commands {
         #[arg(short, long)]
         name: Option<String>,
     },
+    /// Import a KeePass .kdbx database directly into a .pmv vault
+    ImportKeePass {
+        /// Path to the .kdbx file
+        input: String,
+        /// Output path for the .pmv file
+        output: String,
+        /// Vault name
+        #[arg(short, long)]
+        name: Option<String>,
+    },
     /// Convert a Buttercup .bcup vault to a .pmv vault
     Convert {
         /// Path to the .bcup file
@@ -76,6 +86,8 @@ enum CliError {
     Vault(#[from] passman_core::VaultError),
     #[error("buttercup error: {0}")]
     Buttercup(#[from] ButtercupError),
+    #[error("keepass error: {0}")]
+    KeePass(#[from] KeePassError),
     #[error("password prompt error: {0}")]
     PasswordPrompt(String),
 }
@@ -130,6 +142,25 @@ fn run() -> Result<(), CliError> {
 
             let bcup = passman_core::decrypt_buttercup_file(&input, &bcup_password)?;
             let mut import = ImportJson::from(bcup);
+            let vault_name = name.unwrap_or_else(|| derive_vault_name(&import.name, &input));
+            import.name = vault_name.clone();
+
+            let vault = create_and_save_vault(&output, &vault_name, &pmv_password, import)?;
+            println!(
+                "Imported {} entries from {input} into {output}",
+                vault.payload.entries.len()
+            );
+        }
+        Commands::ImportKeePass {
+            input,
+            output,
+            name,
+        } => {
+            let kdbx_password = prompt_password_keepass("KeePass master password: ")?;
+            let pmv_password = prompt_password("New vault password: ")?;
+
+            let kdbx = passman_core::decrypt_keepass_file(&input, &kdbx_password)?;
+            let mut import = ImportJson::from(kdbx);
             let vault_name = name.unwrap_or_else(|| derive_vault_name(&import.name, &input));
             import.name = vault_name.clone();
 
@@ -197,6 +228,13 @@ fn resolve_convert_password() -> Result<String, CliError> {
 
 fn prompt_password(prompt: &str) -> Result<String, CliError> {
     if let Ok(password) = std::env::var("PASSMAN_PASSWORD") {
+        return Ok(password);
+    }
+    rpassword::prompt_password(prompt).map_err(|e| CliError::PasswordPrompt(e.to_string()))
+}
+
+fn prompt_password_keepass(prompt: &str) -> Result<String, CliError> {
+    if let Ok(password) = std::env::var("KDBX_PASSWORD") {
         return Ok(password);
     }
     rpassword::prompt_password(prompt).map_err(|e| CliError::PasswordPrompt(e.to_string()))

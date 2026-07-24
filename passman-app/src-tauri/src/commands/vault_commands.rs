@@ -1,4 +1,4 @@
-use passman_core::{buttercup, config, vault, AppConfig, VaultConfig};
+use passman_core::{buttercup, config, keepass, vault, AppConfig, VaultConfig};
 use tauri::State;
 
 use crate::commands::dto::{vault_to_dto, VaultFileDTO};
@@ -178,6 +178,37 @@ pub async fn convert_buttercup_vault(
     config::add_vault(&id, &vault_name, &output_path).map_err(|e| e.to_string())?;
 
     // Open the vault in state
+    let dto = vault_to_dto(&vault);
+    state.insert_vault(&output_path, vault, vault_key);
+
+    Ok(dto)
+}
+
+#[tauri::command]
+pub async fn convert_keepass_vault(
+    kdbx_path: String,
+    password: String,
+    output_path: String,
+    id: String,
+    state: State<'_, AppState>,
+) -> Result<VaultFileDTO, String> {
+    let kdbx =
+        keepass::decrypt_keepass_file(&kdbx_path, &password).map_err(|e| e.to_string())?;
+
+    let import = passman_core::ImportJson::from(kdbx);
+
+    let vault_name = passman_core::derive_vault_name(&import.name, &kdbx_path);
+
+    let (mut vault, vault_key) =
+        vault::create_vault_file_with_key(&output_path, &vault_name, &password)
+            .map_err(|e| e.to_string())?;
+
+    passman_core::build_payload(&mut vault, import);
+
+    vault::save_vault_file(&vault, &password).map_err(|e| e.to_string())?;
+
+    config::add_vault(&id, &vault_name, &output_path).map_err(|e| e.to_string())?;
+
     let dto = vault_to_dto(&vault);
     state.insert_vault(&output_path, vault, vault_key);
 

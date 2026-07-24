@@ -6,6 +6,7 @@
     dropdownPosition = $bindable({ x: 0, y: 0 }),
     onpickexisting = null,
     onbuttercupimport = null,
+    onkeepassimport = null,
   } = $props();
 
   function pickExistingVault() {
@@ -15,7 +16,7 @@
   function toggleOpenDropdown(event) {
     event.stopPropagation();
     const rect = event.currentTarget.getBoundingClientRect();
-    const menuWidth = 120;
+    const menuWidth = 180;
     const windowWidth = window.innerWidth;
 
     let x = rect.left;
@@ -33,6 +34,11 @@
   function handleButtercupImport() {
     showDropdown = false;
     onbuttercupimport?.();
+  }
+
+  function handleKeePassImport() {
+    showDropdown = false;
+    onkeepassimport?.();
   }
 </script>
 
@@ -58,6 +64,9 @@
   >
     <button class="dropdown-item" onclick={handleButtercupImport}>
       Open Buttercup format
+    </button>
+    <button class="dropdown-item" onclick={handleKeePassImport}>
+      Open KeePass format
     </button>
   </div>
 {/if}
@@ -136,7 +145,7 @@
 
   .dropdown-menu {
     position: fixed;
-    background-color: var(--sidebar-bg);
+    background-color: var(--card-bg);
     border: none;
     border-radius: var(--shape-sm);
     box-shadow:
@@ -146,20 +155,24 @@
     z-index: 9999;
     min-width: auto;
     width: fit-content;
+    padding: var(--space-1);
   }
 
   .dropdown-item {
     width: 100%;
-    padding: 0.375rem 0.625rem;
+    padding: var(--space-2) var(--space-3);
     text-align: left;
     background: transparent;
     border: none;
     color: var(--text-color);
     cursor: pointer;
-    font-size: 0.8rem;
+    font-size: var(--font-size-sm);
+    font-weight: 400;
+    border-radius: var(--shape-xs);
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    white-space: nowrap;
   }
 
   .dropdown-item:hover {

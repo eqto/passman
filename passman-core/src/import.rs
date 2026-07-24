@@ -1,4 +1,5 @@
 use crate::buttercup::{ButtercupEntry, ButtercupGroup, ButtercupVault};
+use crate::keepass::{KeePassEntry, KeePassGroup, KeePassVault};
 use crate::vault::{CustomField, Group, HistoryItem, Trash, VaultEntry, VaultFile};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
@@ -209,6 +210,67 @@ fn map_buttercup_entry(e: ButtercupEntry) -> ImportEntry {
             .collect(),
         deleted_at: e.deleted_at,
         history: e.history,
+    }
+}
+
+fn map_keepass_group(g: KeePassGroup) -> ImportGroup {
+    ImportGroup {
+        id: g.id,
+        name: g.name,
+        parent_id: g.parent_id,
+    }
+}
+
+fn map_keepass_entry(e: KeePassEntry) -> ImportEntry {
+    ImportEntry {
+        id: e.id,
+        group_id: e.group_id,
+        title: e.title,
+        username: e.username,
+        password: e.password,
+        url: e.url,
+        notes: e.notes,
+        tags: e.tags,
+        fields: e
+            .fields
+            .into_iter()
+            .map(|f| ImportCustomField {
+                id: f.id,
+                label: f.label,
+                field_type: f.field_type,
+                value: f.value,
+            })
+            .collect(),
+        deleted_at: e.deleted_at,
+        history: Vec::new(),
+    }
+}
+
+impl From<KeePassVault> for ImportJson {
+    fn from(vault: KeePassVault) -> Self {
+        let now = chrono::Utc::now();
+        ImportJson {
+            name: vault.name,
+            uuid: vault.uuid,
+            created_at: now,
+            updated_at: now,
+            groups: vault.groups.into_iter().map(map_keepass_group).collect(),
+            entries: vault.entries.into_iter().map(map_keepass_entry).collect(),
+            trash: ImportTrash {
+                groups: vault
+                    .trash
+                    .groups
+                    .into_iter()
+                    .map(map_keepass_group)
+                    .collect(),
+                entries: vault
+                    .trash
+                    .entries
+                    .into_iter()
+                    .map(map_keepass_entry)
+                    .collect(),
+            },
+        }
     }
 }
 

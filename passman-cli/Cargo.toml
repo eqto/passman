@@ -25,3 +25,4 @@ passman-core = { path = "../passman-core" }
 assert_cmd = "2"
 tempfile = "3"
 serde_json = { workspace = true }
+keepass = { version = "0.13", features = ["save_kdbx4"] }

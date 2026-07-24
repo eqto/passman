@@ -169,3 +169,12 @@ export async function convertButtercupVault(bcupPath, password, outputPath) {
   setVaultData(outputPath, vault);
   return vault;
 }
+
+export async function convertKeepassVault(kdbxPath, password, outputPath) {
+  const id = crypto.randomUUID();
+  const vault = await invoke("convert_keepass_vault", { kdbxPath, password, outputPath, id });
+  vaults.update((list) => [...list, { id, name: vault.name, path: outputPath }]);
+  currentVault.set({ ...vault, id });
+  setVaultData(outputPath, vault);
+  return vault;
+}
