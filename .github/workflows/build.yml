@@ -30,9 +30,9 @@ jobs:
       - name: Install Wails CLI
         run: go install github.com/wailsapp/wails/v3/cmd/wails3@latest
       - name: Generate bindings
-        env:
-          GOFLAGS: "-tags=gtk3"
-        run: wails3 generate bindings
+        run: |
+          go env -w GOFLAGS=-tags=gtk3
+          wails3 generate bindings
       - name: Go vet
         run: go vet ./...
       - name: Go test
@@ -98,9 +98,9 @@ jobs:
       - name: Install Wails CLI
         run: go install github.com/wailsapp/wails/v3/cmd/wails3@latest
       - name: Generate bindings
-        env:
-          GOFLAGS: ${{ matrix.os == 'ubuntu-latest' && '"-tags=gtk3"' || '' }}
-        run: wails3 generate bindings
+        run: |
+          ${{ matrix.os == 'ubuntu-latest' && 'go env -w GOFLAGS=-tags=gtk3' || '' }}
+          wails3 generate bindings
       - name: Build frontend
         run: |
           cd frontend
