@@ -102,13 +102,13 @@ jobs:
       - name: Package .rpm
         if: matrix.package == 'rpm'
         run: |
-          gem install --no-document fpm
+          sudo gem install --no-document fpm
           fpm -s dir -t rpm -n passman -v ${{ github.ref_name }} -p passman-${{ github.ref_name }}-1.x86_64.rpm \
             --prefix /usr/local/bin ${{ matrix.artifact }}
       - name: Package .deb
         if: matrix.package == 'deb'
         run: |
-          gem install --no-document fpm
+          sudo gem install --no-document fpm
           fpm -s dir -t deb -n passman -v ${{ github.ref_name }} -p passman_${{ github.ref_name }}_amd64.deb \
             --prefix /usr/local/bin ${{ matrix.artifact }}
       - name: Package .dmg
