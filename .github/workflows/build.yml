@@ -30,7 +30,7 @@ jobs:
       - name: Install Wails CLI
         run: go install github.com/wailsapp/wails/v3/cmd/wails3@latest
       - name: Generate bindings
-        run: wails3 generate bindings
+        run: wails3 generate bindings -tags gtk3
       - name: Go vet
         run: go vet ./...
       - name: Go test
@@ -97,7 +97,7 @@ jobs:
       - name: Install Wails CLI
         run: go install github.com/wailsapp/wails/v3/cmd/wails3@latest
       - name: Generate bindings
-        run: wails3 generate bindings
+        run: wails3 generate bindings -tags gtk3
       - name: Build frontend
         run: |
           cd frontend
