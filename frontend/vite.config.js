@@ -6,7 +6,7 @@ export default defineConfig(async () => ({
   plugins: [svelte(), wails("./bindings")],
   clearScreen: false,
   server: {
-    port: 1420,
+    port: 9245,
     strictPort: true,
   },
   envPrefix: ["VITE_", "WAILS_"],

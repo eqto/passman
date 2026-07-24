@@ -1,33 +1,30 @@
 version: '3'
 
+includes:
+  common: ./build/Taskfile.yml
+
 vars:
   NAME: passman
   FRONTEND_DIR: frontend
   BIN_DIR: build/bin
+  PACKAGE_MANAGER: bun
+  APP_NAME: passman
+  VITE_PORT: 9245
 
 tasks:
   build:
-    desc: Build the production binary
+    desc: Build the application
+    deps:
+      - task: common:build:frontend
+        vars:
+          DEV: "true"
     cmds:
-      - task: build:frontend
-      - task: build:app
-
-  build:frontend:
-    desc: Build the frontend assets
-    dir: {{.FRONTEND_DIR}}
-    cmds:
-      - bun install
-      - bun run build
-
-  build:app:
-    desc: Build the Go application
-    cmds:
-      - CGO_ENABLED=1 go build -tags gtk3 -o {{.BIN_DIR}}/{{.NAME}} .
+      - CGO_ENABLED=1 go build -tags gtk3 -o "{{.BIN_DIR}}/{{.NAME}}" .
 
   dev:
     desc: Run in development mode with hot reload
     cmds:
-      - wails3 dev
+      - wails3 dev -config ./build/config.yml
 
   generate:
     desc: Generate Wails bindings
@@ -38,3 +35,8 @@ tasks:
     desc: Run Go tests
     cmds:
       - go test ./...
+
+  run:
+    desc: Run the application
+    cmds:
+      - '"./{{.BIN_DIR}}/{{.NAME}}"'

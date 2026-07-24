@@ -12,6 +12,18 @@ frontend/dist/
 # Wails generated bindings (regenerated via `wails3 generate bindings`)
 frontend/bindings/
 
+# Wails build assets generated to root (should stay in build/)
+/.task/
+/android/
+/darwin/
+/ios/
+/linux/
+/windows/
+/docker/
+/appicon.icon/
+/appicon.png
+/config.yml
+
 # Environment and OS files
 .env
 .DS_Store
