@@ -37,6 +37,10 @@
   let unlockTargetVault = $state(null);
   let showCreate = $state(false);
 
+  let canLockVault = $derived(
+    !!contextMenu.vault && !!$vaultData[contextMenu.vault.path],
+  );
+
   function selectVault(id) {
     const vault = $vaults.find((v) => v.id === id);
     if (!vault || ($currentVault && $currentVault.path === vault.path)) {
@@ -61,6 +65,13 @@
 
   function handleWindowClick() {
     if (contextMenu.show) closeContextMenu();
+  }
+
+  function handleLockVault() {
+    if (contextMenu.vault && $vaultData[contextMenu.vault.path]) {
+      lockVaultByPath(contextMenu.vault.path);
+    }
+    closeContextMenu();
   }
 
   function openSettings() {
@@ -206,10 +217,12 @@
   <VaultContextMenu
     x={contextMenu.x}
     y={contextMenu.y}
+    canLock={canLockVault}
     canRename={contextMenu.vault &&
       $currentVault &&
       $currentVault.id === contextMenu.vault.id &&
       $isUnlocked}
+    onlock={handleLockVault}
     onsettings={openSettings}
     onremove={() => {
       if (contextMenu.vault) {

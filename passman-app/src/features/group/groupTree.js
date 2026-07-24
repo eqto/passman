@@ -10,6 +10,5 @@ export function buildTree(groups, parentId = null, depth = 0) {
       });
     }
   }
-  result.sort((a, b) => a.group.name.localeCompare(b.group.name));
   return result;
 }

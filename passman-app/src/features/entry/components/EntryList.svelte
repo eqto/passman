@@ -46,10 +46,10 @@
     openContextMenuState(event, { entry });
   }
 
-  let filtered = $derived(
-    entries
+  let filtered = $derived.by(() => {
+    const q = filterSearch.toLowerCase();
+    return entries
       .filter((e) => {
-        const q = filterSearch.toLowerCase();
         const matchesSearch =
           e.title.toLowerCase().includes(q) ||
           e.username.toLowerCase().includes(q) ||
@@ -61,8 +61,8 @@
         }
         return true;
       })
-      .sort((a, b) => a.title.localeCompare(b.title)),
-  );
+      .sort((a, b) => a.title.localeCompare(b.title));
+  });
 
   async function handleMenuCopyPassword() {
     if (contextMenu.entry?.password) {

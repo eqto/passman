@@ -3,9 +3,17 @@
     x = 0,
     y = 0,
     canRename = false,
+    canLock = false,
+    onlock = null,
     onsettings = null,
     onremove = null,
   } = $props();
+
+  function handleLock() {
+    if (canLock) {
+      onlock?.();
+    }
+  }
 
   function handleSettings() {
     if (canRename) {
@@ -19,6 +27,18 @@
 </script>
 
 <div class="menu" style="left: {x}px; top: {y}px" role="menu">
+  {#if canLock}
+    <div
+      class="menu-item"
+      role="menuitem"
+      tabindex="0"
+      onclick={handleLock}
+      onkeydown={(e) => (e.key === "Enter" || e.key === " ") && handleLock()}
+    >
+      Lock Vault
+    </div>
+    <div class="context-menu-divider"></div>
+  {/if}
   {#if canRename}
     <div
       class="menu-item"
