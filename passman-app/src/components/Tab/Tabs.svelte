@@ -104,5 +104,6 @@
     flex: 1;
     overflow: hidden;
     display: flex;
+    align-items: stretch;
   }
 </style>

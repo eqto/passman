@@ -175,7 +175,7 @@
     display: flex;
     align-items: center;
     gap: 0.35rem;
-    padding: 0.5rem;
+    padding: 0.375rem 0.5rem;
     cursor: pointer;
     font-size: 0.875rem;
     color: var(--text-color);

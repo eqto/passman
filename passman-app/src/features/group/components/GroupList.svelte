@@ -160,7 +160,9 @@
             handleDropInto(source, target, vaultGroups)}
         />
       {/if}
+    </div>
 
+    <div class="tag-sidebar-container">
       <TagSidebar
         tags={vaultTags}
         {selectedTags}
@@ -235,6 +237,12 @@
   }
 
   .trash-row-container {
+    flex-shrink: 0;
+    border-top: 1px solid var(--border-color);
+    background-color: var(--sidebar-bg);
+  }
+
+  .tag-sidebar-container {
     flex-shrink: 0;
     border-top: 1px solid var(--border-color);
     background-color: var(--sidebar-bg);
