@@ -96,8 +96,9 @@ export async function openVault(path, password) {
 
 export async function registerAndOpenVault(id, path, password) {
   const vault = await invoke("register_and_open_vault", { id, path, password });
-  vaults.update((list) => [...list, { id, name: vault.name, path }]);
-  currentVault.set({ ...vault, id });
+  const name = vault.name || path.split("/").pop().replace(/\.pmv$/i, "");
+  vaults.update((list) => [...list, { id, name, path }]);
+  currentVault.set({ ...vault, id, name });
   setVaultData(path, vault);
   return vault;
 }
