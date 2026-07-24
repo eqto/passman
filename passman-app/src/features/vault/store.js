@@ -73,8 +73,8 @@ function setVaultData(path, vault) {
   });
 }
 
-export async function createVault(id, name, path, password) {
-  const vault = await invoke("create_vault", { id, name, path, password });
+export async function createVault(id, name, path, password, securityLevel) {
+  const vault = await invoke("create_vault", { id, name, path, password, securityLevel });
   vaults.update((list) => [...list, vault]);
   currentVault.set(vault);
   setVaultData(path, vault);
@@ -162,20 +162,24 @@ export async function reorderVaults(orderedIds) {
   return list;
 }
 
-export async function convertButtercupVault(bcupPath, password, outputPath) {
+export async function convertButtercupVault(bcupPath, password, outputPath, securityLevel) {
   const id = crypto.randomUUID();
-  const vault = await invoke("convert_buttercup_vault", { bcupPath, password, outputPath, id });
+  const vault = await invoke("convert_buttercup_vault", { bcupPath, password, outputPath, id, securityLevel });
   vaults.update((list) => [...list, { id, name: vault.name, path: outputPath }]);
   currentVault.set({ ...vault, id });
   setVaultData(outputPath, vault);
   return vault;
 }
 
-export async function convertKeepassVault(kdbxPath, password, outputPath) {
+export async function convertKeepassVault(kdbxPath, password, outputPath, securityLevel) {
   const id = crypto.randomUUID();
-  const vault = await invoke("convert_keepass_vault", { kdbxPath, password, outputPath, id });
+  const vault = await invoke("convert_keepass_vault", { kdbxPath, password, outputPath, id, securityLevel });
   vaults.update((list) => [...list, { id, name: vault.name, path: outputPath }]);
   currentVault.set({ ...vault, id });
   setVaultData(outputPath, vault);
   return vault;
+}
+
+export async function changeSecurityLevel(path, password, newLevel) {
+  await invoke("change_security_level", { path, password, newLevel });
 }

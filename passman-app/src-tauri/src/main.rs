@@ -85,6 +85,7 @@ fn main() {
             reorder_vaults,
             convert_buttercup_vault,
             convert_keepass_vault,
+            change_security_level,
             list_groups,
             add_group,
             delete_group,

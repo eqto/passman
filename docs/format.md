@@ -111,6 +111,19 @@ salt        = 16 random bytes
 
 Implementations must be prepared to read non-default values from the header and use them to derive the same vault key.
 
+#### Security level presets
+
+Passman defines four security level presets that map to Argon2id parameter sets. The user selects a level at vault creation or import time; the corresponding parameters are stored in `kdf_params` and can be upgraded later via Vault Settings.
+
+| Level | `memory_kb` | `iterations` | `parallelism` | ~Unlock time | Description |
+|-------|-------------|--------------|---------------|-------------|-------------|
+| Low | 32,768 | 2 | 2 | ~0.3s | Faster unlock. Recommended for mobile and low-end devices. |
+| Medium (default) | 65,536 | 3 | 4 | ~0.8s | Balanced speed and protection. Recommended for most desktop users. |
+| Secure | 131,072 | 4 | 4 | ~2s | Strong brute-force resistance for sensitive credentials. Desktop only. |
+| Best | 262,144 | 6 | 8 | ~5s | Maximum protection. Requires 256MB+ free memory. |
+
+Changing the security level of an existing vault re-derives the vault key with a fresh salt and the new parameters, then re-encrypts the DEK. The payload is not re-encrypted.
+
 ### 4.2 Encryption (AES-256-GCM)
 
 PMV uses **AES-256-GCM** for both DEK encryption and payload encryption.

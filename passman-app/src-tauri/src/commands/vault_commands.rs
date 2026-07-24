@@ -1,5 +1,6 @@
-use passman_core::{buttercup, config, keepass, vault, AppConfig, VaultConfig};
+use passman_core::{buttercup, config, keepass, vault, AppConfig, SecurityLevel, VaultConfig};
 use tauri::State;
+use zeroize::Zeroizing;
 
 use crate::commands::dto::{vault_to_dto, VaultFileDTO};
 use crate::commands::state::{validate_reorder, AppState};
@@ -15,13 +16,16 @@ pub async fn create_vault(
     name: String,
     path: String,
     password: String,
+    security_level: Option<String>,
     state: State<'_, AppState>,
 ) -> Result<VaultConfig, String> {
     if vault::vault_exists(&path) {
         return Err("vault file already exists".to_string());
     }
+    let level = parse_security_level(security_level)?;
     let (vault, vault_key) =
-        vault::create_vault_file_with_key(&path, &name, &password).map_err(|e| e.to_string())?;
+        vault::create_vault_file_with_level(&path, &name, &password, level)
+            .map_err(|e| e.to_string())?;
     config::add_vault(&id, &name, &path).map_err(|e| e.to_string())?;
 
     state.insert_vault(&path, vault, vault_key);
@@ -155,9 +159,9 @@ pub async fn convert_buttercup_vault(
     password: String,
     output_path: String,
     id: String,
+    security_level: Option<String>,
     state: State<'_, AppState>,
 ) -> Result<VaultFileDTO, String> {
-    // Decrypt buttercup file
     let bcup =
         buttercup::decrypt_buttercup_file(&bcup_path, &password).map_err(|e| e.to_string())?;
 
@@ -165,8 +169,9 @@ pub async fn convert_buttercup_vault(
 
     let vault_name = passman_core::derive_vault_name(&import.name, &bcup_path);
 
+    let level = parse_security_level(security_level)?;
     let (mut vault, vault_key) =
-        vault::create_vault_file_with_key(&output_path, &vault_name, &password)
+        vault::create_vault_file_with_level(&output_path, &vault_name, &password, level)
             .map_err(|e| e.to_string())?;
 
     passman_core::build_payload(&mut vault, import);
@@ -190,6 +195,7 @@ pub async fn convert_keepass_vault(
     password: String,
     output_path: String,
     id: String,
+    security_level: Option<String>,
     state: State<'_, AppState>,
 ) -> Result<VaultFileDTO, String> {
     let kdbx =
@@ -199,8 +205,9 @@ pub async fn convert_keepass_vault(
 
     let vault_name = passman_core::derive_vault_name(&import.name, &kdbx_path);
 
+    let level = parse_security_level(security_level)?;
     let (mut vault, vault_key) =
-        vault::create_vault_file_with_key(&output_path, &vault_name, &password)
+        vault::create_vault_file_with_level(&output_path, &vault_name, &password, level)
             .map_err(|e| e.to_string())?;
 
     passman_core::build_payload(&mut vault, import);
@@ -213,4 +220,43 @@ pub async fn convert_keepass_vault(
     state.insert_vault(&output_path, vault, vault_key);
 
     Ok(dto)
+}
+
+#[tauri::command]
+pub async fn change_security_level(
+    path: String,
+    password: String,
+    new_level: String,
+    state: State<'_, AppState>,
+) -> Result<(), String> {
+    let level = parse_security_level(Some(new_level))?;
+
+    let vault_file = {
+        let guard = state.inner.lock().unwrap();
+        let open_vault = guard
+            .open_vaults
+            .get(&path)
+            .ok_or_else(|| "vault is not open".to_string())?;
+        open_vault.vault.clone()
+    };
+
+    let (new_header, new_vault_key) =
+        vault::change_kdf_params(&vault_file, &password, level).map_err(|e| e.to_string())?;
+
+    {
+        let mut guard = state.inner.lock().unwrap();
+        if let Some(open_vault) = guard.open_vaults.get_mut(&path) {
+            open_vault.vault.header = new_header;
+            open_vault.key = Some(Zeroizing::new(new_vault_key.to_vec()));
+        }
+    }
+
+    Ok(())
+}
+
+fn parse_security_level(level: Option<String>) -> Result<SecurityLevel, String> {
+    match level {
+        Some(s) => s.parse::<SecurityLevel>().map_err(|e| e.to_string()),
+        None => Ok(SecurityLevel::Medium),
+    }
 }

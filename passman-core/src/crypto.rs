@@ -31,14 +31,57 @@ pub struct KdfParams {
 
 impl Default for KdfParams {
     fn default() -> Self {
+        SecurityLevel::Medium.kdf_params()
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum SecurityLevel {
+    Low,
+    Medium,
+    Secure,
+    Best,
+}
+
+impl SecurityLevel {
+    pub fn kdf_params(self) -> KdfParams {
         let salt: [u8; SALT_SIZE] = random_bytes(SALT_SIZE)
             .try_into()
             .expect("salt generated with correct length");
-        Self {
+        let (memory_kb, iterations, parallelism) = match self {
+            SecurityLevel::Low => (32_768, 2, 2),
+            SecurityLevel::Medium => (65_536, 3, 4),
+            SecurityLevel::Secure => (131_072, 4, 4),
+            SecurityLevel::Best => (262_144, 6, 8),
+        };
+        KdfParams {
             salt,
-            memory_kb: 65536,
-            iterations: 3,
-            parallelism: 4,
+            memory_kb,
+            iterations,
+            parallelism,
+        }
+    }
+
+    pub fn label(self) -> &'static str {
+        match self {
+            SecurityLevel::Low => "low",
+            SecurityLevel::Medium => "medium",
+            SecurityLevel::Secure => "secure",
+            SecurityLevel::Best => "best",
+        }
+    }
+}
+
+impl std::str::FromStr for SecurityLevel {
+    type Err = String;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_lowercase().as_str() {
+            "low" => Ok(Self::Low),
+            "medium" => Ok(Self::Medium),
+            "secure" => Ok(Self::Secure),
+            "best" => Ok(Self::Best),
+            other => Err(format!("unknown security level: {other}")),
         }
     }
 }

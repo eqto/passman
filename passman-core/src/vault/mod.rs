@@ -3,7 +3,9 @@ mod types;
 
 pub use types::*;
 
-use crate::crypto::{decrypt, derive_key, encrypt, random_bytes, KdfParams, KEY_SIZE};
+use crate::crypto::{
+    decrypt, derive_key, encrypt, random_bytes, KdfParams, SecurityLevel, KEY_SIZE,
+};
 use base64::{engine::general_purpose, Engine as _};
 use chrono::Utc;
 use format::{read_vault_file, write_vault_file};
@@ -20,7 +22,16 @@ pub fn create_vault_file_with_key(
     name: &str,
     password: &str,
 ) -> Result<(VaultFile, [u8; KEY_SIZE]), VaultError> {
-    let kdf_params = KdfParams::default();
+    create_vault_file_with_level(path, name, password, SecurityLevel::Medium)
+}
+
+pub fn create_vault_file_with_level(
+    path: &str,
+    name: &str,
+    password: &str,
+    level: SecurityLevel,
+) -> Result<(VaultFile, [u8; KEY_SIZE]), VaultError> {
+    let kdf_params = level.kdf_params();
     let vault_key = derive_key(password, &kdf_params)?;
     let dek = random_bytes(KEY_SIZE);
     let dek_array: [u8; KEY_SIZE] = dek.as_slice().try_into().unwrap();
@@ -128,4 +139,42 @@ pub fn save_vault_file_with_key(vault: &VaultFile, vault_key: &[u8]) -> Result<(
 
     write_vault_file(&vault.path, &header, &encrypted_payload.bytes)?;
     Ok(())
+}
+
+/// Change the KDF parameters of an existing vault by re-deriving the vault key
+/// with new parameters and re-encrypting the DEK.
+///
+/// Flow: decrypt DEK with old key → derive new vault key with new params + fresh salt →
+/// re-encrypt DEK → update header → rewrite file.
+pub fn change_kdf_params(
+    vault: &VaultFile,
+    password: &str,
+    new_level: SecurityLevel,
+) -> Result<(VaultHeader, [u8; KEY_SIZE]), VaultError> {
+    let old_kdf_params: KdfParams = vault.header.kdf_params.clone().try_into()?;
+    let old_vault_key = derive_key(password, &old_kdf_params)?;
+
+    let encrypted_dek = general_purpose::STANDARD.decode(&vault.header.encrypted_dek)?;
+    let dek_nonce = general_purpose::STANDARD.decode(&vault.header.dek_nonce)?;
+    let dek = decrypt(&encrypted_dek, &old_vault_key, &dek_nonce)?;
+    let _dek_array: [u8; KEY_SIZE] = dek
+        .as_slice()
+        .try_into()
+        .map_err(|_| VaultError::InvalidFormat)?;
+
+    let new_kdf_params = new_level.kdf_params();
+    let new_vault_key = derive_key(password, &new_kdf_params)?;
+    let re_encrypted_dek = encrypt(&dek, &new_vault_key);
+
+    let mut new_header = vault.header.clone();
+    new_header.kdf_params = KdfParamsJson::from(&new_kdf_params);
+    new_header.encrypted_dek = general_purpose::STANDARD.encode(&re_encrypted_dek.bytes);
+    new_header.dek_nonce = general_purpose::STANDARD.encode(&re_encrypted_dek.nonce);
+    new_header.updated_at = Utc::now();
+
+    let (header_ref, encrypted_payload) = read_vault_file(&vault.path)?;
+    let _ = header_ref;
+    write_vault_file(&vault.path, &new_header, &encrypted_payload)?;
+
+    Ok((new_header, new_vault_key))
 }

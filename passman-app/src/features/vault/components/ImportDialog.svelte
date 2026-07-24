@@ -8,6 +8,7 @@
     DialogFooter,
     DialogActions,
   } from "../../../components/dialog";
+  import SecurityLevelSlider from "./SecurityLevelSlider.svelte";
 
   let { format = "buttercup", onsuccess = null, oncancel = null } = $props();
 
@@ -40,6 +41,7 @@
   let sourcePath = $state("");
   let password = $state("");
   let outputPath = $state("");
+  let securityLevel = $state("medium");
   let error = $state("");
   let loading = $state(false);
   let passwordInput;
@@ -78,7 +80,7 @@
     error = "";
 
     try {
-      await cfg.importFn(sourcePath, password, outputPath);
+      await cfg.importFn(sourcePath, password, outputPath, securityLevel);
       onsuccess?.();
       reset();
     } catch (e) {
@@ -98,6 +100,7 @@
     sourcePath = "";
     password = "";
     outputPath = "";
+    securityLevel = "medium";
     error = "";
     loading = false;
   }
@@ -176,6 +179,7 @@
             </button>
           </div>
         </div>
+        <SecurityLevelSlider bind:value={securityLevel} disabled={loading} />
       {:else}
         <div class="info-message">
           {cfg.infoText}

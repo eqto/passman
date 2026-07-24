@@ -8,14 +8,21 @@
     DialogFooter,
     DialogActions,
   } from "../../../components/dialog";
+  import SecurityLevelSlider from "./SecurityLevelSlider.svelte";
 
   let { oncreated = null, oncancel = null } = $props();
 
   let newName = $state("");
   let newPath = $state("");
   let newPassword = $state("");
+  let confirmPassword = $state("");
+  let securityLevel = $state("medium");
   let error = $state("");
   let isCreating = $state(false);
+
+  let passwordsMatch = $derived(
+    newPassword && confirmPassword && newPassword === confirmPassword,
+  );
 
   async function pickFile() {
     const selected = await save({
@@ -29,11 +36,15 @@
   async function handleCreate() {
     if (isCreating) return;
     if (!newName || !newPath || !newPassword) return;
+    if (newPassword !== confirmPassword) {
+      error = "Passwords do not match";
+      return;
+    }
     error = "";
     isCreating = true;
     try {
       const id = crypto.randomUUID();
-      await createVault(id, newName, newPath, newPassword);
+      await createVault(id, newName, newPath, newPassword, securityLevel);
       reset();
       oncreated?.();
     } catch (e) {
@@ -47,6 +58,8 @@
     newName = "";
     newPath = "";
     newPassword = "";
+    confirmPassword = "";
+    securityLevel = "medium";
   }
 
   function handleCancel() {
@@ -80,14 +93,25 @@
           Browse
         </button>
       </div>
+      <SecurityLevelSlider bind:value={securityLevel} disabled={isCreating} />
       <input
         class="modal-input"
         bind:value={newPassword}
         type="password"
         placeholder="Vault password"
         disabled={isCreating}
+      />
+      <input
+        class="modal-input"
+        bind:value={confirmPassword}
+        type="password"
+        placeholder="Confirm vault password"
+        disabled={isCreating}
         onkeydown={(e) => e.key === "Enter" && handleCreate()}
       />
+      {#if confirmPassword && !passwordsMatch}
+        <p class="modal-error">Passwords do not match</p>
+      {/if}
       {#if error}
         <p class="modal-error">{error}</p>
       {/if}
