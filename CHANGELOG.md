@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Frontend IPC changed from Tauri `invoke()` to auto-generated Wails bindings.
 - Build system changed from `cargo` to `go build` with `Taskfile.yml` for convenience commands.
 - CI workflow updated to use Go instead of Rust.
+- Faster Argon2id key derivation: Go's `golang.org/x/crypto/argon2` parallelizes lanes across goroutines more efficiently than the Rust `argon2` crate, resulting in significantly faster vault creation and unlock times at all security levels while preserving identical KDF parameters.
 
 ### Added
 
