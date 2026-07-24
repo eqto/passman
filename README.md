@@ -18,6 +18,25 @@ A cross-platform, offline-first password manager with multi-vault support.
 
 > **Disclaimer:** Passman is a new project and has not undergone a formal security audit. Use at your own risk.
 
+## Download
+
+Pre-built binaries are available for each release on the [Releases](https://github.com/Eqto/Passman/releases) page.
+
+### Desktop App
+
+| OS | Architecture | Download |
+| --- | --- | --- |
+| Linux | x86_64 | [`.AppImage`](https://github.com/Eqto/Passman/releases/latest/download/Passman_0.1.0-rc.2_amd64.AppImage) · [`.deb`](https://github.com/Eqto/Passman/releases/latest/download/passman_0.1.0-rc.2_amd64.deb) · [`.rpm`](https://github.com/Eqto/Passman/releases/latest/download/passman-0.1.0-rc.2-1.x86_64.rpm) |
+| macOS | Apple Silicon | [`.dmg`](https://github.com/Eqto/Passman/releases/latest/download/Passman_0.1.0-rc.2_aarch64.dmg) |
+| macOS | Intel | [`.dmg`](https://github.com/Eqto/Passman/releases/latest/download/Passman_0.1.0-rc.2_x64.dmg) |
+| Windows | x86_64 | [`.exe` (installer)](https://github.com/Eqto/Passman/releases/latest/download/Passman_0.1.0-rc.2_x64-setup.exe) · [portable `.exe`](https://github.com/Eqto/Passman/releases/latest/download/passman-portable.exe) |
+
+> Download links are updated automatically on each release.
+
+### CLI
+
+The CLI is built alongside the desktop app. Pre-built binaries are available on the [Releases](https://github.com/Eqto/Passman/releases/latest) page under the CI artifacts.
+
 ## Project Structure
 
 - `passman-core/` — Core Rust library (crypto, vault format, config, Buttercup import)

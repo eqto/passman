@@ -109,3 +109,126 @@ jobs:
           files: ${{ matrix.portable }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  update-readme:
+    name: Update README Download Links
+    needs: [build-app]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Fetch release assets and update README
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TAG="${{ github.ref_name }}"
+          REPO="${{ github.repository }}"
+
+          # Fetch release assets
+          ASSETS=$(gh release view "$TAG" --repo "$REPO" --json assets --jq '.assets[].name')
+
+          # Find asset URLs by pattern
+          find_asset() {
+            echo "$ASSETS" | grep -m1 "$1" || true
+          }
+
+          APPIMAGE=$(find_asset '\.AppImage$')
+          DEB=$(find_asset '\.deb$')
+          RPM=$(find_asset '\.rpm$')
+          DMG_AARCH64=$(find_asset 'aarch64.*\.dmg$\|arm64.*\.dmg$')
+          DMG_X64=$(find_asset 'x64.*\.dmg$\|x86_64.*\.dmg$')
+          EXE_SETUP=$(find_asset 'setup.*\.exe$\|_x64-setup\.exe$')
+          PORTABLE=$(find_asset 'portable')
+
+          # If no aarch64 dmg found, try the single dmg (universal build)
+          if [ -z "$DMG_AARCH64" ] && [ -n "$DMG_X64" ]; then
+            DMG_AARCH64="$DMG_X64"
+          fi
+
+          BASE="https://github.com/${REPO}/releases/latest/download"
+
+          # Build the download table
+          {
+            echo "## Download"
+            echo ""
+            echo "Pre-built binaries are available for each release on the [Releases](https://github.com/${REPO}/releases) page."
+            echo ""
+            echo "### Desktop App"
+            echo ""
+            echo "| OS | Architecture | Download |"
+            echo "| --- | --- | --- |"
+
+            LINUX_ROW=""
+            if [ -n "$APPIMAGE" ]; then
+              LINUX_ROW="[\\\`.AppImage\\\`](${BASE}/${APPIMAGE})"
+            fi
+            if [ -n "$DEB" ]; then
+              if [ -n "$LINUX_ROW" ]; then LINUX_ROW="$LINUX_ROW · "; fi
+              LINUX_ROW="${LINUX_ROW}[\\\`.deb\\\`](${BASE}/${DEB})"
+            fi
+            if [ -n "$RPM" ]; then
+              if [ -n "$LINUX_ROW" ]; then LINUX_ROW="$LINUX_ROW · "; fi
+              LINUX_ROW="${LINUX_ROW}[\\\`.rpm\\\`](${BASE}/${RPM})"
+            fi
+            if [ -n "$LINUX_ROW" ]; then
+              echo "| Linux | x86_64 | ${LINUX_ROW} |"
+            fi
+
+            if [ -n "$DMG_AARCH64" ]; then
+              echo "| macOS | Apple Silicon | [\\\`.dmg\\\`](${BASE}/${DMG_AARCH64}) |"
+            fi
+            if [ -n "$DMG_X64" ]; then
+              echo "| macOS | Intel | [\\\`.dmg\\\`](${BASE}/${DMG_X64}) |"
+            fi
+
+            WIN_ROW=""
+            if [ -n "$EXE_SETUP" ]; then
+              WIN_ROW="[\\\`.exe\\\` (installer)](${BASE}/${EXE_SETUP})"
+            fi
+            if [ -n "$PORTABLE" ]; then
+              if [ -n "$WIN_ROW" ]; then WIN_ROW="$WIN_ROW · "; fi
+              WIN_ROW="${WIN_ROW}[portable \\\`.exe\\\`](${BASE}/${PORTABLE})"
+            fi
+            if [ -n "$WIN_ROW" ]; then
+              echo "| Windows | x86_64 | ${WIN_ROW} |"
+            fi
+
+            echo ""
+            echo "### CLI"
+            echo ""
+            echo "The CLI is built alongside the desktop app. Pre-built binaries are available on the [Releases](https://github.com/${REPO}/releases/latest) page under the CI artifacts."
+            echo ""
+          } > /tmp/download_section.txt
+
+          # Replace the Download section in README.md (from "## Download" to "## Project Structure")
+          python3 << 'PYEOF'
+          import re
+
+          with open("README.md", "r") as f:
+              content = f.read()
+
+          with open("/tmp/download_section.txt", "r") as f:
+              new_section = f.read().rstrip() + "\n"
+
+          # Replace everything between "## Download" and "## Project Structure"
+          pattern = r'## Download\n.*?\n## Project Structure'
+          replacement = new_section + "## Project Structure"
+          new_content = re.sub(pattern, replacement, content, flags=re.DOTALL)
+
+          with open("README.md", "w") as f:
+              f.write(new_content)
+
+          print("README.md updated successfully")
+          PYEOF
+
+      - name: Commit updated README
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          if git diff --cached --quiet; then
+            echo "No changes to README"
+          else
+            git commit -m "docs: update download links for ${{ github.ref_name }}"
+            git push
+          fi
