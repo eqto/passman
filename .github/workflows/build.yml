@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.24"
+          go-version: "1.26"
       - uses: oven-sh/setup-bun@v2.2.0
         with:
           bun-version: 1.2.0
@@ -38,28 +38,50 @@ jobs:
           bun run build
       - name: Build app
         run: CGO_ENABLED=1 go build -tags gtk3 -o /tmp/passman .
-      - name: Build CLI
-        run: go build -o /tmp/passman-cli ./cmd/passman-cli
 
   build-app:
-    name: Build App (${{ matrix.os }})
+    name: Build App (${{ matrix.target }})
     if: github.event_name == 'release'
     strategy:
       fail-fast: false
       matrix:
         include:
           - os: ubuntu-latest
+            target: linux-amd64
             artifact: passman-linux-amd64
+            goarch: amd64
+            package: rpm
+          - os: ubuntu-latest
+            target: linux-amd64
+            artifact: passman-linux-amd64
+            goarch: amd64
+            package: deb
           - os: windows-latest
+            target: windows-amd64
             artifact: passman-windows-amd64.exe
+            goarch: amd64
+            package: msi
+          - os: windows-latest
+            target: windows-arm64
+            artifact: passman-windows-arm64.exe
+            goarch: arm64
+            package: none
           - os: macos-latest
+            target: darwin-arm64
             artifact: passman-darwin-arm64
+            goarch: arm64
+            package: dmg
+          - os: macos-13
+            target: darwin-amd64
+            artifact: passman-darwin-amd64
+            goarch: amd64
+            package: dmg
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.24"
+          go-version: "1.26"
       - uses: oven-sh/setup-bun@v2.2.0
         with:
           bun-version: 1.2.0
@@ -76,7 +98,28 @@ jobs:
       - name: Build app
         env:
           CGO_ENABLED: "1"
+          GOARCH: ${{ matrix.goarch }}
         run: go build -tags gtk3 -o ${{ matrix.artifact }} .
+      - name: Package .rpm
+        if: matrix.package == 'rpm'
+        run: |
+          gem install --no-document fpm
+          fpm -s dir -t rpm -n passman -v ${{ github.ref_name }} -p passman-${{ github.ref_name }}-1.x86_64.rpm \
+            --prefix /usr/local/bin ${{ matrix.artifact }}
+      - name: Package .deb
+        if: matrix.package == 'deb'
+        run: |
+          gem install --no-document fpm
+          fpm -s dir -t deb -n passman -v ${{ github.ref_name }} -p passman_${{ github.ref_name }}_amd64.deb \
+            --prefix /usr/local/bin ${{ matrix.artifact }}
+      - name: Package .dmg
+        if: matrix.package == 'dmg'
+        run: |
+          hdiutil create -volname "Passman" -srcfolder ${{ matrix.artifact }} -fs APFS -format UDZO passman-${{ matrix.target }}.dmg
+      - name: Package .msi
+        if: matrix.package == 'msi'
+        run: |
+          echo "MSI packaging requires WiX toolset - skipping for now, uploading plain .exe"
       - name: Upload binary to release
         uses: softprops/action-gh-release@v3
         with:
@@ -84,32 +127,27 @@ jobs:
           files: ${{ matrix.artifact }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  build-cli:
-    name: Build CLI (${{ matrix.os }})
-    if: github.event_name == 'release'
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: ubuntu-latest
-            artifact: passman-cli-linux-amd64
-          - os: windows-latest
-            artifact: passman-cli-windows-amd64.exe
-          - os: macos-latest
-            artifact: passman-cli-darwin-arm64
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-go@v5
-        with:
-          go-version: "1.24"
-      - name: Build CLI
-        run: go build -o ${{ matrix.artifact }} ./cmd/passman-cli
-      - name: Upload binary to release
+      - name: Upload .rpm to release
+        if: matrix.package == 'rpm'
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ github.ref_name }}
-          files: ${{ matrix.artifact }}
+          files: passman-${{ github.ref_name }}-1.x86_64.rpm
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload .deb to release
+        if: matrix.package == 'deb'
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: passman_${{ github.ref_name }}_amd64.deb
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload .dmg to release
+        if: matrix.package == 'dmg'
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: passman-${{ matrix.target }}.dmg
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0-rc.3] - 2026-07-25
+
 ### Changed
 
 - Migrated backend from Rust/Tauri v2 to Go/Wails v3.
@@ -16,9 +18,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Build system changed from `cargo` to `go build` with `Taskfile.yml` for convenience commands.
 - CI workflow updated to use Go instead of Rust.
 - Faster Argon2id key derivation: Go's `golang.org/x/crypto/argon2` parallelizes lanes across goroutines more efficiently than the Rust `argon2` crate, resulting in significantly faster vault creation and unlock times at all security levels while preserving identical KDF parameters.
+- Vault creation dialog split into two-page wizard: vault details first, then security level selection.
 
 ### Added
 
+- System tray (status bar) support with icon, tooltip, and context menu. Closing the window minimizes to tray; tray click toggles window visibility.
 - KeePass `.kdbx` database import (CLI: `import-keepass`, desktop app: Import dialog).
 - Security level selection at vault creation (Low / Medium / Secure / Best Argon2id presets).
 - `ChangeSecurityLevel` service method to upgrade Argon2id parameters on existing vaults.
@@ -32,6 +36,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Per-vault view state isolation via `stores/selection.js`.
 - SCSS design system with Material Design 3 color tokens.
 - `Taskfile.yml` for dev/build/test/generate commands.
+- Restored original Passman lock icon (deleted during Tauri migration).
+- `.gitattributes` to exclude generated files from GitHub language stats.
 
 ### Removed
 
@@ -39,6 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tauri v2 configuration and dependencies.
 - `Cargo.toml` workspace definition.
 - `Zeroizing<Vec<u8>>` key handling (replaced with Go `[]byte`).
+- CLI release builds from CI.
 
 ## [0.1.0-rc.2] - 2026-07-24
 
