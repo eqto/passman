@@ -10,10 +10,12 @@ A cross-platform, offline-first password manager with multi-vault support.
 - **Argon2id key derivation** — Resistant to GPU/ASIC brute-force attacks
 - **Two-layer key model** — Password → vault key → DEK → payload, enabling password changes without re-encrypting all data
 - **Buttercup import** — Import `.bcup` files from [Buttercup](https://buttercup.pw)
+- **KeePass import** — Import `.kdbx` databases from [KeePass](https://keepassxc.org)
 - **Password generator** — Cryptographically secure random password generation
 - **Auto-lock** — Vault locks automatically after 5 minutes of inactivity
 - **Trash & restore** — Deleted entries go to trash with restore support
 - **Cross-vault operations** — Move or copy entries between vaults
+- **Security levels** — Choose Argon2id parameters at vault creation (Low / Medium / Secure / Best)
 - **Dark/light theme** — Follows system theme
 
 > **Disclaimer:** Passman is a new project and has not undergone a formal security audit. Use at your own risk.
@@ -39,9 +41,13 @@ The CLI is built alongside the desktop app. Pre-built binaries are available on 
 
 ## Project Structure
 
-- `passman-core/` — Core Rust library (crypto, vault format, config, Buttercup import)
-- `passman-app/` — Tauri desktop application (Svelte 5 + Rust)
-- `passman-cli/` — Rust CLI tools for vault creation, import, export, and conversion
+- `pkg/` — Core Go packages: `crypto` (Argon2id, AES-256-GCM), `vault` (PMV format), `buttercup` (import), `keepass` (import)
+- `internal/` — Application services: `app` (vault/group/entry/password services), `state` (in-memory state), `config` (app config), `vimport` (import pipeline)
+- `cmd/passman-cli/` — CLI tool for vault creation, import, export, and conversion
+- `frontend/` — Svelte 5 frontend (Wails v3 desktop app)
+- `main.go` — Wails v3 application entry point
+- `wails.json` — Wails application configuration
+- `Taskfile.yml` — Task runner for dev/build/test commands
 - `docs/` — Architecture docs and [PMV file format specification](docs/format.md)
 
 ## File Format
@@ -50,15 +56,16 @@ Vaults are stored in the PMV (Passman Vault) format. See [docs/format.md](docs/f
 
 ## Prerequisites
 
-- **Rust** (stable) — install via [rustup](https://rustup.rs)
+- **Go** 1.24+ — install from [go.dev](https://go.dev/doc/install)
 - **Bun** — install from [bun.sh](https://bun.sh)
-- **Tauri v2 system dependencies** — see [tauri.app/start/prerequisites](https://tauri.app/start/prerequisites/)
+- **Wails v3 CLI** — install with `go install github.com/wailsapp/wails/v3/cmd/wails3@latest`
+- **Task** (optional) — install from [taskfile.dev](https://taskfile.dev) for convenience commands
 
 ### Linux (Ubuntu 24.04)
 
 ```bash
 sudo apt-get update
-sudo apt-get install -y libwebkit2gtk-4.1-dev libjavascriptcoregtk-4.1-dev libgtk-3-dev libsoup2.4-dev build-essential curl wget libssl-dev libayatana-appindicator3-dev librsvg2-dev
+sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libjavascriptcoregtk-4.1-dev libsoup-3.0-dev libglib2.0-dev build-essential pkg-config
 ```
 
 ### macOS
@@ -73,31 +80,39 @@ Install [Microsoft Visual Studio C++ Build Tools](https://visualstudio.microsoft
 
 ## Development
 
-### Core library & CLI
+### Core packages & CLI
 
 ```bash
-cargo build --workspace
-cargo test --workspace
+go build ./...
+go test ./...
 ```
 
 ### Desktop app
 
 ```bash
-cd passman-app
-bun install
-bun run tauri dev
+# Using Wails CLI directly
+wails3 dev
+
+# Or using Task
+task dev
+```
+
+### Production build
+
+```bash
+# Using Task
+task build
+
+# Or manually
+cd frontend && bun install && bun run build && cd ..
+CGO_ENABLED=1 go build -tags gtk3 -o build/bin/passman .
 ```
 
 ## Releases
 
-This repository is a monorepo containing the desktop app, CLI, and shared `passman-core` library. Keeping them together avoids the coordination overhead of publishing `passman-core` separately or maintaining cross-repo git dependencies.
+This repository is a monorepo containing the desktop app, CLI, and shared Go packages. Keeping them together avoids the coordination overhead of publishing shared packages separately or maintaining cross-repo dependencies.
 
-When releasing, you can either:
-
-- Use a single workspace tag (e.g., `v0.1.0`) when the app, CLI, and core ship together.
-- Use component-specific tags (e.g., `app-v0.1.0`, `cli-v0.1.0`, `passman-core-v0.1.0`) when components need independent releases.
-
-The `.github/workflows/build.yml` workflow builds the CLI and the Tauri app on Ubuntu, Windows, and macOS runners and uploads the resulting artifacts.
+The `.github/workflows/build.yml` workflow builds the CLI and the Wails app on Ubuntu, Windows, and macOS runners and uploads the resulting artifacts.
 
 ## Contributing
 

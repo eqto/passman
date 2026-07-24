@@ -5,6 +5,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Migrated backend from Rust/Tauri v2 to Go/Wails v3.
+- Core library restructured from Rust workspace (`passman-core`, `passman-cli`, `passman-app`) to Go module (`pkg/`, `internal/`, `cmd/passman-cli/`).
+- CLI rewritten from `clap` (Rust) to `cobra` (Go).
+- Frontend IPC changed from Tauri `invoke()` to auto-generated Wails bindings.
+- Build system changed from `cargo` to `go build` with `Taskfile.yml` for convenience commands.
+- CI workflow updated to use Go instead of Rust.
+
+### Added
+
+- KeePass `.kdbx` database import (CLI: `import-keepass`, desktop app: Import dialog).
+- Security level selection at vault creation (Low / Medium / Secure / Best Argon2id presets).
+- `ChangeSecurityLevel` service method to upgrade Argon2id parameters on existing vaults.
+- `ImportDialog` component for importing Buttercup/KeePass vaults from the desktop app.
+- `SecurityLevelSlider` component for security level selection.
+- `OpenVaultMenu` component for opening existing vault files.
+- `PasswordGenerator` component with configurable charset and length.
+- `TagManager` component for entry tag management.
+- `Tree`/`TreeItem` reusable components for group and trash lists.
+- `Tab` system components for vault tab management.
+- Per-vault view state isolation via `stores/selection.js`.
+- SCSS design system with Material Design 3 color tokens.
+- `Taskfile.yml` for dev/build/test/generate commands.
+
+### Removed
+
+- Rust workspace (`passman-core/`, `passman-cli/`, `passman-app/`).
+- Tauri v2 configuration and dependencies.
+- `Cargo.toml` workspace definition.
+- `Zeroizing<Vec<u8>>` key handling (replaced with Go `[]byte`).
+
 ## [0.1.0-rc.2] - 2026-07-24
 
 ### Added

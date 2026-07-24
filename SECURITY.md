@@ -18,9 +18,9 @@ You will receive a response within 72 hours. If the vulnerability is confirmed, 
 
 - Vault encryption (AES-256-GCM, Argon2id key derivation)
 - Vault file format (PMV) parsing and validation
-- In-memory key handling and zeroization
-- Tauri IPC boundary and CSP configuration
-- Password generator randomness source
+- In-memory key handling
+- Wails IPC boundary between Go backend and webview frontend
+- Password generator randomness source (`crypto/rand`)
 
 ## Out of Scope
 
@@ -33,7 +33,7 @@ You will receive a response within 72 hours. If the vulnerability is confirmed, 
 - **KDF:** Argon2id (64 MiB, 3 iterations, 4 lanes by default)
 - **Cipher:** AES-256-GCM with 12-byte random nonce
 - **Key model:** User password → vault key → DEK → payload (two-layer encryption)
-- **Key material:** Stored in memory using `Zeroizing<Vec<u8>>`, zeroed on lock
+- **Key material:** Vault keys stored as `[]byte` in `AppState.openVaults`, cleared from memory on lock
 - **File integrity:** GCM authentication tag verified on every decryption
 
 **Note:** Passman has not undergone a formal security audit. Use at your own risk.

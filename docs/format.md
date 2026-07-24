@@ -356,17 +356,18 @@ The binary file version remains `1`. The header `version` remains `1`. Implement
 
 ## 8. Reference Implementation
 
-The canonical implementation is in `passman-core/src/vault.rs` and `passman-core/src/crypto.rs`. It provides the following relevant functions and constants:
+The canonical implementation is in the `pkg/vault` and `pkg/crypto` Go packages. It provides the following relevant functions and constants:
 
 | Symbol         | Location                          | Purpose                                      |
 |----------------|-----------------------------------|----------------------------------------------|
-| `MAGIC`        | `passman-core/src/vault.rs`       | The byte sequence `b"PMV "`.                 |
-| `VERSION`      | `passman-core/src/vault.rs`       | The current format version `1`.             |
-| `create_vault_file` | `passman-core/src/vault.rs`  | Creates a new PMV file.                      |
-| `open_vault_file`   | `passman-core/src/vault.rs`  | Opens and decrypts an existing PMV file.     |
-| `derive_key`   | `passman-core/src/crypto.rs`      | Derives a 32-byte key from a password.       |
-| `encrypt`      | `passman-core/src/crypto.rs`      | AES-256-GCM encryption.                      |
-| `decrypt`      | `passman-core/src/crypto.rs`      | AES-256-GCM decryption.                      |
+| `Magic`        | `pkg/vault/types.go`              | The byte sequence `"PMV "`.                  |
+| `Version`      | `pkg/vault/types.go`              | The current format version `1`.              |
+| `CreateVaultFile` | `pkg/vault/vault.go`          | Creates a new PMV file.                      |
+| `OpenVaultFile`   | `pkg/vault/vault.go`          | Opens and decrypts an existing PMV file.     |
+| `SaveVaultFile`   | `pkg/vault/vault.go`          | Re-encrypts and saves a vault.               |
+| `DeriveKey`    | `pkg/crypto/crypto.go`            | Derives a 32-byte key from a password.       |
+| `Encrypt`      | `pkg/crypto/crypto.go`            | AES-256-GCM encryption.                      |
+| `Decrypt`      | `pkg/crypto/crypto.go`            | AES-256-GCM decryption.                      |
 
 ## 9. Security Notes
 

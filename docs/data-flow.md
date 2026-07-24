@@ -10,7 +10,7 @@ Textual diagrams showing how data moves through the Passman application.
 ┌─────────────────────────────────────────────────────────────┐
 │                     Svelte Stores                           │
 │                                                             │
-│  stores/vaults.js                                           │
+│  features/vault/store.js                                    │
 │  ┌─────────────┐  ┌──────────────┐  ┌──────────────┐       │
 │  │ vaults      │  │ currentVault │  │ vaultData    │       │
 │  │ (writable)  │  │ (writable)   │  │ (writable)   │       │
@@ -19,7 +19,7 @@ Textual diagrams showing how data moves through the Passman application.
 │  │             │  │              │  │   groups,    │       │
 │  │             │  │              │  │   tags,      │       │
 │  │             │  │              │  │   entries,   │       │
-│  │             │  │              │  │   viewState  │       │
+│  │             │  │              │  │   trash      │       │
 │  │             │  │              │  │ }}           │       │
 │  └──────┬──────┘  └──────┬───────┘  └──────┬───────┘       │
 │         │                │                 │                │
@@ -29,125 +29,134 @@ Textual diagrams showing how data moves through the Passman application.
 │         │     │ isUnlocked           │◄────┘                │
 │         │     │ groups               │                      │
 │         │     │ entries              │                      │
-│         │     │ tags                 │                      │
 │         │     └──────────────────────┘                      │
-│         │                                                   │
-│  ┌──────┴──────┐                                           │
-│  │ saveStatus  │  ◄── updated via Tauri event listener     │
-│  │ (writable)  │      "save-status" → "saving"/"saved"     │
-│  └─────────────┘                                           │
-│                                                            │
-│  Derived stores also include `trash`.
 │                                                             │
-│  stores/entries.js          stores/groups.js                │
+│  stores/selection.js                                        │
+│  ┌────────────────────────────────────────────────┐         │
+│  │ Per-vault writable stores (Map<path, store>)   │         │
+│  │ { selectedGroup, selectedEntry, editingEntry,  │         │
+│  │   mode, trashMode, selectedTrashGroup,         │         │
+│  │   selectedTags }                               │         │
+│  └────────────────────────────────────────────────┘         │
+│                                                             │
+│  features/entry/store.js    features/group/store.js         │
 │  ┌────────────────┐        ┌──────────────────┐             │
 │  │ addEntry       │        │ addGroup         │             │
 │  │ updateEntry    │        │ addTag           │             │
 │  │ deleteEntry    │        │ deleteGroup      │             │
-│  │ moveEntryToGrp │        │ reorderGroups    │             │
-│  │ moveEntryToVlt │        └──────────────────┘             │
-│  │ copyEntryToGrp │                                         │
-│  │ copyEntryToVlt │                                         │
-│  │ generatePasswd │                                         │
-│  └────────────────┘                                        │
+│  │ restoreEntry   │        │ reorderGroups    │             │
+│  │ moveEntryToGrp │        │ mergeGroups      │             │
+│  │ moveEntryToVlt │        │ moveGroupToVault │             │
+│  │ copyEntryToGrp │        │ copyGroupToVault │             │
+│  │ copyEntryToVlt │        │ moveGroupToParent│             │
+│  └────────────────┘        └──────────────────┘             │
 │                                                             │
-│  All functions: invoke() → Tauri backend → updateVaultData()│
+│  All functions: Wails binding → Go backend → updateVaultData│
+│  Save status: Events.On("save-status") → showToast()       │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 **Key pattern**: Every store mutation function follows the same flow:
 1. Read `currentVault` to get the vault path
-2. Call `invoke("command_name", { path, ...params })`
+2. Call the auto-generated Wails binding (e.g., `entryService.AddEntry(path, entry)`)
 3. On success, call `updateVaultData(path, { field: result })` to update the `vaultData` store
 4. Svelte reactivity propagates changes to all derived stores and components
 
 ---
 
-## 2. Tauri IPC Call Map
+## 2. Wails IPC Call Map
 
 ```
-Frontend (Svelte)                          Backend (Rust)
+Frontend (Svelte)                          Backend (Go)
 ───────────────                            ──────────────
 
-stores/vaults.js:
-  loadVaults()          ──invoke──►  list_vaults()
-  createVault()         ──invoke──►  create_vault()
-  openVault()           ──invoke──►  open_vault()
-  registerAndOpenVault()──invoke──►  register_and_open_vault()
-  closeVault()          ──invoke──►  close_vault()
-  lockVaultByPath()     ──invoke──►  close_vault()
-  unlockVault()         ──invoke──►  open_vault()
-  deleteVault()         ──invoke──►  delete_vault()
-  renameVault()         ──invoke──►  rename_vault()
-  reorderVaults()       ──invoke──►  reorder_vaults()
+features/vault/store.js:
+  vaultService.ListVaults()           ──binding──►  VaultService.ListVaults()
+  vaultService.CreateVault()          ──binding──►  VaultService.CreateVault()
+  vaultService.OpenVault()            ──binding──►  VaultService.OpenVault()
+  vaultService.RegisterAndOpenVault() ──binding──►  VaultService.RegisterAndOpenVault()
+  vaultService.CloseVault()           ──binding──►  VaultService.CloseVault()
+  vaultService.DeleteVault()          ──binding──►  VaultService.DeleteVault()
+  vaultService.RenameVault()          ──binding──►  VaultService.RenameVault()
+  vaultService.ReorderVaults()        ──binding──►  VaultService.ReorderVaults()
+  vaultService.ConvertButtercupVault()──binding──►  VaultService.ConvertButtercupVault()
+  vaultService.ConvertKeepassVault()  ──binding──►  VaultService.ConvertKeepassVault()
+  vaultService.ChangeSecurityLevel()  ──binding──►  VaultService.ChangeSecurityLevel()
 
-stores/groups.js:
-  addGroup()            ──invoke──►  add_group()
-  addTag()              ──invoke──►  add_tag()
-  deleteGroup()         ──invoke──►  delete_group()
-  reorderGroups()       ──invoke──►  reorder_groups()
+features/group/store.js:
+  groupService.AddGroup()             ──binding──►  GroupService.AddGroup()
+  groupService.AddTag()               ──binding──►  GroupService.AddTag()
+  groupService.DeleteGroup()          ──binding──►  GroupService.DeleteGroup()
+  groupService.ReorderGroups()        ──binding──►  GroupService.ReorderGroups()
+  groupService.MergeGroups()          ──binding──►  GroupService.MergeGroups()
+  groupService.MoveGroupToVault()     ──binding──►  GroupService.MoveGroupToVault()
+  groupService.CopyGroupToVault()     ──binding──►  GroupService.CopyGroupToVault()
+  groupService.MoveGroupToParent()    ──binding──►  GroupService.MoveGroupToParent()
 
-stores/entries.js:
-  addEntry()            ──invoke──►  add_entry()
-  updateEntry()         ──invoke──►  update_entry()
-  deleteEntry()         ──invoke──►  delete_entry()
-  moveEntryToGroup()    ──invoke──►  update_entry()        (modifies tags)
-  moveEntryToVault()    ──invoke──►  delete_entry() + add_entry()  (cross-vault)
-  copyEntryToGroup()    ──invoke──►  add_entry()           (new ID, modified tags)
-  copyEntryToVault()    ──invoke──►  add_entry()           (cross-vault, new ID)
-  generatePassword()    ──invoke──►  generate_password()
+features/entry/store.js:
+  entryService.AddEntry()             ──binding──►  EntryService.AddEntry()
+  entryService.UpdateEntry()          ──binding──►  EntryService.UpdateEntry()
+  entryService.DeleteEntry()          ──binding──►  EntryService.DeleteEntry()
+  entryService.RestoreTrashEntry()    ──binding──►  EntryService.RestoreTrashEntry()
+  entryService.DeleteTrashEntry()     ──binding──►  EntryService.DeleteTrashEntry()
+  moveEntryToGroup()                  ──binding──►  EntryService.UpdateEntry()  (modifies group_id)
+  moveEntryToVault()                  ──binding──►  DeleteEntry() + AddEntry()  (cross-vault)
+  copyEntryToGroup()                  ──binding──►  EntryService.AddEntry()     (new ID)
+  copyEntryToVault()                  ──binding──►  EntryService.AddEntry()     (cross-vault, new ID)
 
-Backend events (Rust → Svelte):
-  "save-status"         ──emit───►  saveStatus store
-    payload: "saving" | "saved" | "error"
+  passwordService.GeneratePassword()  ──binding──►  PasswordService.GeneratePassword()
+
+Backend events (Go → Svelte):
+  "save-status"         ──emit───►  Events.On listener → showToast()
+    payload: "saved" | "error"
 ```
 
 ---
 
-## 3. Rust Backend State
+## 3. Go Backend State
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│  AppState (managed by Tauri, cloned per command)             │
+│  AppState (internal/state/state.go)                          │
 │                                                              │
 │  ┌────────────────────────────────────────────────┐          │
-│  │  inner: Arc<Mutex<AppStateInner>>              │          │
+│  │  mu: sync.RWMutex                             │          │
 │  │  ┌──────────────────────────────────────────┐  │          │
-│  │  │  open_vaults: HashMap<String, OpenVault> │  │          │
+│  │  │  openVaults: map[string]*OpenVault       │  │          │
 │  │  │                                          │  │          │
-│  │  │  "path/to/vault.pmv" → OpenVault {       │  │          │
-│  │  │    vault: VaultFile {                    │  │          │
-│  │  │      path, header, payload, needs_save   │  │          │
+│  │  │  "path/to/vault.pmv" → OpenVault {      │  │          │
+│  │  │    Vault: *vault.VaultFile {             │  │          │
+│  │  │      Path, Header, Payload, NeedsSave    │  │          │
 │  │  │    }                                     │  │          │
-│  │  │    key: Zeroizing<Vec<u8>>                │  │          │
+│  │  │    Key: []byte                           │  │          │
 │  │  │  }                                       │  │          │
 │  │  └──────────────────────────────────────────┘  │          │
 │  └────────────────────────────────────────────────┘          │
 │                                                              │
 │  ┌────────────────────────────────────────────────┐          │
-│  │  save_tx: mpsc::Sender<SaveJob>                │          │
-│  │  (sends vault + key to background save thread) │          │
+│  │  saveCh: chan state.SaveJob                   │          │
+│  │  (sends vault + key to background save goroutine)│       │
 │  └────────────────────────────────────────────────┘          │
 │                                                              │
-│  Background Save Worker Thread:                              │
+│  Background Save Worker Goroutine (started in main.go):      │
 │  ┌────────────────────────────────────────────────┐          │
-│  │  loop {                                       │          │
-│  │    job = save_rx.recv()                       │          │
-│  │    emit("save-status", "saving")              │          │
-│  │    vault::save_vault_file_with_key(           │          │
-│  │      job.vault, job.key)                      │          │
-│  │    emit("save-status", "saved"|"error")       │          │
-│  │  }                                            │          │
+│  │  for {                                       │          │
+│  │    job := <-saveCh                           │          │
+│  │    application.EmitEvent("save-status", ...) │          │
+│  │    vault.SaveVaultFileWithKey(               │          │
+│  │      job.Vault, job.Key)                     │          │
+│  │    application.EmitEvent("save-status", ...)│          │
+│  │  }                                           │          │
 │  └────────────────────────────────────────────────┘          │
 └──────────────────────────────────────────────────────────────┘
 
-Command flow:
-  1. Tauri command receives State<AppState>
-  2. Lock inner mutex
-  3. Get/modify OpenVault from open_vaults map
-  4. Drop lock
-  5. state.schedule_save(&path) → sends SaveJob on save_tx channel
-  6. Worker thread picks it up, saves to disk, emits event
+Service method flow:
+  1. Service method receives *state.AppState (via struct reference)
+  2. RLock or Lock mutex
+  3. Get/modify OpenVault from openVaults map
+  4. RUnlock or Unlock
+  5. state.ScheduleSave(path) → sends SaveJob on saveCh channel
+  6. Worker goroutine picks it up, saves to disk, emits event
 ```
 
 ---
@@ -155,47 +164,49 @@ Command flow:
 ## 4. Data Model
 
 ```
-AppConfig (config.json)
-├── vaults: Vec<VaultConfig>
-│   └── VaultConfig { id: String, name: String, path: String }
+AppConfig (internal/config/config.go)
+├── Vaults: []VaultConfig
+│   └── VaultConfig { ID: string, Name: string, Path: string }
 
-VaultFile (decrypted, in-memory)
-├── path: String
-├── header: VaultHeader
-│   ├── magic: "PMV "
-│   ├── version: 1
-│   ├── kdf_params: KdfParamsJson
-│   │   ├── algorithm: "argon2id"
-│   │   ├── salt: base64
-│   │   ├── iterations: 3
-│   │   ├── memory_kib: 65536
-│   │   └── parallelism: 4
-│   ├── nonce: base64 (12 bytes)
-│   └── tag: base64 (16 bytes)
-├── payload: VaultPayload
-│   ├── name: String
-│   ├── created_at: DateTime
-│   ├── updated_at: DateTime
-│   ├── groups: Vec<Group>
-│   │   └── Group { id: String, name: String, parent_id: Option<String> }
-│   ├── tags: Vec<String>
-│   ├── entries: Vec<VaultEntry>
+VaultFile (decrypted, in-memory, pkg/vault/types.go)
+├── Path: string
+├── Header: VaultHeader
+│   ├── Magic: "PMV "
+│   ├── Version: 1
+│   ├── KdfParams: KdfParamsJSON
+│   │   ├── Algorithm: "argon2id"
+│   │   ├── Salt: base64
+│   │   ├── Iterations: 3
+│   │   ├── MemoryKIB: 65536
+│   │   └── Parallelism: 4
+│   ├── Nonce: base64 (12 bytes)
+│   └── Tag: base64 (16 bytes)
+├── Payload: VaultPayload
+│   ├── Name: string
+│   ├── CreatedAt: time.Time
+│   ├── UpdatedAt: time.Time
+│   ├── Groups: []Group
+│   │   └── Group { ID: string, Name: string, ParentID: string }
+│   ├── Tags: []string
+│   ├── Entries: []VaultEntry
 │   │   └── VaultEntry {
-│   │         id: String (UUID),
-│   │         title: String,
-│   │         username: String,
-│   │         password: String,
-│   │         url: String,
-│   │         notes: String,
-│   │         tags: Vec<String>,
-│   │         group_id: Option<String>,
-│   │         created_at: DateTime,
-│   │         updated_at: DateTime
+│   │         ID: string (UUID),
+│   │         Title: string,
+│   │         Username: string,
+│   │         Password: string,
+│   │         URL: string,
+│   │         Notes: string,
+│   │         Tags: []string,
+│   │         GroupID: string,
+│   │         CustomFields: []CustomField,
+│   │         History: []HistoryItem,
+│   │         CreatedAt: time.Time,
+│   │         UpdatedAt: time.Time
 │   │       }
-│   └── trash: Trash
-│       ├── groups: Vec<Group>
-│       └── entries: Vec<VaultEntry>
-└── needs_save: bool
+│   └── Trash: Trash
+│       ├── Groups: []Group
+│       └── Entries: []VaultEntry
+└── NeedsSave: bool
 
 On-disk format (PMV file):
   [4 bytes: "PMV "]
@@ -206,9 +217,9 @@ On-disk format (PMV file):
   [M bytes: encrypted payload (ciphertext + 16-byte GCM tag)]
 
 Groups vs Tags:
-  - Groups are stored in payload.groups[]
-  - Tags are stored in payload.tags[]
-  - Entry.tags can contain both group names and tag names
+  - Groups are stored in payload.Groups[]
+  - Tags are stored in payload.Tags[]
+  - Entry.Tags can contain both group names and tag names
   - Frontend filters: tags = all entry tags NOT in groups
   - Selecting a group filters entries by tag membership
 ```
@@ -236,42 +247,41 @@ Groups vs Tags:
           │        │        │
           ▼        ▼        ▼
      Add Entry  Edit     Delete Entry
-     (add_entry) (update_  (delete_
-                 entry)    entry)
+     (AddEntry) (Update-  (Delete-
+                 Entry)   Entry)
           │        │        │
           ▼        ▼        ▼
      ┌─────────────────────────┐
-     │ schedule_save(path)     │
-     │ → save_tx channel       │
-     │ → worker thread         │
-     │ → save_vault_file_      │
-     │   with_key()            │
-     │ → emit "save-status"    │
+     │ ScheduleSave(path)      │
+     │ → saveCh channel        │
+     │ → worker goroutine      │
+     │ → SaveVaultFileWithKey()│
+     │ → EmitEvent "save-status"│
      └─────────────────────────┘
 
 Lock flow:
-  User clicks lock / Ctrl+L / auto-lock timeout
-    → close_vault(path) invoke
-    → Rust: open_vaults.remove(path) (drops key from memory)
-    → Frontend: vaultData[path].unlocked = false
+  User clicks lock / auto-lock timeout
+    → vaultService.CloseVault(path) binding call
+    → Go: openVaults[path] removed (key dropped from memory)
+    → Frontend: vaultData[path] cleared, deleteVaultStore(path)
     → Vault data cleared from derived stores
 
 Unlock flow:
   User enters password
-    → open_vault(path, password) invoke
-    → Rust: open_vault_file() → derive_vault_key() → store OpenVault
+    → vaultService.OpenVault(path, password) binding call
+    → Go: OpenVaultFile() → DeriveKey() → store OpenVault in AppState
     → Frontend: vaultData[path] = { unlocked, groups, tags, entries, trash }
     → Derived stores propagate to components
 
 Cross-vault move:
   moveEntryToVault(entry, targetPath, targetGroup)
-    → delete_entry from source vault (invoke)
-    → add_entry to target vault (invoke, new tags)
+    → entryService.DeleteEntry from source vault (binding)
+    → entryService.AddEntry to target vault (binding, new group_id)
     → vaultData updated for BOTH vaults
 
 Cross-vault copy:
   copyEntryToVault(entry, targetPath, targetGroup)
-    → add_entry to target vault (invoke, new UUID, new tags)
+    → entryService.AddEntry to target vault (binding, new UUID, new group_id)
     → vaultData updated for target vault only
 ```
 
@@ -281,21 +291,26 @@ Cross-vault copy:
 
 ```
 App.svelte
-├── VaultList.svelte (top bar)
+├── Vaults.svelte (top tab bar)
 │   ├── UnlockDialog.svelte (per-vault unlock prompt)
-│   ├── CreateVaultDialog.svelte
-│   ├── VaultSettingsDialog.svelte (rename)
+│   ├── CreateVaultDialog.svelte (with SecurityLevelSlider)
+│   ├── ImportDialog.svelte (Buttercup/KeePass import)
+│   ├── OpenVaultMenu.svelte (open vault from disk)
+│   ├── VaultSettingsDialog.svelte (rename, change security level)
 │   ├── VaultContextMenu.svelte (right-click)
 │   └── RemoveVaultDialog.svelte
 ├── VaultView.svelte (main content, when unlocked)
-│   ├── GroupList.svelte (left panel)
+│   ├── GroupList.svelte (left panel, tree structure)
 │   │   ├── AddGroupDialog.svelte (also used for tags)
+│   │   ├── DeleteGroupDialog.svelte
 │   │   └── GroupTagContextMenu.svelte
 │   ├── EntryList.svelte (middle panel)
 │   │   └── EntryContextMenu.svelte
 │   │       └── MoveCopySubmenu.svelte (×2: move + copy)
 │   └── EntryDetails.svelte OR EntryEditor.svelte (right panel)
-└── AutoLock.svelte (invisible, timer-based)
+│       └── TagManager.svelte (within editor)
+├── AutoLock.svelte (invisible, timer-based)
+└── Toast.svelte (notification display)
 ```
 
 ---
@@ -306,32 +321,31 @@ App.svelte
 User action (add/edit/delete entry, add/delete group, etc.)
   │
   ▼
-Store function (entries.js / groups.js / vaults.js)
+Store function (features/entry/store.js / features/group/store.js / features/vault/store.js)
   │
-  ├──► invoke("command", { path, ... })
+  ├──► Wails binding call (e.g., entryService.AddEntry(path, entry))
   │    │
   │    ▼
-  │    Rust command (entry_commands.rs / etc.)
+  │    Go service method (entry_service.go / etc.)
   │    │
-  │    ├── lock mutex
-  │    ├── modify open_vaults[path].vault.payload
-  │    ├── drop lock
-  │    ├── state.schedule_save(&path)
-  │    │   └── save_tx.send(SaveJob { vault, key })  (non-blocking)
+  │    ├── RLock mutex
+  │    ├── modify openVaults[path].Vault.Payload
+  │    ├── RUnlock mutex
+  │    ├── state.ScheduleSave(path)
+  │    │   └── saveCh <- SaveJob{Vault, Key}  (non-blocking)
   │    └── return updated data
   │
   ├──► updateVaultData(path, { entries/groups/tags })
   │    └── vaultData store updated → Svelte reactivity
   │
   ▼
-Background save worker thread
+Background save worker goroutine (started in main.go)
   │
-  ├── save_rx.recv() → SaveJob { vault, key }
-  ├── emit("save-status", "saving")
-  ├── vault::save_vault_file_with_key(&job.vault, &job.key)
+  ├── job := <-saveCh  →  SaveJob{Vault, Key}
+  ├── EmitEvent("save-status", "saving")
+  ├── vault.SaveVaultFileWithKey(job.Vault, job.Key)
   │   └── encrypt payload with AES-256-GCM
-  │       └── write to .pmv file
-  └── emit("save-status", "saved" | "error")
-      └── Frontend: saveStatus store → UI indicator
-          └── auto-reset to "idle" after 2 seconds
+  │       └── write to .pmv file (atomic: temp + rename)
+  └── EmitEvent("save-status", "saved" | "error")
+      └── Frontend: Events.On("save-status") → showToast()
 ```

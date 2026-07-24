@@ -1,258 +1,444 @@
 # Passman Component Reference
 
-A complete map of every source file in the Passman project, organized by crate/module.
+A complete map of every source file in the Passman project, organized by Go package and frontend module.
 
 ---
 
-## passman-core
+## pkg/crypto
 
-Rust library implementing vault file format, cryptography, and Buttercup import.
+Go package implementing cryptographic primitives: Argon2id key derivation, AES-256-GCM encryption/decryption, and security level presets.
 
-### `passman-core/src/lib.rs`
-Re-exports `buttercup`, `config`, `crypto`, `vault` modules. Defines `VaultConfig`, `AppConfig`, `VaultFile`, `VaultEntry` public types. Contains integration tests for create/open/save vaults.
+### `pkg/crypto/crypto.go`
+Cryptographic primitives and security level presets. Defines `SecurityLevel` (Low / Medium / Secure / Best), `KdfParams`, `KdfParamsJSON`, `Ciphertext`, `CryptoError`.
 
-- **Exports**: `VaultConfig`, `AppConfig`, `VaultFile`, `VaultEntry`, `VaultHeader`, `VaultPayload`, `KdfParams`, `Trash`
-- **Dependencies**: `serde`, `serde_json`, `chrono`
-
-### `passman-core/src/vault.rs`
-Core vault data structures and file I/O. Defines `VaultHeader`, `KdfParamsJson`, `VaultEntry`, `VaultPayload`, `VaultFile`, `Trash`. Handles vault creation, opening, saving, and key derivation.
-
-- **Key functions**: `create_vault_file`, `create_vault_file_with_key`, `open_vault_file`, `open_vault_file_with_key`, `save_vault_file`, `save_vault_file_with_key`, `derive_vault_key`, `vault_exists`
-- **Constants**: `MAGIC` = `"PMV "`, `VERSION` = 1, `PAYLOAD_FORMAT_VERSION` = 1
-- **Dependencies**: `crypto` module, `serde`, `serde_json`, `chrono`, `zeroize`
-
-### `passman-core/src/crypto.rs` (129 lines)
-Cryptographic primitives: Argon2id key derivation, AES-256-GCM encryption/decryption, random byte generation. Defines `KdfParams`, `CryptoError`.
-
-- **Key functions**: `random_bytes`, `derive_key`, `encrypt`, `decrypt`
-- **Constants**: `KEY_SIZE` = 32, `NONCE_SIZE` = 12, `TAG_SIZE` = 16, `SALT_SIZE` = 16
-- **Dependencies**: `argon2`, `aes-gcm`, `rand`, `zeroize`
-
-### `passman-core/src/config.rs`
-Application config file (`~/.config/passman/vaults.json`) read/write. Defines `VaultConfig`, `AppConfig`.
-
-- **Key functions**: `load_config`, `save_config`, `add_vault`, `remove_vault`, `update_vault`
-- **Dependencies**: `serde`, `serde_json`, `dirs`
-
-### `passman-core/src/buttercup.rs`
-Buttercup vault format parser for import. Supports CBC and GCM decryption. Defines `ButtercupVault`, `ButtercupTrash`, `ButtercupGroup`, `ButtercupEntry`, `ButtercupError`. Detects the Buttercup trash group by its `bc_group_role` attribute (value `"trash"`), matching the official Buttercup behaviour, and preserves deleted group hierarchy.
-
-- **Key functions**: `decrypt_buttercup_file`, `decrypt_buttercup_vault`
-- **Constants**: `FORMAT_B_SIGNATURE` = `"b~>buttercup/b"`, `DEFAULT_ALGORITHM` = `"cbc"`, `PASSWORD_KEY_SIZE` = 32, `HMAC_KEY_SIZE` = 32
-- **Dependencies**: `aes`, `cbc`, `hmac`, `sha2`, `flate2`, `pbkdf2`, `serde_json`, `base64`
+- **Key functions**: `DeriveKey`, `Encrypt`, `Decrypt`, `RandomBytes`, `ParseSecurityLevel`, `KdfParamsToJSON`, `KdfParamsFromJSON`
+- **Constants**: `KeySize` = 32, `NonceSize` = 12, `TagSize` = 16, `SaltSize` = 16
+- **Security levels**: `SecurityLevelLow` (32 MiB / 2 iter / 2 lanes), `SecurityLevelMedium` (64 MiB / 3 iter / 4 lanes), `SecurityLevelSecure` (128 MiB / 4 iter / 4 lanes), `SecurityLevelBest` (256 MiB / 6 iter / 8 lanes)
+- **Dependencies**: `golang.org/x/crypto/argon2`, `crypto/aes`, `crypto/cipher`, `crypto/rand`
 
 ---
 
-## passman-cli
+## pkg/vault
 
-Rust CLI tool for vault creation, import, export, and conversion.
+Go package implementing the PMV file format, data models, and group/entry operations.
 
-### `passman-cli/src/main.rs`
-Command-line interface using `clap`. Subcommands: `Create`, `Import`, `ExportButtercup`, `ImportButtercup`, `Convert`, `Extract`. Handles password prompting via `rpassword`.
+### `pkg/vault/types.go`
+Core vault data structures. Defines `VaultHeader`, `VaultPayload`, `VaultEntry`, `Group`, `Trash`, `CustomField`, `HistoryItem`, `VaultFile`, `VaultFileDTO`, `VaultError`.
 
-- **Key functions**: `create_and_save_vault`, `build_payload`, `prompt_password`, `resolve_convert_password`, `derive_vault_name`
-- **Dependencies**: `clap`, `passman-core`, `rpassword`, `serde`, `serde_json`
+- **Key types**: `VaultFile` (Header + Payload + Path + NeedsSave), `VaultFileDTO` (serializable to frontend)
+- **Key functions**: `VaultToDTO`, `VaultPayload.Touch`
+- **Constants**: `Magic` = `"PMV "`, `Version` = 1, `PayloadFormatVersion` = 1
+- **Dependencies**: `pkg/crypto`
 
----
+### `pkg/vault/format.go`
+Binary file I/O for the PMV format. Reads and writes the binary wrapper around the JSON header and encrypted payload.
 
-## passman-app (Tauri Backend)
+- **Key functions**: `ReadVaultFile`, `WriteVaultFile`, `VaultExists`
+- **Write safety**: Atomic writes via temp file + rename
+- **Dependencies**: `encoding/binary`, `encoding/json`, `os`, `path/filepath`
 
-Rust backend for the desktop app, exposing Tauri IPC commands.
+### `pkg/vault/vault.go`
+High-level vault operations: create, open, save, and KDF parameter changes.
 
-### `passman-app/src-tauri/src/main.rs`
-Tauri app entry point. Initializes plugins (dialog, shell, clipboard-manager), manages `AppState`, registers all `invoke_handler` commands.
+- **Key functions**: `CreateVaultFile`, `CreateVaultFileWithKey`, `CreateVaultFileWithLevel`, `OpenVaultFile`, `OpenVaultFileWithKey`, `SaveVaultFile`, `SaveVaultFileWithKey`, `ChangeKdfParams`
+- **Dependencies**: `pkg/crypto`, `encoding/base64`, `encoding/json`, `time`
 
-- **Dependencies**: `tauri`, `commands` module
+### `pkg/vault/operations.go`
+Group and entry operations: deletion, merging, move/copy within and across vaults, trash management.
 
-### `passman-app/src-tauri/src/commands/mod.rs` (11 lines)
-Module declarations and re-exports for all command submodules.
+- **Key functions**: `DeleteGroupWithChildren`, `MergeGroupsInVault`, `MoveGroupToParent`, `MoveEntriesToTrash`, `MoveGroupToTrash`, `PrepareMoveFromSource`, `ApplyMoveToTarget`, `PrepareCopyFromSource`, `ApplyCopyToTarget`, `CollectChildIDs`, `IsDescendant`, `RandomEntryID`
+- **Key types**: `GroupDeletionResult`, `PreparedGroupMove`, `PreparedGroupCopy`
+- **Dependencies**: `crypto/rand`, `encoding/hex`, `time`
 
-- **Re-exports**: `entry_commands::*`, `group_commands::*`, `password::*`, `state::*`, `vault_commands::*`
-
-### `passman-app/src-tauri/src/commands/state.rs`
-In-memory application state. Defines `SaveJob`, `OpenVault`, `AppStateInner`, `AppState`. Spawns background save worker thread that listens on `save_tx` channel and emits `save-status` events.
-
-- **Key types**: `AppState` (Clone), `AppStateInner`, `OpenVault`, `SaveJob`
-- **Key functions**: `AppState::new`, `AppState::schedule_save`, `AppState::with_open_vault`, `AppState::with_open_vault_save`
-- **Dependencies**: `passman-core::vault`, `tauri`, `zeroize`, `std::sync`
-
-### `passman-app/src-tauri/src/commands/vault_commands.rs` (184 lines)
-Tauri commands for vault CRUD: `list_vaults`, `create_vault`, `open_vault`, `register_and_open_vault`, `close_vault`, `delete_vault`, `rename_vault`, `reorder_vaults`.
-
-- **Dependencies**: `passman-core::{config, vault}`, `state`, `password` (for DTO)
-
-### `passman-app/src-tauri/src/commands/group_commands.rs`
-Tauri commands for group/tag management: `list_groups`, `add_group`, `delete_group`, `reorder_groups`, `merge_groups`, `move_group_to_vault`, `copy_group_to_vault`, `add_tag`.
-
-- **Dependencies**: `passman-core::{VaultEntry, Trash, random_bytes}`, `state`
-
-### `passman-app/src-tauri/src/commands/entry_commands.rs`
-Tauri commands for entry CRUD and trash: `list_entries`, `add_entry`, `update_entry`, `delete_entry`, `restore_trash_entry`, `delete_trash_entry`, `list_trash`.
-
-- **Dependencies**: `passman-core::{VaultEntry, Trash}`, `state`
-
-### `passman-app/src-tauri/src/commands/dto.rs`
-DTO types for transferring vault state to the frontend. Defines `VaultFileDTO` and `vault_to_dto`.
-
-- **Key functions**: `vault_to_dto`
-- **Dependencies**: `passman-core::{VaultEntry, VaultFile, Group, Trash}`
-
-### `passman-app/src-tauri/src/commands/password.rs`
-Password generation command. Defines `PasswordOptions`. Contains unit tests for password generation.
-
-- **Key functions**: `generate_password`
-- **Dependencies**: `rand`
+### `pkg/vault/vault_test.go`
+Unit tests for vault create/open/save operations.
 
 ---
 
-## passman-app (Svelte Frontend)
+## pkg/buttercup
 
-### `passman-app/src/main.js`
-Vite/Svelte entry point. Imports `App.svelte`, mounts to `#app`, imports `app.css`.
+Go package for decrypting and parsing Buttercup `.bcup` vault files.
 
-### `passman-app/src/app.css`
-Global CSS: CSS custom properties for theming (light/dark), reset styles, shared modal classes (`.modal-overlay`, `.modal`, `.modal-actions`, `.modal-cancel-btn`, `.modal-primary-btn`, `.modal-danger-btn`, `.modal-input`, `.modal-error`, `.modal-form`).
+### `pkg/buttercup/buttercup.go`
+Entry point for Buttercup decryption. Detects format (A or B) and dispatches to the appropriate parser.
 
-### `passman-app/src/App.svelte`
-Root component. Sets theme on mount, loads vault list, initializes save listener. Renders `VaultList` (top bar), `VaultView` (main content), `UnlockDialog` (when vault needs unlocking), `AutoLock`. Handles Ctrl/Cmd+L to lock vault. Displays save status indicator.
+- **Key functions**: `DecryptButtercupFile`
+- **Dependencies**: `pkg/buttercup/decrypt`, `pkg/buttercup/parse`, `pkg/buttercup/format_a`
 
-- **Props**: none
-- **Dependencies**: `VaultList`, `VaultView`, `UnlockDialog`, `AutoLock`, `stores/vaults`, `stores/theme`
+### `pkg/buttercup/decrypt.go`
+Decryption logic for Buttercup vaults. Supports CBC+HMAC and GCM+AAD modes.
 
-### `passman-app/src/stores/vaults.js`
-Core Svelte store module. Exports writable stores: `vaults`, `currentVault`, `vaultData`, `saveStatus`. Derived stores: `isUnlocked`, `groups`, `entries`, `tags`. Functions: `loadVaults`, `createVault`, `openVault`, `registerAndOpenVault`, `closeVault`, `lockVault`, `lockVaultByPath`, `unlockVault`, `deleteVault`, `renameVault`, `reorderVaults`, `setVaultViewState`, `initSaveListener`, `updateVaultData`.
+- **Key functions**: `decryptCBC`, `decryptGCM`, `deriveButtercupKey`
+- **Constants**: `PASSWORD_KEY_SIZE` = 32, `HMAC_KEY_SIZE` = 32
+- **Dependencies**: `crypto/aes`, `crypto/cipher`, `crypto/hmac`, `crypto/sha2`, `golang.org/x/crypto/pbkdf2`
 
-- **Dependencies**: `svelte/store`, `@tauri-apps/api/core`, `@tauri-apps/api/event`
+### `pkg/buttercup/format_a.go`
+Parser for Buttercup Format A (legacy `$`-delimited format).
 
-### `passman-app/src/stores/entries.js`
-Entry operation functions: `addEntry`, `updateEntry`, `deleteEntry`, `moveEntryToGroup`, `moveEntryToVault`, `moveEntriesWithTagToGroup`, `moveEntriesInGroupToTag`, `copyEntryToGroup`, `copyEntryToVault`, `generatePassword`. All call Tauri `invoke` and update `vaultData` store.
+- **Key functions**: `parseFormatA`, `extractFormatAComponents`
 
-- **Dependencies**: `svelte/store`, `@tauri-apps/api/core`, `stores/vaults`
+### `pkg/buttercup/parse.go`
+Parser for Buttercup Format B (JSON-based format). Extracts groups, entries, trash, and history.
 
-### `passman-app/src/stores/groups.js`
-Group/tag operation functions: `addGroup`, `addTag`, `deleteGroup`, `reorderGroups`. All call Tauri `invoke` and update `vaultData` store.
+- **Key functions**: `parseFormatB`, `mapButtercupGroups`, `mapButtercupEntries`
+- **Dependencies**: `compress/flate`, `encoding/json`, `encoding/base64`
 
-- **Dependencies**: `svelte/store`, `@tauri-apps/api/core`, `stores/vaults`
+### `pkg/buttercup/types.go`
+Buttercup data types. Defines `ButtercupVault`, `ButtercupGroup`, `ButtercupEntry`, `ButtercupTrash`, `ButtercupField`, `HistoryItem`.
 
-### `passman-app/src/stores/theme.js`
-Theme application utility. Exports `applyTheme(value)` which toggles `.dark` class on `<html>`. Listens to system color scheme changes.
+---
 
-- **Dependencies**: none (plain DOM API)
+## pkg/keepass
 
-### `passman-app/src/lib/dragList.js`
-Reusable Svelte drag-and-drop reorder utility. Exports `createDragList({ axis, getKey, onReorder })` returning stores (`dragItem`, `dragOver`, `insertBefore`) and handler functions (`dragStart`, `dragEnd`, `dragOver`, `dragLeave`, `drop`).
+Go package for decrypting and parsing KeePass `.kdbx` database files.
 
-- **Dependencies**: `svelte/store`
+### `pkg/keepass/keepass.go`
+KeePass database parser. Decrypts `.kdbx` files and extracts groups, entries, and custom fields.
 
-### `passman-app/src/components/VaultList.svelte`
-Top tab bar showing all vaults. Handles vault selection, unlock, lock, create, rename (settings), delete. Drag-to-reorder using `createDragList`. Right-click context menu via `VaultContextMenu`.
+- **Key functions**: `DecryptKeePassFile`, `mapKeePassGroups`, `mapKeePassEntries`
+- **Key types**: `KeePassVault`, `KeePassGroup`, `KeePassEntry`, `KeePassField`
+- **Dependencies**: `github.com/tobischo/gokeepasslib/v3`
 
-- **Props**: none
-- **Dependencies**: `stores/vaults`, `UnlockDialog`, `CreateVaultDialog`, `VaultSettingsDialog`, `VaultContextMenu`, `RemoveVaultDialog`, `lib/dragList`, `@tauri-apps/plugin-dialog`
+---
 
-### `passman-app/src/components/VaultView.svelte`
-Main 3-panel layout: groups sidebar, entry list, entry details/editor. Manages selection state (`selectedGroup`, `selectedTags`, `selectedEntry`, `editingEntry`, `mode`). Resizable panels with persisted widths. Keyboard shortcut Ctrl+C copies selected entry password. `resetSelection()` helper for cleanup.
+## internal/app
 
-- **Props**: none
-- **Dependencies**: `stores/vaults`, `stores/entries`, `GroupList`, `EntryList`, `EntryDetails`, `EntryEditor`, `@tauri-apps/plugin-clipboard-manager`
+Wails v3 services exposed to the frontend. Each service is registered in `main.go`.
 
-### `passman-app/src/components/VaultContextMenu.svelte`
-Right-click menu for vault tabs. Actions: Settings (rename), Remove. Dispatches `settings` and `remove` events.
+### `internal/app/vault_service.go`
+Vault service: CRUD, import, security level management.
 
-- **Props**: `x`, `y`, `vault`
-- **Events**: `settings`, `remove`
+- **Key methods**: `ListVaults`, `CreateVault`, `OpenVault`, `RegisterAndOpenVault`, `CloseVault`, `DeleteVault`, `RenameVault`, `ReorderVaults`, `ConvertButtercupVault`, `ConvertKeepassVault`, `ChangeSecurityLevel`
+- **Dependencies**: `internal/config`, `internal/state`, `internal/vimport`, `pkg/buttercup`, `pkg/keepass`, `pkg/crypto`, `pkg/vault`
 
-### `passman-app/src/components/UnlockDialog.svelte`
-Modal dialog for entering vault password. Shows vault name, password input, error messages, indeterminate progress bar during unlock. Dispatches `onUnlock(path, password)` and `onCancel`.
+### `internal/app/group_service.go`
+Group service: group CRUD, tag management, cross-vault move/copy.
 
-- **Props**: `path`, `name`, `onUnlock`, `onCancel`
-- **Dependencies**: shared modal CSS from `app.css`
+- **Key methods**: `ListGroups`, `AddGroup`, `DeleteGroup`, `ReorderGroups`, `MergeGroups`, `MoveGroupToVault`, `CopyGroupToVault`, `MoveGroupToParent`, `AddTag`
+- **Key types**: `GroupDeletionResult`, `MoveGroupToVaultResult`
+- **Dependencies**: `internal/state`, `pkg/vault`
 
-### `passman-app/src/components/CreateVaultDialog.svelte`
-Modal dialog for creating a new vault. Fields: name, file path (with Browse button via `save` dialog), password. Calls `createVault` from stores.
+### `internal/app/entry_service.go`
+Entry service: entry CRUD, trash management, restore.
 
-- **Props**: none (dispatches `created`, `cancel` events)
-- **Dependencies**: `stores/vaults`, `@tauri-apps/plugin-dialog`, shared modal CSS
+- **Key methods**: `ListEntries`, `AddEntry`, `UpdateEntry`, `DeleteEntry`, `RestoreTrashEntry`, `DeleteTrashEntry`, `ListTrash`
+- **Key types**: `EntryMutationResult`, `EntryDeletionResult`, `TrashMutationResult`
+- **Dependencies**: `internal/state`, `pkg/vault`, `time`
 
-### `passman-app/src/components/VaultSettingsDialog.svelte`
-Modal dialog for renaming a vault. Shows name input and read-only file path. Calls `renameVault` from stores.
+### `internal/app/password_service.go`
+Password generation service using `crypto/rand`.
 
-- **Props**: `vault`
-- **Events**: `renamed`, `cancel`
-- **Dependencies**: `stores/vaults`, shared modal CSS
+- **Key types**: `PasswordOptions` (Length, Uppercase, Lowercase, Digits, Space, UnderscoreDash, Symbols)
+- **Key methods**: `GeneratePassword`
+- **Dependencies**: `crypto/rand`, `math/big`
 
-### `passman-app/src/components/RemoveVaultDialog.svelte`
-Confirmation modal for removing a vault from Passman (unregister, not delete file). Shows vault name. Escape key cancels.
+---
 
-- **Props**: `vault`, `onRemove`, `onCancel`
-- **Dependencies**: shared modal CSS
+## internal/state
 
-### `passman-app/src/components/AddGroupDialog.svelte`
-Modal dialog for adding a group or tag (title prop switches label). Enter to add, Escape to cancel. Validates non-empty name.
+In-memory application state management.
 
-- **Props**: `title`, `onAdd`, `onCancel`
-- **Dependencies**: shared modal CSS
+### `internal/state/state.go`
+Thread-safe vault state with `sync.RWMutex`. Manages open vaults and background save queue.
 
-### `passman-app/src/components/AutoLock.svelte`
-Invisible component that auto-locks the vault after 5 minutes of inactivity. Resets timer on mousemove, keydown, click. Calls `lockVault` on timeout.
+- **Key types**: `AppState`, `OpenVault` (Vault + Key), `SaveJob` (Vault + Key)
+- **Key methods**: `NewAppState`, `InsertVault`, `RemoveVault`, `IsOpen`, `GetVault`, `WithOpenVault`, `WithOpenVaultSave`, `ScheduleSave`
+- **Dependencies**: `sync`, `pkg/vault`
 
-- **Props**: none
-- **Dependencies**: `stores/vaults`, `svelte`
+---
+
+## internal/config
+
+Application configuration persisted to `~/.config/passman/vaults.json`.
+
+### `internal/config/config.go`
+Read/write app config. Defines `VaultConfig`, `AppConfig`.
+
+- **Key functions**: `LoadConfig`, `SaveConfig`, `AddVault`, `RemoveVault`, `UpdateVault`, `ConfigDir`, `ConfigPath`
+- **Dependencies**: `encoding/json`, `os`, `path/filepath`
+
+---
+
+## internal/vimport
+
+Import pipeline that converts Buttercup and KeePass data into PMV format.
+
+### `internal/vimport/import.go`
+Intermediate `ImportJSON` representation and mapping functions from Buttercup/KeePass to PMV.
+
+- **Key types**: `ImportJSON`, `ImportGroup`, `ImportEntry`, `ImportTrash`, `ImportCustomField`
+- **Key functions**: `FromButtercupVault`, `FromKeePassVault`, `BuildPayload`, `DeriveVaultName`, `DefaultVaultName`
+- **Dependencies**: `pkg/buttercup`, `pkg/keepass`, `pkg/vault`, `path/filepath`, `time`
+
+---
+
+## cmd/passman-cli
+
+CLI tool using Cobra for vault creation, import, export, and conversion.
+
+### `cmd/passman-cli/main.go`
+Command-line interface with subcommands: `create`, `import`, `export-buttercup`, `import-buttercup`, `import-keepass`, `convert`, `extract`. Password prompting via `golang.org/x/term`.
+
+- **Key functions**: `createCmd`, `importCmd`, `exportButtercupCmd`, `importButtercupCmd`, `importKeePassCmd`, `convertCmd`, `extractCmd`, `createAndSaveVault`, `promptPassword`, `promptPasswordEnv`, `resolveConvertPassword`
+- **Dependencies**: `cobra`, `golang.org/x/term`, `pkg/buttercup`, `pkg/keepass`, `pkg/vault`, `pkg/crypto`, `internal/vimport`
+
+---
+
+## main.go
+
+Wails v3 application entry point. Initializes `AppState` with a background save worker goroutine, creates services (`VaultService`, `GroupService`, `EntryService`, `PasswordService`), registers them as Wails services, and creates the main window.
+
+- **Dependencies**: `wailsapp/wails/v3/pkg/application`, `internal/app`, `internal/state`, `pkg/vault`
+
+---
+
+## frontend/ (Svelte 5 + Wails v3)
+
+### `frontend/src/main.js`
+Vite/Svelte entry point. Imports `App.svelte`, mounts to `#app`, imports `styles/app.scss`.
+
+### `frontend/src/App.svelte`
+Root component. Loads vault list on mount, initializes save event listener, renders `Vaults` and `AutoLock`. Displays load errors.
+
+- **Dependencies**: `features/vault`, `components/AutoLock`, `components/dialog`, `bindings/.../vaultservice.js`
+
+### `frontend/src/features/vault/store.js`
+Core vault state store. Exports writable stores: `vaults`, `currentVault`, `vaultData`. Derived stores: `isUnlocked`, `groups`, `entries`. Functions: `createVault`, `openVault`, `registerAndOpenVault`, `closeVault`, `lockVault`, `lockVaultByPath`, `unlockVault`, `deleteVault`, `renameVault`, `reorderVaults`, `convertButtercupVault`, `convertKeepassVault`, `changeSecurityLevel`, `initSaveListener`, `updateVaultData`.
+
+- **Dependencies**: `svelte/store`, `@wailsio/runtime`, `bindings/.../vaultservice.js`, `stores/toast.js`, `stores/selection.js`
+
+### `frontend/src/features/vault/components/Vaults.svelte`
+Top-level vault tab bar. Handles vault selection, unlock, create, import, open. Drag-to-reorder. Right-click context menu.
+
+### `frontend/src/features/vault/components/Topbar.svelte`
+Top bar with vault actions and theme toggle.
+
+### `frontend/src/features/vault/components/VaultView.svelte`
+Main 3-panel layout: groups sidebar, entry list, entry details/editor. Resizable panels.
+
+### `frontend/src/features/vault/components/UnlockDialog.svelte`
+Modal dialog for entering vault password.
+
+### `frontend/src/features/vault/components/CreateVaultDialog.svelte`
+Modal dialog for creating a new vault with security level selection.
+
+### `frontend/src/features/vault/components/ImportDialog.svelte`
+Modal dialog for importing Buttercup/KeePass vaults.
+
+### `frontend/src/features/vault/components/OpenVaultMenu.svelte`
+Menu for opening an existing vault file from disk.
+
+### `frontend/src/features/vault/components/VaultSettingsDialog.svelte`
+Modal dialog for renaming a vault and changing security level.
+
+### `frontend/src/features/vault/components/VaultContextMenu.svelte`
+Right-click menu for vault tabs. Actions: Settings, Remove.
+
+### `frontend/src/features/vault/components/RemoveVaultDialog.svelte`
+Confirmation modal for removing a vault from Passman.
+
+### `frontend/src/features/vault/components/SecurityLevelSlider.svelte`
+Slider component for selecting Argon2id security level.
+
+### `frontend/src/features/entry/store.js`
+Entry state and operations. Functions: `addEntry`, `updateEntry`, `deleteEntry`, `restoreEntry`, `deleteTrashEntry`, `moveEntryToGroup`, `moveEntryToVault`, `moveEntriesWithTagToGroup`, `moveEntriesInGroupToTag`, `copyEntryToGroup`, `copyEntryToVault`.
+
+- **Dependencies**: `svelte/store`, `bindings/.../entryservice.js`, `features/vault`
+
+### `frontend/src/features/entry/actions.js`
+Entry action helpers, created per-vault via `createEntryActions`.
+
+### `frontend/src/features/entry/components/EntryList.svelte`
+Middle panel showing filtered entry list with search.
+
+### `frontend/src/features/entry/components/EntryRow.svelte`
+Single entry row in the entry list.
+
+### `frontend/src/features/entry/components/EntryDetails.svelte`
+Right panel showing entry details in view mode. Copy buttons for fields.
+
+### `frontend/src/features/entry/components/EntryEditor.svelte`
+Right panel for creating/editing entries. Fields: title, username, password (with Generate), custom fields, tags.
+
+### `frontend/src/features/entry/components/EntryInput.svelte`
+Reusable input component for entry fields.
+
+### `frontend/src/features/entry/components/EntryContextMenu.svelte`
+Right-click menu for entries: Copy Password, Move to, Copy to.
+
+### `frontend/src/features/entry/components/MoveCopySubmenu.svelte`
+Reusable submenu for move/copy operations across groups and vaults.
+
+### `frontend/src/features/entry/components/TagManager.svelte`
+Tag input and management component for entries.
+
+### `frontend/src/features/group/store.js`
+Group state and operations. Functions: `addGroup`, `addTag`, `deleteGroup`, `reorderGroups`, `mergeGroups`, `moveGroupToVault`, `copyGroupToVault`, `moveGroupToParent`.
+
+- **Dependencies**: `svelte/store`, `bindings/.../groupservice.js`, `features/vault`
+
+### `frontend/src/features/group/groupTree.js`
+Tree builder for group hierarchy. Exports `buildTree`.
+
+### `frontend/src/features/group/groupActions.js`
+Group action helpers.
+
+### `frontend/src/features/group/groupVaultMove.svelte.js`
+Cross-vault group move/copy logic.
+
+### `frontend/src/features/group/components/GroupList.svelte`
+Sidebar showing groups and tags with tree structure. Drag-and-drop, context menu.
+
+### `frontend/src/features/group/components/GroupTitle.svelte`
+Group title display component.
+
+### `frontend/src/features/group/components/AddGroupDialog.svelte`
+Modal dialog for adding a group or tag.
+
+### `frontend/src/features/group/components/DeleteGroupDialog.svelte`
+Confirmation dialog for deleting a group.
+
+### `frontend/src/features/group/components/GroupTagContextMenu.svelte`
+Right-click menu for groups/tags: Move to group, Move to vault, Delete.
+
+### `frontend/src/features/group/components/GroupVaultMoveDialog.svelte`
+Dialog for moving/copying a group to another vault.
+
+### `frontend/src/features/group/components/TagSidebar.svelte`
+Sidebar showing tags for filtering.
+
+### `frontend/src/features/group/components/TrashSidebar.svelte`
+Sidebar showing trash groups and entries.
+
+### `frontend/src/features/group/components/TrashRow.svelte`
+Single trash entry row.
+
+### `frontend/src/components/AutoLock.svelte`
+Invisible component that auto-locks the vault after 5 minutes of inactivity.
+
 - **Constants**: `LOCK_TIMEOUT_MS` = 300000
 
-### `passman-app/src/components/GroupList.svelte`
-Sidebar showing groups and tags. Add/delete groups, add tags. Click to select group, click tag to toggle filter. Drag-to-reorder groups using `createDragList`. Right-click context menu via `GroupTagContextMenu`.
+### `frontend/src/components/PasswordGenerator.svelte`
+Password generator dialog with configurable charset and length.
 
-- **Props**: `selectedGroup`, `selectedTags`, `onSelectGroup`, `onToggleTag`
-- **Dependencies**: `stores/vaults`, `stores/groups`, `stores/entries`, `AddGroupDialog`, `GroupTagContextMenu`, `lib/dragList`
+### `frontend/src/components/ThemeToggle.svelte`
+Theme toggle component (light/dark/auto).
 
-### `passman-app/src/components/GroupTagContextMenu.svelte`
-Right-click menu for groups/tags. Shows "Move to group" or "Move to tag" submenu listing all other groups/tags. Dispatches `moveToGroup` or `moveToTag` events.
+### `frontend/src/components/Tree.svelte`
+Reusable tree component for hierarchical lists.
 
-- **Props**: `x`, `y`, `type` ("group"|"tag"), `item`, `groups`, `tags`
-- **Events**: `moveToGroup`, `moveToTag`
+### `frontend/src/components/TreeItem.svelte`
+Single tree item with collapse/expand support.
 
-### `passman-app/src/components/EntryList.svelte`
-Middle panel showing filtered entry list. Search box, "New" button. Each entry row shows title, username, tags. Right-click context menu via `EntryContextMenu`. Click to select, double-click to edit.
+### `frontend/src/components/TagContextMenu.svelte`
+Right-click menu for tags.
 
-- **Props**: `entries`, `selectedEntry`, `onSelect`, `onNew`, `onMoveToGroup`, `onMoveToVault`, `onCopyToGroup`, `onCopyToVault`
-- **Dependencies**: `stores/vaults`, `EntryContextMenu`, `@tauri-apps/plugin-clipboard-manager`
+### `frontend/src/components/dialog/Dialog.svelte`
+Base dialog wrapper component.
 
-### `passman-app/src/components/EntryContextMenu.svelte`
-Right-click menu for entries. Actions: Copy Password, Move to (groups + other vaults), Copy to (groups + other vaults). Uses `MoveCopySubmenu` for the move/copy submenus. Auto-positions within viewport.
+### `frontend/src/components/dialog/Confirm.svelte`
+Confirmation dialog component.
 
-- **Props**: `x`, `y`, `entry`
-- **Events**: `copyPassword`, `moveToGroup`, `moveToVault`, `copyToGroup`, `copyToVault`
-- **Dependencies**: `stores/vaults`, `MoveCopySubmenu`
+### `frontend/src/components/dialog/Toast.svelte`
+Toast notification component.
 
-### `passman-app/src/components/MoveCopySubmenu.svelte`
-Reusable submenu component for move/copy operations. Shows list of groups and vaults (with locked badge). Hovering a vault shows its groups as a nested submenu. Dispatches `selectGroup` and `selectVaultGroup` events.
+### `frontend/src/components/dialog/DialogHeader.svelte`
+Dialog header component.
 
-- **Props**: `label`, `groups`, `vaults`, `left`, `top`, `menuWidth`
-- **Events**: `selectGroup`, `selectVaultGroup`
-- **Dependencies**: `stores/vaults` (for `vaultData`)
+### `frontend/src/components/dialog/DialogBody.svelte`
+Dialog body component.
 
-### `passman-app/src/components/EntryDetails.svelte`
-Right panel showing entry details when in view mode. Displays title, URL, username, password (with show/hide toggle), notes, tags. Copy buttons for each field. Edit and Delete buttons.
+### `frontend/src/components/dialog/DialogFooter.svelte`
+Dialog footer component.
 
-- **Props**: `entry`, `onEdit`, `onClose`
-- **Dependencies**: `stores/entries`, `stores/vaults`, `@tauri-apps/plugin-clipboard-manager`
+### `frontend/src/components/dialog/DialogActions.svelte`
+Dialog action buttons component.
 
-### `passman-app/src/components/EntryEditor.svelte`
-Right panel for creating/editing entries. Fields: title, username, password (with Generate button), URL, notes, tags. Tag input with comma/enter to add. Save calls `addEntry` or `updateEntry` depending on whether entry already has a title.
+### `frontend/src/components/form/Chip.svelte`
+Chip component for tags and UI chips.
 
-- **Props**: `entry`, `selectedGroup`, `onClose`
-- **Dependencies**: `stores/entries`, `stores/vaults`
+### `frontend/src/components/form/Input.svelte`
+Reusable input component.
+
+### `frontend/src/components/form/Label.svelte`
+Reusable label component.
+
+### `frontend/src/components/Tab/Tab.svelte`
+Individual tab component.
+
+### `frontend/src/components/Tab/TabHeader.svelte`
+Tab header with close button and drag support.
+
+### `frontend/src/components/Tab/Tabs.svelte`
+Tab container component.
+
+### `frontend/src/components/Tab/drag.js`
+Tab drag-and-drop reorder utility.
+
+### `frontend/src/components/Tab/tab-id.js`
+Tab ID generation utility.
+
+### `frontend/src/stores/selection.js`
+Per-vault selection state. Creates isolated stores for each vault with `selectedGroup`, `selectedEntry`, `editingEntry`, `mode`, `trashMode`, `selectedTrashGroup`, `selectedTags`.
+
+- **Key exports**: `createVaultSelection`, `deleteVaultStore`
+
+### `frontend/src/stores/toast.js`
+Toast notification store. Exports `showToast`.
+
+### `frontend/src/stores/contextMenu.js`
+Global context menu state store.
+
+### `frontend/src/lib/columnResize.svelte.js`
+Resizable panel utility using Svelte runes.
+
+### `frontend/src/lib/createContextMenu.svelte.js`
+Context menu creation utility.
+
+### `frontend/src/lib/debounce.js`
+Debounce utility function.
+
+### `frontend/src/lib/menuPosition.js`
+Menu positioning utility to keep menus within viewport.
+
+### `frontend/src/lib/tags.js`
+Tag utility functions.
+
+### `frontend/src/lib/constants.js`
+Shared constants (e.g., `SAVE_LISTENER_TIMEOUT_MS`).
+
+### `frontend/src/lib/types.js`
+Shared TypeScript-like type definitions for JS.
+
+### `frontend/src/styles/`
+SCSS design system files:
+
+- `app.scss` — Entry point, imports all partials.
+- `theme.scss` — Theme token definitions (light/dark).
+- `_colors.scss` — Color variables.
+- `_var.scss` — CSS custom properties.
+- `_buttons.scss` — Button styles.
+- `_menus.scss` — Menu and context menu styles.
+- `_modal.scss` — Modal/dialog styles.
+- `_base.scss` — Base reset and typography.
+- `_mixins.scss` — SCSS mixins.
 
 ---
 
 ## Test Files
 
-### `passman-core/tests/buttercup_tests.rs`
-Integration tests for Buttercup vault import (CBC and GCM formats).
+### `pkg/vault/vault_test.go`
+Unit tests for vault create/open/save operations.
 
-### `passman-cli/tests/import_tests.rs`
-Integration tests for CLI import functionality.
+---
 
-### `passman-app/src-tauri/src/commands/password.rs` (inline tests)
-Unit tests for `generate_password`: length, charset restriction, empty charset error.
+## Configuration Files
+
+### `wails.json`
+Wails v3 application configuration: name, output filename, frontend settings (dir, install/build/dev commands, dev server URL).
+
+### `Taskfile.yml`
+Task runner with commands: `dev` (wails3 dev), `build` (frontend + Go build), `build:frontend`, `build:app`, `generate` (wails3 generate bindings), `test` (go test ./...).
+
+### `frontend/bindings/`
+Auto-generated Wails bindings. Generated by `wails3 generate bindings`. Maps Go service methods to JavaScript functions importable from the frontend.
