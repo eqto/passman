@@ -145,7 +145,9 @@ fn map_import_group_to_group(g: ImportGroup) -> Group {
 
 pub fn build_payload(vault: &mut VaultFile, imported: ImportJson) {
     let now = chrono::Utc::now();
-    vault.payload.name = imported.name;
+    if !imported.name.is_empty() {
+        vault.payload.name = imported.name;
+    }
     vault.payload.uuid = imported.uuid;
     vault.payload.created_at = imported.created_at;
     vault.payload.updated_at = now;

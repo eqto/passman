@@ -4,16 +4,14 @@
   import {
     OpenVaultMenu,
     CreateVaultDialog,
-    ImportButtercupDialog,
-    ImportKeePassDialog,
+    ImportDialog,
     UnlockDialog,
     openVault,
     registerAndOpenVault,
   } from "../index.js";
 
   let showCreate = $state(false);
-  let showButtercupImport = $state(false);
-  let showKeePassImport = $state(false);
+  let importFormat = $state(null);
   let showOpenDropdown = $state(false);
   let dropdownPosition = $state({ x: 0, y: 0 });
   let unlockTarget = $state(null);
@@ -45,11 +43,11 @@
   }
 
   function handleButtercupImport() {
-    showButtercupImport = true;
+    importFormat = "buttercup";
   }
 
   function handleKeePassImport() {
-    showKeePassImport = true;
+    importFormat = "keepass";
   }
 </script>
 
@@ -88,17 +86,11 @@
   />
 {/if}
 
-{#if showButtercupImport}
-  <ImportButtercupDialog
-    onsuccess={() => (showButtercupImport = false)}
-    oncancel={() => (showButtercupImport = false)}
-  />
-{/if}
-
-{#if showKeePassImport}
-  <ImportKeePassDialog
-    onsuccess={() => (showKeePassImport = false)}
-    oncancel={() => (showKeePassImport = false)}
+{#if importFormat}
+  <ImportDialog
+    format={importFormat}
+    onsuccess={() => (importFormat = null)}
+    oncancel={() => (importFormat = null)}
   />
 {/if}
 

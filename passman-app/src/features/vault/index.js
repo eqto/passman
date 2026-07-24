@@ -7,7 +7,6 @@ export { default as UnlockDialog } from './components/UnlockDialog.svelte';
 export { default as CreateVaultDialog } from './components/CreateVaultDialog.svelte';
 export { default as RemoveVaultDialog } from './components/RemoveVaultDialog.svelte';
 export { default as OpenVaultMenu } from './components/OpenVaultMenu.svelte';
-export { default as ImportButtercupDialog } from './components/ImportButtercupDialog.svelte';
-export { default as ImportKeePassDialog } from './components/ImportKeePassDialog.svelte';
+export { default as ImportDialog } from './components/ImportDialog.svelte';
 
 export * from './store.js';
