@@ -13,222 +13,103 @@ concurrency:
 
 jobs:
   lint-and-test:
-    name: Lint & Test Core / CLI
+    name: Lint & Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-go@v5
         with:
-          components: rustfmt, clippy
-      - uses: Swatinem/rust-cache@v2
-      - run: cargo fmt --check
-      - run: cargo clippy -p passman-core -p passman-cli -- -D warnings
-      - run: cargo test -p passman-core -p passman-cli
+          go-version: "1.24"
+      - uses: oven-sh/setup-bun@v2.2.0
+        with:
+          bun-version: 1.2.0
+      - name: Install Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libjavascriptcoregtk-4.1-dev libsoup-3.0-dev libglib2.0-dev build-essential pkg-config
+      - name: Go vet
+        run: go vet ./...
+      - name: Go test
+        run: go test ./...
+      - name: Build frontend
+        run: |
+          cd frontend
+          bun install
+          bun run build
+      - name: Build app
+        run: CGO_ENABLED=1 go build -tags gtk3 -o /tmp/passman .
+      - name: Build CLI
+        run: go build -o /tmp/passman-cli ./cmd/passman-cli
 
   build-app:
-    name: Build App (${{ matrix.os }} / ${{ matrix.bundle }})
+    name: Build App (${{ matrix.os }})
     if: github.event_name == 'release'
     strategy:
       fail-fast: false
       matrix:
         include:
           - os: ubuntu-latest
-            bundle: deb
-            artifact: '**/*.deb'
-          - os: ubuntu-latest
-            bundle: rpm
-            artifact: '**/*.rpm'
-          - os: ubuntu-latest
-            bundle: appimage
-            artifact: '**/*.AppImage'
+            artifact: passman-linux-amd64
           - os: windows-latest
-            bundle: nsis
-            artifact: '**/*.exe'
-            portable: target/release/passman-portable.exe
+            artifact: passman-windows-amd64.exe
           - os: macos-latest
-            bundle: dmg
-            artifact: '**/*.dmg'
-          - os: macos-latest
-            bundle: dmg
-            artifact: '**/*.dmg'
-            target: x86_64-apple-darwin
+            artifact: passman-darwin-arm64
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
       - uses: oven-sh/setup-bun@v2.2.0
         with:
           bun-version: 1.2.0
-      - name: Cache bun dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('passman-app/bun.lock') }}
-          restore-keys: ${{ runner.os }}-bun-
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.target || '' }}
-      - uses: Swatinem/rust-cache@v2
-        with:
-          key: ${{ matrix.os }}-${{ matrix.target || 'native' }}
       - name: Install Linux dependencies
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libjavascriptcoregtk-4.1-dev libgtk-3-dev libsoup-3.0-dev libglib2.0-dev build-essential curl wget libssl-dev libayatana-appindicator3-dev librsvg2-dev pkg-config
-      - name: Verify pkg-config
-        if: matrix.os == 'ubuntu-latest'
-        run: pkg-config --exists glib-2.0 gobject-2.0 gtk+-3.0
-      - run: bun install --frozen-lockfile
-        working-directory: ./passman-app
-      - uses: tauri-apps/tauri-action@v1
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libjavascriptcoregtk-4.1-dev libsoup-3.0-dev libglib2.0-dev build-essential pkg-config
+      - name: Build frontend
+        run: |
+          cd frontend
+          bun install
+          bun run build
+      - name: Build app
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          projectPath: ./passman-app
-          args: --bundles ${{ matrix.bundle }} ${{ matrix.target && format('--target {0}', matrix.target) || '' }}
-      - name: Upload bundle to release
+          CGO_ENABLED: "1"
+        run: go build -tags gtk3 -o ${{ matrix.artifact }} .
+      - name: Upload binary to release
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ github.ref_name }}
-          files: |
-            passman-app/src-tauri/target/${{ matrix.target || 'release' }}/release/bundle/${{ matrix.artifact }}
-            passman-app/src-tauri/target/release/bundle/${{ matrix.artifact }}
-            target/${{ matrix.target || 'release' }}/release/bundle/${{ matrix.artifact }}
-            target/release/bundle/${{ matrix.artifact }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Rename Windows portable binary
-        if: matrix.portable
-        run: mv target/release/passman-app.exe target/release/passman-portable.exe
-        shell: bash
-      - name: Upload Windows portable binary to release
-        if: matrix.portable
-        uses: softprops/action-gh-release@v3
-        with:
-          tag_name: ${{ github.ref_name }}
-          files: ${{ matrix.portable }}
+          files: ${{ matrix.artifact }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  update-readme:
-    name: Update README Download Links
-    needs: [build-app]
-    runs-on: ubuntu-latest
+  build-cli:
+    name: Build CLI (${{ matrix.os }})
+    if: github.event_name == 'release'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact: passman-cli-linux-amd64
+          - os: windows-latest
+            artifact: passman-cli-windows-amd64.exe
+          - os: macos-latest
+            artifact: passman-cli-darwin-arm64
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
-      - name: Fetch release assets and update README
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+      - name: Build CLI
+        run: go build -o ${{ matrix.artifact }} ./cmd/passman-cli
+      - name: Upload binary to release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: ${{ matrix.artifact }}
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-          TAG="${{ github.ref_name }}"
-          REPO="${{ github.repository }}"
-
-          # Fetch release assets
-          ASSETS=$(gh release view "$TAG" --repo "$REPO" --json assets --jq '.assets[].name')
-
-          # Find asset URLs by pattern
-          find_asset() {
-            echo "$ASSETS" | grep -m1 "$1" || true
-          }
-
-          APPIMAGE=$(find_asset '\.AppImage$')
-          DEB=$(find_asset '\.deb$')
-          RPM=$(find_asset '\.rpm$')
-          DMG_AARCH64=$(find_asset 'aarch64.*\.dmg$\|arm64.*\.dmg$')
-          DMG_X64=$(find_asset 'x64.*\.dmg$\|x86_64.*\.dmg$')
-          EXE_SETUP=$(find_asset 'setup.*\.exe$\|_x64-setup\.exe$')
-          PORTABLE=$(find_asset 'portable')
-
-          # If no aarch64 dmg found, try the single dmg (universal build)
-          if [ -z "$DMG_AARCH64" ] && [ -n "$DMG_X64" ]; then
-            DMG_AARCH64="$DMG_X64"
-          fi
-
-          BASE="https://github.com/${REPO}/releases/latest/download"
-
-          # Build the download table
-          {
-            echo "## Download"
-            echo ""
-            echo "Pre-built binaries are available for each release on the [Releases](https://github.com/${REPO}/releases) page."
-            echo ""
-            echo "### Desktop App"
-            echo ""
-            echo "| OS | Architecture | Download |"
-            echo "| --- | --- | --- |"
-
-            LINUX_ROW=""
-            if [ -n "$APPIMAGE" ]; then
-              LINUX_ROW="[\\\`.AppImage\\\`](${BASE}/${APPIMAGE})"
-            fi
-            if [ -n "$DEB" ]; then
-              if [ -n "$LINUX_ROW" ]; then LINUX_ROW="$LINUX_ROW · "; fi
-              LINUX_ROW="${LINUX_ROW}[\\\`.deb\\\`](${BASE}/${DEB})"
-            fi
-            if [ -n "$RPM" ]; then
-              if [ -n "$LINUX_ROW" ]; then LINUX_ROW="$LINUX_ROW · "; fi
-              LINUX_ROW="${LINUX_ROW}[\\\`.rpm\\\`](${BASE}/${RPM})"
-            fi
-            if [ -n "$LINUX_ROW" ]; then
-              echo "| Linux | x86_64 | ${LINUX_ROW} |"
-            fi
-
-            if [ -n "$DMG_AARCH64" ]; then
-              echo "| macOS | Apple Silicon | [\\\`.dmg\\\`](${BASE}/${DMG_AARCH64}) |"
-            fi
-            if [ -n "$DMG_X64" ]; then
-              echo "| macOS | Intel | [\\\`.dmg\\\`](${BASE}/${DMG_X64}) |"
-            fi
-
-            WIN_ROW=""
-            if [ -n "$EXE_SETUP" ]; then
-              WIN_ROW="[\\\`.exe\\\` (installer)](${BASE}/${EXE_SETUP})"
-            fi
-            if [ -n "$PORTABLE" ]; then
-              if [ -n "$WIN_ROW" ]; then WIN_ROW="$WIN_ROW · "; fi
-              WIN_ROW="${WIN_ROW}[portable \\\`.exe\\\`](${BASE}/${PORTABLE})"
-            fi
-            if [ -n "$WIN_ROW" ]; then
-              echo "| Windows | x86_64 | ${WIN_ROW} |"
-            fi
-
-            echo ""
-            echo "### CLI"
-            echo ""
-            echo "The CLI is built alongside the desktop app. Pre-built binaries are available on the [Releases](https://github.com/${REPO}/releases/latest) page under the CI artifacts."
-            echo ""
-          } > /tmp/download_section.txt
-
-          # Replace the Download section in README.md (from "## Download" to "## Project Structure")
-          python3 << 'PYEOF'
-          import re
-
-          with open("README.md", "r") as f:
-              content = f.read()
-
-          with open("/tmp/download_section.txt", "r") as f:
-              new_section = f.read().rstrip() + "\n"
-
-          # Replace everything between "## Download" and "## Project Structure"
-          pattern = r'## Download\n.*?\n## Project Structure'
-          replacement = new_section + "## Project Structure"
-          new_content = re.sub(pattern, replacement, content, flags=re.DOTALL)
-
-          with open("README.md", "w") as f:
-              f.write(new_content)
-
-          print("README.md updated successfully")
-          PYEOF
-
-      - name: Commit updated README
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add README.md
-          if git diff --cached --quiet; then
-            echo "No changes to README"
-          else
-            git commit -m "docs: update download links for ${{ github.ref_name }}"
-            git push
-          fi
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

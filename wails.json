@@ -1,0 +1,21 @@
+{
+  "name": "Passman",
+  "outputfilename": "passman",
+  "frontend": {
+    "dir": "./frontend",
+    "install": "bun install",
+    "build": "bun run build",
+    "dev": "bun run dev",
+    "devServerUrl": "http://localhost:1420"
+  },
+  "author": {
+    "name": "Passman Contributors",
+    "email": ""
+  },
+  "info": {
+    "productName": "Passman",
+    "productVersion": "0.1.0-rc.2",
+    "copyright": "Copyright (c) 2026 Passman Contributors",
+    "comments": "A secure password manager"
+  }
+}
