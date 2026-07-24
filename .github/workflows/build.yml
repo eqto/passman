@@ -52,6 +52,10 @@ jobs:
           - os: macos-latest
             bundle: dmg
             artifact: '**/*.dmg'
+          - os: macos-latest
+            bundle: dmg
+            artifact: '**/*.dmg'
+            target: x86_64-apple-darwin
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
@@ -65,9 +69,11 @@ jobs:
           key: ${{ runner.os }}-bun-${{ hashFiles('passman-app/bun.lock') }}
           restore-keys: ${{ runner.os }}-bun-
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target || '' }}
       - uses: Swatinem/rust-cache@v2
         with:
-          key: ${{ matrix.os }}
+          key: ${{ matrix.os }}-${{ matrix.target || 'native' }}
       - name: Install Linux dependencies
         if: matrix.os == 'ubuntu-latest'
         run: |
@@ -83,13 +89,15 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           projectPath: ./passman-app
-          args: --bundles ${{ matrix.bundle }}
+          args: --bundles ${{ matrix.bundle }} ${{ matrix.target && format('--target {0}', matrix.target) || '' }}
       - name: Upload bundle to release
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ github.ref_name }}
           files: |
+            passman-app/src-tauri/target/${{ matrix.target || 'release' }}/release/bundle/${{ matrix.artifact }}
             passman-app/src-tauri/target/release/bundle/${{ matrix.artifact }}
+            target/${{ matrix.target || 'release' }}/release/bundle/${{ matrix.artifact }}
             target/release/bundle/${{ matrix.artifact }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
