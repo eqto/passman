@@ -293,8 +293,7 @@
   }
 
   .empty-state {
-    position: absolute;
-    inset: 0;
+    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;

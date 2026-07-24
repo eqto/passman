@@ -9,10 +9,10 @@ import {
 const WIDTHS_KEY = "passman.columnWidths";
 
 export function createColumnResize() {
-  let columnWidths = {
+  let columnWidths = $state({
     groups: GROUP_PANEL_DEFAULT_WIDTH,
     entries: ENTRY_PANEL_DEFAULT_WIDTH,
-  };
+  });
 
   let resizing = null;
   let startX = 0;

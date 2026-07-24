@@ -7,7 +7,7 @@
   import EntryList from "../../entry/components/EntryList.svelte";
   import EntryDetails from "../../entry/components/EntryDetails.svelte";
   import EntryEditor from "../../entry/components/EntryEditor.svelte";
-  import { createColumnResize } from "../../../lib/columnResize.js";
+  import { createColumnResize } from "../../../lib/columnResize.svelte.js";
 
   let { vault } = $props();
 
