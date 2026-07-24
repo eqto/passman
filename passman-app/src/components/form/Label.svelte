@@ -16,6 +16,5 @@
     white-space: normal;
     word-break: break-word;
     flex-shrink: 0;
-    padding-top: 0.5rem;
   }
 </style>
