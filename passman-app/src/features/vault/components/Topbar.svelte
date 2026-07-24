@@ -55,7 +55,7 @@
 
 <div class="topbar">
   <div class="topbar-left">
-    <button class="btn-secondary" onclick={() => (showCreate = true)}>
+    <button class="btn-neutral" onclick={() => (showCreate = true)}>
       <span class="action-icon">+</span>
       <span class="action-text">New Vault</span>
     </button>

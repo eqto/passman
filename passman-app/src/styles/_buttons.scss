@@ -35,6 +35,22 @@
   }
 }
 
+// Neutral Tonal Button — surface-colored, no accent
+.btn-neutral {
+  padding: var(--space-2) var(--space-6);
+  background-color: var(--hover-bg);
+  color: var(--text-color);
+  height: var(--btn-height);
+  border-radius: var(--shape-full);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  @include state-layer-hover;
+
+  &:disabled {
+    @include disabled;
+  }
+}
+
 // M3 Filled Error Button
 .btn-danger {
   padding: var(--space-2) var(--space-6);

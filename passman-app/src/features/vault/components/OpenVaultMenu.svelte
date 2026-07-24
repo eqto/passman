@@ -77,8 +77,8 @@
     display: flex;
     align-items: center;
     padding: 0 0.5rem 0 0.75rem;
-    background-color: var(--accent-container);
-    color: var(--on-accent-container);
+    background-color: var(--hover-bg);
+    color: var(--text-color);
     border-radius: var(--shape-full);
     gap: 0.25rem;
     height: var(--btn-height);
@@ -140,7 +140,7 @@
   }
 
   .dropdown-toggle:hover {
-    background-color: var(--accent-hover);
+    background-color: var(--hover-bg);
   }
 
   .dropdown-menu {

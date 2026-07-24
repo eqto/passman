@@ -72,7 +72,7 @@
   </div>
 </div>
 
-<div class="tab-content">
+<div class="tab-content" class:empty={!selectedKey}>
   {#each tabs as tab (tab.id)}
     {#if tab.id === selectedKey && tab.content}
       {@render tab.content()}
@@ -105,5 +105,9 @@
     overflow: hidden;
     display: flex;
     align-items: stretch;
+  }
+
+  .tab-content.empty {
+    flex: 0;
   }
 </style>
