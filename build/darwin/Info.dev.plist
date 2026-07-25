@@ -8,7 +8,7 @@
         <key>CFBundleExecutable</key>
             <string>passman</string>
         <key>CFBundleIdentifier</key>
-            <string>com.wails.passman</string>
+            <string>io.github.eqto.passman</string>
         <key>CFBundleVersion</key>
             <string>0.1.0</string>
         <key>CFBundleGetInfoString</key>

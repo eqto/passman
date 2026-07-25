@@ -5,11 +5,11 @@
 	"info": {
 		"0000": {
 			"ProductVersion": "0.1.0",
-			"CompanyName": "Eqto",
-			"FileDescription": "Cross-platform offline-first password manager",
-			"LegalCopyright": "© 2026 Eqto",
+			"CompanyName": "Passman Contributors",
+			"FileDescription": "A secure password manager",
+			"LegalCopyright": "(c) 2025, Passman Contributors",
 			"ProductName": "Passman",
-			"Comments": "Cross-platform offline-first password manager"
+			"Comments": "Passman Password Manager"
 		}
 	}
 }

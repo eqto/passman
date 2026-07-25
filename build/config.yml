@@ -7,7 +7,7 @@ version: '3'
 info:
   companyName: "Passman Contributors"
   productName: "Passman"
-  productIdentifier: "com.eqto.passman"
+  productIdentifier: "io.github.eqto.passman"
   description: "A secure password manager"
   copyright: "(c) 2025, Passman Contributors"
   comments: "Passman Password Manager"

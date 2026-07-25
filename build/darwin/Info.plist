@@ -8,11 +8,11 @@
         <key>CFBundleExecutable</key>
             <string>passman</string>
         <key>CFBundleIdentifier</key>
-            <string>com.eqto.passman</string>
+            <string>io.github.eqto.passman</string>
         <key>CFBundleVersion</key>
             <string>0.1.0</string>
         <key>CFBundleGetInfoString</key>
-            <string>Cross-platform offline-first password manager</string>
+            <string>A secure password manager</string>
         <key>CFBundleShortVersionString</key>
             <string>0.1.0</string>
         <key>CFBundleIconFile</key>
@@ -24,6 +24,6 @@
         <key>NSHighResolutionCapable</key>
             <string>true</string>
         <key>NSHumanReadableCopyright</key>
-            <string>© 2026 Eqto</string>
+            <string>(c) 2025, Passman Contributors</string>
     </dict>
 </plist>
