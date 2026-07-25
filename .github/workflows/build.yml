@@ -141,12 +141,13 @@ jobs:
           echo "C:\nsis\nsis-3.10" >> "$GITHUB_PATH"
       - name: Package .exe installer
         if: matrix.package == 'msi'
-        shell: bash
+        shell: powershell
         run: |
           # Download WebView2 bootstrapper required by NSIS script
-          curl -L -o MicrosoftEdgeWebview2Setup.exe https://go.microsoft.com/fwlink/p/?LinkId=2124703
+          Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/p/?LinkId=2124703" -OutFile "MicrosoftEdgeWebview2Setup.exe" -MaximumRedirection 10
+          Get-Item MicrosoftEdgeWebview2Setup.exe | Format-List Length, FullName
           makensis "-DARG_WAILS_AMD64_BINARY=${{ matrix.artifact }}" "-DINFO_PROJECTNAME=passman" "-DINFO_COMPANYNAME=Passman Contributors" "-DINFO_PRODUCTNAME=Passman" "-DINFO_PRODUCTVERSION=0.1.0" "-DINFO_COPYRIGHT=(c) 2025, Passman Contributors" build/windows/nsis/project.nsi
-          mv passman-setup.exe passman-windows-amd64-setup.exe || true
+          Move-Item passman-setup.exe passman-windows-amd64-setup.exe -Force -ErrorAction SilentlyContinue
       - name: Upload binary to release
         uses: softprops/action-gh-release@v3
         with:
