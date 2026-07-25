@@ -28,13 +28,13 @@ Pre-built binaries are available for each release on the [Releases](https://gith
 
 | OS | Architecture | Download |
 | --- | --- | --- |
-| Linux | x86_64 | [`.rpm`](https://github.com/Eqto/Passman/releases/latest/download/passman-v0.1.0-rc.3-1.x86_64.rpm) · [`.deb`](https://github.com/Eqto/Passman/releases/latest/download/passman_v0.1.0-rc.3_amd64.deb) · [binary](https://github.com/Eqto/Passman/releases/latest/download/passman-linux-amd64) |
-| macOS | Apple Silicon | [`.dmg`](https://github.com/Eqto/Passman/releases/latest/download/passman-darwin-arm64.dmg) · [binary](https://github.com/Eqto/Passman/releases/latest/download/passman-darwin-arm64) |
-| macOS | Intel | [`.dmg`](https://github.com/Eqto/Passman/releases/latest/download/passman-darwin-amd64.dmg) · [binary](https://github.com/Eqto/Passman/releases/latest/download/passman-darwin-amd64) |
-| Windows | x86_64 | [`.exe`](https://github.com/Eqto/Passman/releases/latest/download/passman-windows-amd64.exe) |
-| Windows | ARM64 | [`.exe`](https://github.com/Eqto/Passman/releases/latest/download/passman-windows-arm64.exe) |
+| Linux | x86_64 | [`.rpm`](https://github.com/Eqto/Passman/releases/download/v0.1.0-rc.3/passman-v0.1.0-rc.3-1.x86_64.rpm) · [`.deb`](https://github.com/Eqto/Passman/releases/download/v0.1.0-rc.3/passman_v0.1.0-rc.3_amd64.deb) · [binary](https://github.com/Eqto/Passman/releases/download/v0.1.0-rc.3/passman-linux-amd64) |
+| macOS | Apple Silicon | [`.dmg`](https://github.com/Eqto/Passman/releases/download/v0.1.0-rc.3/passman-darwin-arm64.dmg) · [binary](https://github.com/Eqto/Passman/releases/download/v0.1.0-rc.3/passman-darwin-arm64) |
+| macOS | Intel | [`.dmg`](https://github.com/Eqto/Passman/releases/download/v0.1.0-rc.3/passman-darwin-amd64.dmg) · [binary](https://github.com/Eqto/Passman/releases/download/v0.1.0-rc.3/passman-darwin-amd64) |
+| Windows | x86_64 | [`.exe`](https://github.com/Eqto/Passman/releases/download/v0.1.0-rc.3/passman-windows-amd64.exe) |
+| Windows | ARM64 | [`.exe`](https://github.com/Eqto/Passman/releases/download/v0.1.0-rc.3/passman-windows-arm64.exe) |
 
-> Download links are updated automatically on each release.
+> Download links point to the latest release. Visit the [Releases](https://github.com/Eqto/Passman/releases) page for all versions.
 
 ## Project Structure
 
