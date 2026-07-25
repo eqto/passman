@@ -132,14 +132,15 @@ jobs:
           cp build/darwin/icons.icns "$APPDIR/Contents/Resources/icons.icns"
           chmod +x "$APPDIR/Contents/MacOS/passman"
           hdiutil create -volname "Passman" -srcfolder "$APPDIR" -fs APFS -format UDZO passman-${{ matrix.target }}.dmg
+      - name: Install NSIS
+        if: matrix.package == 'msi'
+        run: |
+          curl -L -o nsis.zip https://sourceforge.net/projects/nsis/files/NSIS%203/3.10/nsis-3.10.zip/download
+          7z x nsis.zip -o"C:\nsis" -y
+          echo "C:\nsis\nsis-3.10" >> $env:GITHUB_PATH
       - name: Package .exe installer
         if: matrix.package == 'msi'
         run: |
-          # Download and install NSIS
-          curl -L -o nsis.zip https://sourceforge.net/projects/nsis/files/NSIS%203/3.10/nsis-3.10.zip/download
-          7z x nsis.zip -o"C:\nsis" -y
-          echo "C:\nsis\nsis-3.10" >> $GITHUB_PATH
-          # Build installer using NSIS
           makensis -DARG_WAILS_AMD64_BINARY=${{ matrix.artifact }} -DINFO_PROJECTNAME=passman "-DINFO_COMPANYNAME=Passman Contributors" -DINFO_PRODUCTNAME=Passman -DINFO_PRODUCTVERSION=0.1.0 "-DINFO_COPYRIGHT=(c) 2025, Passman Contributors" build/windows/nsis/project.nsi
           mv passman-setup.exe passman-windows-amd64-setup.exe || true
       - name: Upload binary to release
