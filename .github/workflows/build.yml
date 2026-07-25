@@ -143,12 +143,14 @@ jobs:
         if: matrix.package == 'msi'
         shell: powershell
         run: |
+          # Create output directory expected by NSIS script
+          New-Item -ItemType Directory -Force -Path "bin"
           # Download WebView2 bootstrapper required by NSIS script (must be in script dir)
           Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/p/?LinkId=2124703" -OutFile "build/windows/nsis/MicrosoftEdgeWebview2Setup.exe" -MaximumRedirection 10
           # Copy binary to script dir so NSIS File command can find it
           Copy-Item ${{ matrix.artifact }} "build/windows/nsis/${{ matrix.artifact }}"
           makensis "-DARG_WAILS_AMD64_BINARY=${{ matrix.artifact }}" "-DINFO_PROJECTNAME=passman" "-DINFO_COMPANYNAME=Passman Contributors" "-DINFO_PRODUCTNAME=Passman" "-DINFO_PRODUCTVERSION=0.1.0" "-DINFO_COPYRIGHT=(c) 2025, Passman Contributors" build/windows/nsis/project.nsi
-          Move-Item "build/windows/nsis/passman-setup.exe" passman-windows-amd64-setup.exe -Force -ErrorAction SilentlyContinue
+          Move-Item "bin\passman-amd64-installer.exe" passman-windows-amd64-setup.exe -Force
       - name: Upload binary to release
         uses: softprops/action-gh-release@v3
         with:
