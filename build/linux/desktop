@@ -1,13 +1,10 @@
 [Desktop Entry]
 Version=1.0
-Name=My Product
-Comment=My Product Description
-# The Exec line includes %u to pass the URL to the application
+Name=Passman
+Comment=Cross-platform offline-first password manager
 Exec=/usr/local/bin/passman %u
 Terminal=false
 Type=Application
 Icon=passman
-Categories=Utility;
+Categories=Utility;Security;
 StartupWMClass=passman
-
- 

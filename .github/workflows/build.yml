@@ -103,14 +103,24 @@ jobs:
         if: matrix.package == 'rpm'
         run: |
           sudo gem install --no-document fpm
+          mkdir -p pkgroot/usr/local/bin pkgroot/usr/share/applications pkgroot/usr/share/icons/hicolor/128x128/apps
+          cp ${{ matrix.artifact }} pkgroot/usr/local/bin/passman
+          cp build/linux/desktop pkgroot/usr/share/applications/passman.desktop
+          cp build/appicon.png pkgroot/usr/share/icons/hicolor/128x128/apps/passman.png
           fpm -s dir -t rpm -n passman -v ${{ github.ref_name }} -p passman-${{ github.ref_name }}-1.x86_64.rpm \
-            --prefix /usr/local/bin ${{ matrix.artifact }}
+            --depends libgtk-3-0 --depends libwebkit2gtk-4.1-0 \
+            -C pkgroot usr/local/bin/passman usr/share/applications/passman.desktop usr/share/icons/hicolor/128x128/apps/passman.png
       - name: Package .deb
         if: matrix.package == 'deb'
         run: |
           sudo gem install --no-document fpm
+          mkdir -p pkgroot/usr/local/bin pkgroot/usr/share/applications pkgroot/usr/share/icons/hicolor/128x128/apps
+          cp ${{ matrix.artifact }} pkgroot/usr/local/bin/passman
+          cp build/linux/desktop pkgroot/usr/share/applications/passman.desktop
+          cp build/appicon.png pkgroot/usr/share/icons/hicolor/128x128/apps/passman.png
           fpm -s dir -t deb -n passman -v ${{ github.ref_name }} -p passman_${{ github.ref_name }}_amd64.deb \
-            --prefix /usr/local/bin ${{ matrix.artifact }}
+            --depends libgtk-3-0 --depends libwebkit2gtk-4.1-0 \
+            -C pkgroot usr/local/bin/passman usr/share/applications/passman.desktop usr/share/icons/hicolor/128x128/apps/passman.png
       - name: Package .dmg
         if: matrix.package == 'dmg'
         run: |
