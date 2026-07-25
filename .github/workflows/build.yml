@@ -124,11 +124,24 @@ jobs:
       - name: Package .dmg
         if: matrix.package == 'dmg'
         run: |
-          hdiutil create -volname "Passman" -srcfolder ${{ matrix.artifact }} -fs APFS -format UDZO passman-${{ matrix.target }}.dmg
-      - name: Package .msi
+          APPDIR="Passman.app"
+          mkdir -p "$APPDIR/Contents/MacOS"
+          mkdir -p "$APPDIR/Contents/Resources"
+          cp ${{ matrix.artifact }} "$APPDIR/Contents/MacOS/passman"
+          cp build/darwin/Info.plist "$APPDIR/Contents/Info.plist"
+          cp build/darwin/icons.icns "$APPDIR/Contents/Resources/icons.icns"
+          chmod +x "$APPDIR/Contents/MacOS/passman"
+          hdiutil create -volname "Passman" -srcfolder "$APPDIR" -fs APFS -format UDZO passman-${{ matrix.target }}.dmg
+      - name: Package .exe installer
         if: matrix.package == 'msi'
         run: |
-          echo "MSI packaging requires WiX toolset - skipping for now, uploading plain .exe"
+          # Download and install NSIS
+          curl -L -o nsis.zip https://sourceforge.net/projects/nsis/files/NSIS%203/3.10/nsis-3.10.zip/download
+          7z x nsis.zip -o"C:\nsis" -y
+          echo "C:\nsis" >> $GITHUB_PATH
+          # Build installer using NSIS
+          C:\nsis\makensis.exe -DARG_WAILS_AMD64_BINARY=${{ matrix.artifact }} -DINFO_PROJECTNAME=passman -DINFO_COMPANYNAME=Eqto -DINFO_PRODUCTNAME=Passman -DINFO_PRODUCTVERSION=0.1.0 -DINFO_COPYRIGHT="© 2026 Eqto" build/windows/nsis/project.nsi
+          mv passman-setup.exe passman-windows-amd64-setup.exe || true
       - name: Upload binary to release
         uses: softprops/action-gh-release@v3
         with:
@@ -158,5 +171,13 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           files: passman-${{ matrix.target }}.dmg
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload .exe installer to release
+        if: matrix.package == 'msi'
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: passman-windows-amd64-setup.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

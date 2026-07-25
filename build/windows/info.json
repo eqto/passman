@@ -5,11 +5,11 @@
 	"info": {
 		"0000": {
 			"ProductVersion": "0.1.0",
-			"CompanyName": "My Company",
-			"FileDescription": "My Product Description",
-			"LegalCopyright": "© now, My Company",
-			"ProductName": "My Product",
-			"Comments": "This is a comment"
+			"CompanyName": "Eqto",
+			"FileDescription": "Cross-platform offline-first password manager",
+			"LegalCopyright": "© 2026 Eqto",
+			"ProductName": "Passman",
+			"Comments": "Cross-platform offline-first password manager"
 		}
 	}
 }
