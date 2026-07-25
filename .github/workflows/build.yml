@@ -143,6 +143,8 @@ jobs:
         if: matrix.package == 'msi'
         shell: bash
         run: |
+          # Download WebView2 bootstrapper required by NSIS script
+          curl -L -o MicrosoftEdgeWebview2Setup.exe https://go.microsoft.com/fwlink/p/?LinkId=2124703
           makensis "-DARG_WAILS_AMD64_BINARY=${{ matrix.artifact }}" "-DINFO_PROJECTNAME=passman" "-DINFO_COMPANYNAME=Passman Contributors" "-DINFO_PRODUCTNAME=Passman" "-DINFO_PRODUCTVERSION=0.1.0" "-DINFO_COPYRIGHT=(c) 2025, Passman Contributors" build/windows/nsis/project.nsi
           mv passman-setup.exe passman-windows-amd64-setup.exe || true
       - name: Upload binary to release
