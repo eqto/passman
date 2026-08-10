@@ -4,3 +4,12 @@ frontend/wailsjs/** linguist-generated
 
 # Build artifacts
 build/** linguist-generated
+
+# Frontend UI layer — this is a Wails app whose primary language is Go.
+# The Svelte/JS frontend is the view layer, not the project's main language,
+# so exclude it from Linguist stats to keep Go as the reported primary language.
+frontend/src/** linguist-vendored
+frontend/index.html linguist-vendored
+frontend/package.json linguist-vendored
+frontend/svelte.config.js linguist-vendored
+frontend/vite.config.js linguist-vendored
