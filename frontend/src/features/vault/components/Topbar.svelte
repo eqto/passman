@@ -1,6 +1,7 @@
 <script>
   import { Dialogs } from "@wailsio/runtime";
   import ThemeToggle from "../../../components/ThemeToggle.svelte";
+  import AppSettings from "../../../components/AppSettings.svelte";
   import {
     OpenVaultMenu,
     CreateVaultDialog,
@@ -66,7 +67,10 @@
       onkeepassimport={handleKeePassImport}
     />
   </div>
-  <ThemeToggle />
+  <div class="topbar-right">
+    <ThemeToggle />
+    <AppSettings />
+  </div>
 </div>
 
 {#if showCreate}
@@ -108,6 +112,12 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
+  }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
   }
 
   .action-icon {

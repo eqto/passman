@@ -120,9 +120,9 @@ export class HistoryItem {
         if (!("updated_at" in $$source)) {
             /**
              * @member
-             * @type {string}
+             * @type {Date}
              */
-            this["updated_at"] = "0001-01-01T00:00:00.000Z";
+            this["updated_at"] = new Date("0001-01-01T00:00:00.000Z");
         }
 
         Object.assign(this, $$source);
@@ -134,7 +134,11 @@ export class HistoryItem {
      * @returns {HistoryItem}
      */
     static createFrom($$source = {}) {
+        const $$createField2_0 = $Create.DateFromTime;
         let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
+        if ("updated_at" in $$parsedSource) {
+            $$parsedSource["updated_at"] = $$createField2_0($$parsedSource["updated_at"]);
+        }
         return new HistoryItem(/** @type {Partial<HistoryItem>} */($$parsedSource));
     }
 }
@@ -240,21 +244,21 @@ export class VaultEntry {
         if (!("created_at" in $$source)) {
             /**
              * @member
-             * @type {string}
+             * @type {Date}
              */
-            this["created_at"] = "0001-01-01T00:00:00.000Z";
+            this["created_at"] = new Date("0001-01-01T00:00:00.000Z");
         }
         if (!("updated_at" in $$source)) {
             /**
              * @member
-             * @type {string}
+             * @type {Date}
              */
-            this["updated_at"] = "0001-01-01T00:00:00.000Z";
+            this["updated_at"] = new Date("0001-01-01T00:00:00.000Z");
         }
         if (/** @type {any} */(false)) {
             /**
              * @member
-             * @type {string | null | undefined}
+             * @type {Date | null | undefined}
              */
             this["deleted_at"] = undefined;
         }
@@ -277,13 +281,25 @@ export class VaultEntry {
     static createFrom($$source = {}) {
         const $$createField4_0 = $$createType4;
         const $$createField5_0 = $$createType6;
-        const $$createField10_0 = $$createType8;
+        const $$createField7_0 = $Create.DateFromTime;
+        const $$createField8_0 = $Create.DateFromTime;
+        const $$createField9_0 = $$createType7;
+        const $$createField10_0 = $$createType9;
         let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
         if ("tags" in $$parsedSource) {
             $$parsedSource["tags"] = $$createField4_0($$parsedSource["tags"]);
         }
         if ("fields" in $$parsedSource) {
             $$parsedSource["fields"] = $$createField5_0($$parsedSource["fields"]);
+        }
+        if ("created_at" in $$parsedSource) {
+            $$parsedSource["created_at"] = $$createField7_0($$parsedSource["created_at"]);
+        }
+        if ("updated_at" in $$parsedSource) {
+            $$parsedSource["updated_at"] = $$createField8_0($$parsedSource["updated_at"]);
+        }
+        if ("deleted_at" in $$parsedSource) {
+            $$parsedSource["deleted_at"] = $$createField9_0($$parsedSource["deleted_at"]);
         }
         if ("history" in $$parsedSource) {
             $$parsedSource["history"] = $$createField10_0($$parsedSource["history"]);
@@ -356,7 +372,7 @@ export class VaultFileDTO {
         const $$createField2_0 = $$createType1;
         const $$createField3_0 = $$createType4;
         const $$createField4_0 = $$createType3;
-        const $$createField5_0 = $$createType9;
+        const $$createField5_0 = $$createType10;
         let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
         if ("groups" in $$parsedSource) {
             $$parsedSource["groups"] = $$createField2_0($$parsedSource["groups"]);
@@ -382,6 +398,7 @@ const $$createType3 = $Create.Array($$createType2);
 const $$createType4 = $Create.Array($Create.Any);
 const $$createType5 = CustomField.createFrom;
 const $$createType6 = $Create.Array($$createType5);
-const $$createType7 = HistoryItem.createFrom;
-const $$createType8 = $Create.Array($$createType7);
-const $$createType9 = Trash.createFrom;
+const $$createType7 = $Create.Nullable($Create.DateFromTime);
+const $$createType8 = HistoryItem.createFrom;
+const $$createType9 = $Create.Array($$createType8);
+const $$createType10 = Trash.createFrom;

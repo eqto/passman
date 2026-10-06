@@ -132,7 +132,7 @@ The desktop UI is built with Svelte 5 (runes mode) and communicates with the Go 
 3. The Go backend stores the decrypted vault and derived key in `AppState.openVaults`. The user password is not retained.
 4. The frontend uses Svelte stores to display groups and tags. Groups are single-select; tags are multi-select and filter the entry list.
 5. Mutations (add/update/delete entry or group) update the in-memory vault and trigger a background save via `ScheduleSave`.
-6. `AutoLock.svelte` locks the vault after 5 minutes of inactivity.
+6. `AutoLock.svelte` locks the vault after a configurable inactivity timeout (default 5 minutes).
 
 ### Import Flow
 
