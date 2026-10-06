@@ -70,7 +70,7 @@ jobs:
             artifact: passman-darwin-arm64
             goarch: arm64
             package: dmg
-          - os: macos-13
+          - os: macos-15-intel
             target: darwin-amd64
             artifact: passman-darwin-amd64
             goarch: amd64
