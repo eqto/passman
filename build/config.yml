@@ -1,7 +1,7 @@
 # This file contains the configuration for this project.
 # When you update `info` or `fileAssociations`, run `wails3 task common:update:build-assets` to update the assets.
 # Note that this will overwrite any changes you have made to the assets.
-version: '3'
+version: "3"
 
 # This information is used to generate the build assets.
 info:
@@ -11,7 +11,7 @@ info:
   description: "A secure password manager"
   copyright: "(c) 2025, Passman Contributors"
   comments: "Passman Password Manager"
-  version: "0.1.0-rc.3"
+  version: "0.1.0-rc.4"
   # cfBundleIconName: "appicon" # The macOS icon name in Assets.car icon bundles (optional)
   #                               # Should match the name of your .icon file without the extension
   #                               # If not set and Assets.car exists, defaults to "appicon"

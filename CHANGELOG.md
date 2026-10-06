@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0-rc.4] - 2026-10-06
+
+### Added
+
+- App settings dialog (gear button in topbar) with configurable auto-lock timeout — 5 minutes, 15 minutes, 30 minutes, 1 hour, 6 hours, or 1 day (previously hardcoded to 5 minutes).
+
 ## [0.1.0-rc.3] - 2026-07-25
 
 ### Changed
